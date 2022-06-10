@@ -20,35 +20,67 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <vector>
+#include <filesystem>
 
-namespace nlp::preprocessing::google {
+namespace nlp::preprocessing {
+    static const std::string TOTALCOUNTS_FILE_NAME = "totalcounts-1";
+
     using NgramYear = std::string;
     using NgramCount = uint64_t;
 
-    struct NgramYearlyCounts {
-        static const NgramYearlyCounts DEFAULT;
+    struct GoogleNgramYearlyCounts {
+        static const GoogleNgramYearlyCounts DEFAULT;
 
         const NgramCount matches = 0;
         const NgramCount pages = 0;
         const NgramCount volumes = 0;
     };
 
-    class NgramTotalCounts {
+    class GoogleNgramTotalCounts {
         private:
-            using TotalCountsMap = std::map<NgramYear, NgramYearlyCounts>;
+            using TotalCountsMap = std::map<NgramYear, GoogleNgramYearlyCounts>;
             TotalCountsMap total_counts_map;
 
         public:
-            static auto parse_from_file(const std::string &path) -> NgramTotalCounts;
+            GoogleNgramTotalCounts() : total_counts_map(TotalCountsMap()) { };
+            ~GoogleNgramTotalCounts() = default;
 
-            NgramTotalCounts() : total_counts_map(TotalCountsMap()) { };
-            ~NgramTotalCounts() = default;
+            auto load(const std::filesystem::path &path) -> void;
 
-            auto get_counts_of_year(const NgramYear year) const noexcept -> NgramYearlyCounts;
+            auto get_counts_of_year(const NgramYear &year) const noexcept -> GoogleNgramYearlyCounts;
 
-            auto set_counts_of_year(const NgramYear year, const NgramYearlyCounts counts) noexcept -> void;
+            auto set_counts_of_year(const NgramYear year, const GoogleNgramYearlyCounts counts) noexcept -> void;
 
             auto dump() const noexcept -> std::string;
+    };
+
+    class GoogleNgramDatabase {
+        private:
+            struct Partition {
+                std::map<std::string, double> data;
+                double max_weight = 0;
+            };
+
+            using Database = std::map<std::string, uint16_t>;
+            Database database;
+            GoogleNgramTotalCounts total_counts;
+
+            auto load_partition(const std::filesystem::path &path) const -> Partition;
+
+            auto normalize_and_insert_partitions(const std::vector<Partition> &partitions) -> void;
+
+        public:
+            GoogleNgramDatabase() : database(Database()), total_counts(GoogleNgramTotalCounts()) { };
+            ~GoogleNgramDatabase() = default;
+
+            auto load(const std::filesystem::path &path) -> void;
+
+            auto set_word(std::string word, double weight) noexcept -> void;
+
+            auto dump() const noexcept -> std::string;
+
+            auto dump(std::basic_ostream<char> &out) const noexcept -> void;
     };
 }
 

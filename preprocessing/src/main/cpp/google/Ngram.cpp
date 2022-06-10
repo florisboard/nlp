@@ -21,58 +21,56 @@
 #include <stdexcept>
 #include <filesystem>
 
-using namespace nlp::preprocessing::google;
+using namespace nlp::preprocessing;
 
 static const char YEAR_DATA_DELIM = '\t';
 static const std::string YEAR_DELIM = ",";
+static const std::string DATABASE_DELIM = "\t";
 
-const NgramYearlyCounts NgramYearlyCounts::DEFAULT = NgramYearlyCounts();
+const GoogleNgramYearlyCounts GoogleNgramYearlyCounts::DEFAULT = GoogleNgramYearlyCounts();
 
-auto NgramTotalCounts::parse_from_file(const std::string &path) -> NgramTotalCounts {
+auto GoogleNgramTotalCounts::load(const std::filesystem::path &path) -> void {
     if (!std::filesystem::exists(path)) {
-        throw std::runtime_error("File '" + path + "' not found!");
+        throw std::runtime_error("File '" + path.string() + "' not found!");
     }
     if (std::filesystem::is_directory(path)) {
-        throw std::runtime_error("File '" + path + "' is a directory!");
+        throw std::runtime_error("File '" + path.string() + "' is a directory!");
     }
 
     std::ifstream total_counts_file(path);
-    if (total_counts_file.is_open()) {
-        auto total_counts = NgramTotalCounts();
-        std::string year_data_str;
-        std::vector<std::string> year_data_vec;
-        while (std::getline(total_counts_file, year_data_str, YEAR_DATA_DELIM)) {
-            if (year_data_str.empty()) continue;
-            year_data_vec.clear();
-            stdext::str_split(year_data_str, YEAR_DELIM, year_data_vec);
-            if (year_data_vec.size() != 4) continue;
-            NgramYear year = year_data_vec[0];
-            NgramYearlyCounts year_data = {
-                .matches = std::strtoull(year_data_vec[1].c_str(), nullptr, 10),
-                .pages = std::strtoull(year_data_vec[2].c_str(), nullptr, 10),
-                .volumes = std::strtoull(year_data_vec[3].c_str(), nullptr, 10),
-            };
-            total_counts.set_counts_of_year(year, year_data);
-        }
-        total_counts_file.close();
-        return total_counts;
+    if (!total_counts_file.is_open()) {
+        throw std::runtime_error("An unknown error occurred");
     }
-
-    throw std::runtime_error("An unknown error occurred");
+    std::string year_data_str;
+    std::vector<std::string> year_data_vec;
+    while (std::getline(total_counts_file, year_data_str, YEAR_DATA_DELIM)) {
+        if (year_data_str.empty()) continue;
+        year_data_vec.clear();
+        stdext::str_split(year_data_str, YEAR_DELIM, year_data_vec);
+        if (year_data_vec.size() != 4) continue;
+        NgramYear year = year_data_vec[0];
+        GoogleNgramYearlyCounts year_data = {
+            .matches = std::strtoull(year_data_vec[1].c_str(), nullptr, 10),
+            .pages = std::strtoull(year_data_vec[2].c_str(), nullptr, 10),
+            .volumes = std::strtoull(year_data_vec[3].c_str(), nullptr, 10),
+        };
+        set_counts_of_year(year, year_data);
+    }
+    total_counts_file.close();
 }
 
-auto NgramTotalCounts::get_counts_of_year(const NgramYear year) const noexcept -> NgramYearlyCounts {
-    return stdext::map_get_or_default(total_counts_map, year, NgramYearlyCounts::DEFAULT);
+auto GoogleNgramTotalCounts::get_counts_of_year(const NgramYear &year) const noexcept -> GoogleNgramYearlyCounts {
+    return stdext::map_get_or_default(total_counts_map, year, GoogleNgramYearlyCounts::DEFAULT);
 }
 
-auto NgramTotalCounts::set_counts_of_year(const NgramYear year, const NgramYearlyCounts counts) noexcept -> void {
+auto GoogleNgramTotalCounts::set_counts_of_year(const NgramYear year, const GoogleNgramYearlyCounts counts) noexcept -> void {
     total_counts_map.insert(std::make_pair(year, counts));
 }
 
-auto NgramTotalCounts::dump() const noexcept -> std::string {
+auto GoogleNgramTotalCounts::dump() const noexcept -> std::string {
     std::stringstream ss;
-    ss << "NgramTotalCounts {\n";
-    for (auto [year, counts] : total_counts_map) {
+    ss << "GoogleNgramTotalCounts {\n";
+    for (auto &[year, counts] : total_counts_map) {
         ss << "  " << year << " -> { ";
         ss << "matches = " << counts.matches << ", ";
         ss << "pages = " << counts.pages << ", ";
@@ -80,4 +78,111 @@ auto NgramTotalCounts::dump() const noexcept -> std::string {
     }
     ss << "}\n";
     return ss.str();
+}
+
+auto GoogleNgramDatabase::load(const std::filesystem::path &path) -> void {
+    if (!std::filesystem::exists(path)) {
+        throw std::runtime_error("Directory '" + path.string() + "' not found!");
+    }
+    if (!std::filesystem::is_directory(path)) {
+        throw std::runtime_error("Directory '" + path.string() + "' is a file!");
+    }
+
+    // Load total counts (or throw)
+    total_counts.load(path / TOTALCOUNTS_FILE_NAME);
+    std::cout << total_counts.dump();
+
+    // Load all partitions
+    // TODO: placeholder partition 20 is used; add support for multi-threading and processing of all partitions
+    auto partition = load_partition(path / "1-00019-of-00024");
+    std::vector<Partition> partitions { partition };
+
+    // Insert them
+    normalize_and_insert_partitions(partitions);
+}
+
+auto GoogleNgramDatabase::load_partition(const std::filesystem::path &path) const -> Partition {
+    if (!std::filesystem::exists(path)) {
+        throw std::runtime_error("File '" + path.string() + "' not found!");
+    }
+    if (std::filesystem::is_directory(path)) {
+        throw std::runtime_error("File '" + path.string() + "' is a directory!");
+    }
+
+    std::ifstream partition_file(path);
+    if (!partition_file.is_open()) {
+        throw std::runtime_error("An unknown error occurred");
+    }
+    auto partition = Partition();
+    std::string line_str;
+    std::vector<std::string> line_vec;
+    std::vector<std::string> token_vec;
+    size_t lnum = 0;
+    while (std::getline(partition_file, line_str)) {
+        if (lnum++ >= 2000) break;
+        if (line_str.empty()) continue;
+        line_vec.clear();
+        stdext::str_split(line_str, DATABASE_DELIM, line_vec);
+        if (line_vec.size() < 1) continue;
+        std::string word = line_vec[0];
+        size_t n = 0;
+        double weight_sum = 0.0;
+        size_t weight_count = 0;
+        for (auto &token_str : line_vec) {
+            if (n++ == 0 || token_str.empty()) continue;
+            token_vec.clear();
+            stdext::str_split(token_str, YEAR_DELIM, token_vec);
+            if (token_vec.size() != 3) continue;
+            NgramYear year = token_vec[0];
+            NgramCount matches = std::strtoull(token_vec[1].c_str(), nullptr, 10);
+            auto yearlyData = total_counts.get_counts_of_year(year);
+            if (yearlyData.matches <= 0) continue;
+            weight_sum += (double)matches / (double)yearlyData.matches;
+            weight_count++;
+        }
+        if (weight_count <= 0) continue;
+        auto weight = weight_sum / (double)weight_count;
+        partition.data.insert(std::make_pair(word, weight));
+        if (weight > partition.max_weight) {
+            partition.max_weight = weight;
+        }
+    }
+    partition_file.close();
+    return partition;
+}
+
+auto GoogleNgramDatabase::normalize_and_insert_partitions(const std::vector<Partition> &partitions) -> void {
+    // Find maximum weight in all partitions
+    double max_weight = 0.0;
+    for (auto &partition : partitions) {
+        if (partition.max_weight > max_weight) {
+            max_weight = partition.max_weight;
+        }
+    }
+
+    // Normalize and insert
+    for (auto &partition : partitions) {
+        for (auto &[word, weight] : partition.data) {
+            auto norm_weight = static_cast<uint16_t>(UINT16_MAX * (weight / max_weight));
+            database.insert(std::make_pair(word, norm_weight));
+        }
+    }
+}
+
+auto GoogleNgramDatabase::set_word(std::string word, double data) noexcept -> void {
+    database.insert(std::make_pair(word, data));
+}
+
+auto GoogleNgramDatabase::dump() const noexcept -> std::string {
+    std::stringstream ss;
+    dump(ss);
+    return ss.str();
+}
+
+auto GoogleNgramDatabase::dump(std::basic_ostream<char> &out) const noexcept -> void {
+    out << "GoogleNgramDatabase {\n";
+    for (auto &[word, weight] : database) {
+        out << "  " << word << " -> " << weight << "\n";
+    }
+    out << "}\n";
 }

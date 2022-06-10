@@ -15,12 +15,10 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include "google/Ngram.hpp"
 
 using namespace nlp::preprocessing;
-using namespace nlp::preprocessing::google;
-
-static const std::string TOTALCOUNTS_FILE_NAME = "totalcounts-1";
 
 int main(int argc, char **argv) {
     if (argc <= 1) {
@@ -28,11 +26,15 @@ int main(int argc, char **argv) {
         return 1;
     }
     std::string path(argv[1]);
-    path.append("/");
-    path.append(TOTALCOUNTS_FILE_NAME);
     try {
-        auto total_counts = NgramTotalCounts::parse_from_file(path);
-        std::cout << total_counts.dump();
+        auto database = GoogleNgramDatabase();
+        database.load(path);
+        std::string out_path = path + std::string("/norm_dump.txt");
+        std::ofstream norm_dump(out_path);
+        if (norm_dump.is_open()) {
+            database.dump(norm_dump);
+            norm_dump.close();
+        }
     } catch (std::runtime_error e) {
         std::cout << e.what() << "\n";
         return 2;
