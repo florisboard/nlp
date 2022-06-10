@@ -10,3 +10,7 @@ application {
         implementation("org.florisboard.nlp:core")
     }
 }
+
+tasks.withType<CppCompile> {
+    compilerArgs.addAll("-std=c++2a")
+}
