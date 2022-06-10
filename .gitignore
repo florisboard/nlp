@@ -35,3 +35,6 @@
 .gradle/
 build/
 release/
+
+# VSCode settings.json file
+.vscode/settings.json
