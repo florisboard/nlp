@@ -15,9 +15,27 @@
  */
 
 #include <iostream>
-#include "LanguageModel.hpp"
+#include "google/Ngram.hpp"
+
+using namespace nlp::preprocessing;
+using namespace nlp::preprocessing::google;
+
+static const std::string TOTALCOUNTS_FILE_NAME = "totalcounts-1";
 
 int main(int argc, char **argv) {
-    std::cout << "Hello world! " << testLM() << "\n";
+    if (argc <= 1) {
+        std::cout << "Please provide a path" << "\n";
+        return 1;
+    }
+    std::string path(argv[1]);
+    path.append("/");
+    path.append(TOTALCOUNTS_FILE_NAME);
+    try {
+        auto total_counts = NgramTotalCounts::parse_from_file(path);
+        std::cout << total_counts.dump();
+    } catch (std::runtime_error e) {
+        std::cout << e.what() << "\n";
+        return 2;
+    }
     return 0;
 }
