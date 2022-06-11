@@ -18,13 +18,22 @@
 #define _FLORISNLP_PREPROCESSING_GOOGLE_NGRAM
 
 #include <cstdint>
-#include <map>
 #include <string>
+#include <map>
 #include <vector>
+#include <regex>
 #include <filesystem>
 
 namespace nlp::preprocessing {
-    static const std::string TOTALCOUNTS_FILE_NAME = "totalcounts-1";
+    namespace constants {
+        static const std::string TOTALCOUNTS_FILE_NAME = "totalcounts-1";
+        static const std::string LOG_FILENAME_PREFIX = "prep_";
+        static const std::string LOG_FILENAME_SUFFIX = ".log";
+
+        static const std::regex SKIP_REGEX_EMAIL("^.+@.+$");
+        static const std::regex SKIP_REGEX_URL("^(?:https:\\/\\/|http:\\/\\/|www\\.).+$");
+        static const std::regex SKIP_REGEX_NUMBER("^[0-9,.]+(?:_[A-Z]+)?$");
+    }
 
     using NgramYear = std::string;
     using NgramCount = uint64_t;
@@ -58,7 +67,10 @@ namespace nlp::preprocessing {
     class GoogleNgramDatabase {
         private:
             struct Partition {
+                std::string name;
                 std::map<std::string, double> data;
+                size_t entry_count = 0;
+                size_t skip_count = 0;
                 double max_weight = 0;
             };
 
@@ -66,7 +78,11 @@ namespace nlp::preprocessing {
             Database database;
             GoogleNgramTotalCounts total_counts;
 
-            auto load_partition(const std::filesystem::path &path) const -> Partition;
+            auto load_partition(const std::filesystem::path &partition_path) const -> Partition;
+
+            auto get_log_path(const std::filesystem::path &partition_path) const noexcept -> std::filesystem::path;
+
+            auto should_skip_word(const std::string &word, std::basic_ostream<char> &log) const noexcept -> bool;
 
             auto normalize_and_insert_partitions(const std::vector<Partition> &partitions) -> void;
 

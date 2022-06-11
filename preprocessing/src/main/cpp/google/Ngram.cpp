@@ -80,6 +80,8 @@ auto GoogleNgramTotalCounts::dump() const noexcept -> std::string {
     return ss.str();
 }
 
+// -------- GoogleNgramDatabase --------
+
 auto GoogleNgramDatabase::load(const std::filesystem::path &path) -> void {
     if (!std::filesystem::exists(path)) {
         throw std::runtime_error("Directory '" + path.string() + "' not found!");
@@ -89,7 +91,7 @@ auto GoogleNgramDatabase::load(const std::filesystem::path &path) -> void {
     }
 
     // Load total counts (or throw)
-    total_counts.load(path / TOTALCOUNTS_FILE_NAME);
+    total_counts.load(path / constants::TOTALCOUNTS_FILE_NAME);
     std::cout << total_counts.dump();
 
     // Load all partitions
@@ -101,30 +103,39 @@ auto GoogleNgramDatabase::load(const std::filesystem::path &path) -> void {
     normalize_and_insert_partitions(partitions);
 }
 
-auto GoogleNgramDatabase::load_partition(const std::filesystem::path &path) const -> Partition {
-    if (!std::filesystem::exists(path)) {
-        throw std::runtime_error("File '" + path.string() + "' not found!");
+auto GoogleNgramDatabase::load_partition(const std::filesystem::path &partition_path) const -> Partition {
+    if (!std::filesystem::exists(partition_path)) {
+        throw std::runtime_error("File '" + partition_path.string() + "' not found!");
     }
-    if (std::filesystem::is_directory(path)) {
-        throw std::runtime_error("File '" + path.string() + "' is a directory!");
+    if (std::filesystem::is_directory(partition_path)) {
+        throw std::runtime_error("File '" + partition_path.string() + "' is a directory!");
     }
 
-    std::ifstream partition_file(path);
+    std::ifstream partition_file(partition_path);
     if (!partition_file.is_open()) {
-        throw std::runtime_error("An unknown error occurred");
+        throw std::runtime_error("An unknown error (partition file) occurred");
     }
-    auto partition = Partition();
+    std::ofstream partition_log(get_log_path(partition_path), std::ios::out | std::ios::trunc);
+    if (!partition_log.is_open()) {
+        throw std::runtime_error("An unknown error (partition log file) occurred");
+    }
+    auto partition = Partition { .name = partition_path.filename() };
     std::string line_str;
     std::vector<std::string> line_vec;
     std::vector<std::string> token_vec;
     size_t lnum = 0;
     while (std::getline(partition_file, line_str)) {
-        if (lnum++ >= 2000) break;
+        if (lnum++ >= 40000) break;
         if (line_str.empty()) continue;
         line_vec.clear();
         stdext::str_split(line_str, DATABASE_DELIM, line_vec);
         if (line_vec.size() < 1) continue;
+        partition.entry_count++;
         std::string word = line_vec[0];
+        if (should_skip_word(word, partition_log)) {
+            partition.skip_count++;
+            continue;
+        }
         size_t n = 0;
         double weight_sum = 0.0;
         size_t weight_count = 0;
@@ -146,9 +157,32 @@ auto GoogleNgramDatabase::load_partition(const std::filesystem::path &path) cons
         if (weight > partition.max_weight) {
             partition.max_weight = weight;
         }
+        partition_log << "take\t" << word << "\t" << weight << "\n";
     }
     partition_file.close();
     return partition;
+}
+
+auto GoogleNgramDatabase::get_log_path(const std::filesystem::path &partition_path) const noexcept -> std::filesystem::path {
+    auto log_filename =
+        constants::LOG_FILENAME_PREFIX + partition_path.filename().string() + constants::LOG_FILENAME_SUFFIX;
+    return partition_path.parent_path() / log_filename;
+}
+
+auto GoogleNgramDatabase::should_skip_word(const std::string &word, std::basic_ostream<char> &log) const noexcept -> bool {
+    if (std::regex_match(word, constants::SKIP_REGEX_URL)) {
+        log << "skip(url)\t" << word << "\n";
+        return true;
+    }
+    if (std::regex_match(word, constants::SKIP_REGEX_EMAIL)) {
+        log << "skip(email)\t" << word << "\n";
+        return true;
+    }
+    if (std::regex_match(word, constants::SKIP_REGEX_NUMBER)) {
+        log << "skip(number)\t" << word << "\n";
+        return true;
+    }
+    return false;
 }
 
 auto GoogleNgramDatabase::normalize_and_insert_partitions(const std::vector<Partition> &partitions) -> void {
@@ -164,7 +198,9 @@ auto GoogleNgramDatabase::normalize_and_insert_partitions(const std::vector<Part
     for (auto &partition : partitions) {
         for (auto &[word, weight] : partition.data) {
             auto norm_weight = static_cast<uint16_t>(UINT16_MAX * (weight / max_weight));
-            database.insert(std::make_pair(word, norm_weight));
+            if (norm_weight > 0) {
+                database.insert(std::make_pair(word, norm_weight));
+            }
         }
     }
 }
