@@ -18,6 +18,7 @@
 
 auto stdext::str_split(const std::string &s, const std::string &delim, std::vector<std::string> &result) noexcept -> void {
     if (s.empty()) return;
+    result.clear();
     std::size_t start = 0;
     std::size_t end;
     while ((end = s.find(delim, start)) != std::string::npos) {

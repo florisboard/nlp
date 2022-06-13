@@ -12,5 +12,9 @@ application {
 }
 
 tasks.withType<CppCompile> {
-    compilerArgs.addAll("-std=c++2a")
+    compilerArgs.addAll("-std=c++2a")//, "-pg")
 }
+
+//tasks.withType<LinkExecutable> {
+//    linkerArgs.addAll("-pg")
+//}

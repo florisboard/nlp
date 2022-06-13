@@ -27,9 +27,9 @@ int main(int argc, char **argv) {
     }
     std::string path(argv[1]);
     try {
-        auto database = GoogleNgramDatabase();
+        auto database = GoogleUnigramDatabase();
         database.load(path);
-        std::string out_path = path + std::string("/norm_dump.txt");
+        std::string out_path = path + std::string("/norm_dump.log");
         std::ofstream norm_dump(out_path);
         if (norm_dump.is_open()) {
             database.dump(norm_dump);

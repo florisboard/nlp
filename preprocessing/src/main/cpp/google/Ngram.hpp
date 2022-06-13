@@ -19,6 +19,7 @@
 
 #include <cstdint>
 #include <string>
+#include <list>
 #include <map>
 #include <vector>
 #include <regex>
@@ -29,10 +30,6 @@ namespace nlp::preprocessing {
         static const std::string TOTALCOUNTS_FILE_NAME = "totalcounts-1";
         static const std::string LOG_FILENAME_PREFIX = "prep_";
         static const std::string LOG_FILENAME_SUFFIX = ".log";
-
-        static const std::regex SKIP_REGEX_EMAIL("^.+@.+$");
-        static const std::regex SKIP_REGEX_URL("^(?:https:\\/\\/|http:\\/\\/|www\\.).+$");
-        static const std::regex SKIP_REGEX_NUMBER("^[0-9,.]+(?:_[A-Z]+)?$");
     }
 
     using NgramYear = std::string;
@@ -64,11 +61,16 @@ namespace nlp::preprocessing {
             auto dump() const noexcept -> std::string;
     };
 
-    class GoogleNgramDatabase {
+    class GoogleUnigramDatabase {
         private:
             struct Partition {
+                struct Unigram {
+                    std::string word;
+                    double weight;
+                };
+
                 std::string name;
-                std::map<std::string, double> data;
+                std::list<Unigram> data;
                 size_t entry_count = 0;
                 size_t skip_count = 0;
                 double max_weight = 0;
@@ -82,13 +84,13 @@ namespace nlp::preprocessing {
 
             auto get_log_path(const std::filesystem::path &partition_path) const noexcept -> std::filesystem::path;
 
-            auto should_skip_word(const std::string &word, std::basic_ostream<char> &log) const noexcept -> bool;
+            auto check_and_clean_raw_word(const std::string &raw_word, std::string &cleaned_word, std::basic_ostream<char> &log) const noexcept -> bool;
 
             auto normalize_and_insert_partitions(const std::vector<Partition> &partitions) -> void;
 
         public:
-            GoogleNgramDatabase() : database(Database()), total_counts(GoogleNgramTotalCounts()) { };
-            ~GoogleNgramDatabase() = default;
+            GoogleUnigramDatabase() : database(Database()), total_counts(GoogleNgramTotalCounts()) { };
+            ~GoogleUnigramDatabase() = default;
 
             auto load(const std::filesystem::path &path) -> void;
 

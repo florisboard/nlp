@@ -20,6 +20,8 @@
 #include <fstream>
 #include <stdexcept>
 #include <filesystem>
+#include <chrono>
+#include <algorithm>
 
 using namespace nlp::preprocessing;
 
@@ -82,7 +84,7 @@ auto GoogleNgramTotalCounts::dump() const noexcept -> std::string {
 
 // -------- GoogleNgramDatabase --------
 
-auto GoogleNgramDatabase::load(const std::filesystem::path &path) -> void {
+auto GoogleUnigramDatabase::load(const std::filesystem::path &path) -> void {
     if (!std::filesystem::exists(path)) {
         throw std::runtime_error("Directory '" + path.string() + "' not found!");
     }
@@ -92,18 +94,21 @@ auto GoogleNgramDatabase::load(const std::filesystem::path &path) -> void {
 
     // Load total counts (or throw)
     total_counts.load(path / constants::TOTALCOUNTS_FILE_NAME);
-    std::cout << total_counts.dump();
 
     // Load all partitions
     // TODO: placeholder partition 20 is used; add support for multi-threading and processing of all partitions
+    auto time_start = std::chrono::high_resolution_clock::now();
     auto partition = load_partition(path / "1-00019-of-00024");
+    auto time_stop = std::chrono::high_resolution_clock::now();
+    auto time_duration = std::chrono::duration_cast<std::chrono::seconds>(time_stop - time_start);
+    std::cout << "Load partition " << "1-00019-of-00024" << " took " << time_duration.count() << "s\n";
     std::vector<Partition> partitions { partition };
 
     // Insert them
     normalize_and_insert_partitions(partitions);
 }
 
-auto GoogleNgramDatabase::load_partition(const std::filesystem::path &partition_path) const -> Partition {
+auto GoogleUnigramDatabase::load_partition(const std::filesystem::path &partition_path) const -> Partition {
     if (!std::filesystem::exists(partition_path)) {
         throw std::runtime_error("File '" + partition_path.string() + "' not found!");
     }
@@ -121,18 +126,19 @@ auto GoogleNgramDatabase::load_partition(const std::filesystem::path &partition_
     }
     auto partition = Partition { .name = partition_path.filename() };
     std::string line_str;
+    std::string original_word;
+    std::string cleaned_word;
     std::vector<std::string> line_vec;
     std::vector<std::string> token_vec;
     size_t lnum = 0;
     while (std::getline(partition_file, line_str)) {
         if (lnum++ >= 40000) break;
         if (line_str.empty()) continue;
-        line_vec.clear();
         stdext::str_split(line_str, DATABASE_DELIM, line_vec);
         if (line_vec.size() < 1) continue;
         partition.entry_count++;
-        std::string word = line_vec[0];
-        if (should_skip_word(word, partition_log)) {
+        original_word.assign(line_vec[0]);
+        if (!check_and_clean_raw_word(original_word, cleaned_word, partition_log)) {
             partition.skip_count++;
             continue;
         }
@@ -141,7 +147,6 @@ auto GoogleNgramDatabase::load_partition(const std::filesystem::path &partition_
         size_t weight_count = 0;
         for (auto &token_str : line_vec) {
             if (n++ == 0 || token_str.empty()) continue;
-            token_vec.clear();
             stdext::str_split(token_str, YEAR_DELIM, token_vec);
             if (token_vec.size() != 3) continue;
             NgramYear year = token_vec[0];
@@ -151,41 +156,70 @@ auto GoogleNgramDatabase::load_partition(const std::filesystem::path &partition_
             weight_sum += (double)matches / (double)yearlyData.matches;
             weight_count++;
         }
-        if (weight_count <= 0) continue;
-        auto weight = weight_sum / (double)weight_count;
-        partition.data.insert(std::make_pair(word, weight));
-        if (weight > partition.max_weight) {
-            partition.max_weight = weight;
+        auto unigram = Partition::Unigram {
+            .word = cleaned_word,
+            .weight = weight_count > 0 ? (weight_sum / static_cast<double>(weight_count)) : 0,
+        };
+        partition_log << unigram.weight << "\n";
+        partition.data.push_back(unigram);
+        if (unigram.weight > partition.max_weight) {
+            partition.max_weight = unigram.weight;
         }
-        partition_log << "take\t" << word << "\t" << weight << "\n";
     }
     partition_file.close();
     return partition;
 }
 
-auto GoogleNgramDatabase::get_log_path(const std::filesystem::path &partition_path) const noexcept -> std::filesystem::path {
+auto GoogleUnigramDatabase::get_log_path(const std::filesystem::path &partition_path) const noexcept -> std::filesystem::path {
     auto log_filename =
         constants::LOG_FILENAME_PREFIX + partition_path.filename().string() + constants::LOG_FILENAME_SUFFIX;
     return partition_path.parent_path() / log_filename;
 }
 
-auto GoogleNgramDatabase::should_skip_word(const std::string &word, std::basic_ostream<char> &log) const noexcept -> bool {
-    if (std::regex_match(word, constants::SKIP_REGEX_URL)) {
-        log << "skip(url)\t" << word << "\n";
-        return true;
+auto GoogleUnigramDatabase::check_and_clean_raw_word(const std::string &original, std::string &cleaned, std::basic_ostream<char> &log) const noexcept -> bool {
+    // Check if URL
+    if (original.starts_with("https://") || original.starts_with("http://") || original.starts_with("www.")) {
+        log << "skip(url)\t" << original << "\n";
+        return false;
     }
-    if (std::regex_match(word, constants::SKIP_REGEX_EMAIL)) {
-        log << "skip(email)\t" << word << "\n";
-        return true;
+
+    // Check if Email
+    if (original.find("@") != std::string::npos) {
+        log << "skip(email)\t" << original << "\n";
+        return false;
     }
-    if (std::regex_match(word, constants::SKIP_REGEX_NUMBER)) {
-        log << "skip(number)\t" << word << "\n";
-        return true;
+
+    // Check if number (by _NUM tag)
+    if (original.ends_with("_NUM")) {
+        log << "skip(numtag)\t" << original << "\n";
+        return false;
     }
-    return false;
+
+    // Do cleaning operation
+    cleaned.assign(original);
+    auto tag_begin = cleaned.find_last_of('_');
+    if (tag_begin == std::string::npos) {
+        tag_begin = cleaned.length();
+    }
+    for (auto it = cleaned.begin(), end = cleaned.begin() + tag_begin; it != end; it++) {
+        char c = *it;
+        if (std::isdigit(c) || c == ',' || c == '.') {
+            cleaned.erase(it);
+        }
+    }
+
+    // Check if cleaning operation caused word not be exposed as not a word
+    if (cleaned.empty() || cleaned.starts_with('_')) {
+        log << "skip(notaword)\t" << original << "\n";
+        return false;
+    }
+
+    // At this point we assume it is a valid word
+    log << "take\t" << original << "\t" << cleaned << "\t"; // leave open so outer logic can append weight
+    return true;
 }
 
-auto GoogleNgramDatabase::normalize_and_insert_partitions(const std::vector<Partition> &partitions) -> void {
+auto GoogleUnigramDatabase::normalize_and_insert_partitions(const std::vector<Partition> &partitions) -> void {
     // Find maximum weight in all partitions
     double max_weight = 0.0;
     for (auto &partition : partitions) {
@@ -198,24 +232,23 @@ auto GoogleNgramDatabase::normalize_and_insert_partitions(const std::vector<Part
     for (auto &partition : partitions) {
         for (auto &[word, weight] : partition.data) {
             auto norm_weight = static_cast<uint16_t>(UINT16_MAX * (weight / max_weight));
-            if (norm_weight > 0) {
-                database.insert(std::make_pair(word, norm_weight));
-            }
+            norm_weight += stdext::map_get_or_default(database, word, static_cast<uint16_t>(0));
+            database.insert_or_assign(word, norm_weight);
         }
     }
 }
 
-auto GoogleNgramDatabase::set_word(std::string word, double data) noexcept -> void {
+auto GoogleUnigramDatabase::set_word(std::string word, double data) noexcept -> void {
     database.insert(std::make_pair(word, data));
 }
 
-auto GoogleNgramDatabase::dump() const noexcept -> std::string {
+auto GoogleUnigramDatabase::dump() const noexcept -> std::string {
     std::stringstream ss;
     dump(ss);
     return ss.str();
 }
 
-auto GoogleNgramDatabase::dump(std::basic_ostream<char> &out) const noexcept -> void {
+auto GoogleUnigramDatabase::dump(std::basic_ostream<char> &out) const noexcept -> void {
     out << "GoogleNgramDatabase {\n";
     for (auto &[word, weight] : database) {
         out << "  " << word << " -> " << weight << "\n";
