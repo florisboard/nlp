@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+
 #include "google/Ngram.hpp"
 
 using namespace nlp::preprocessing;
 
 int main(int argc, char **argv) {
     if (argc <= 1) {
-        std::cout << "Please provide a path" << "\n";
+        std::cout << "Please provide a path"
+                  << "\n";
         return 1;
     }
     std::string path(argv[1]);

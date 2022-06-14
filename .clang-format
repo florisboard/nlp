@@ -1,0 +1,16 @@
+---
+BasedOnStyle: Google
+ColumnLimit: 120
+IndentWidth: 4
+UseTab: Never
+---
+Language: Cpp
+Standard: c++20
+BreakBeforeBraces: Attach
+DerivePointerAlignment: false
+IndentCaseLabels: true
+PointerAlignment: Right
+ReferenceAlignment: Pointer
+SpaceAfterTemplateKeyword: false
+SpaceBeforeCpp11BracedList: true
+---

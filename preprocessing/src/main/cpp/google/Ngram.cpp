@@ -15,19 +15,21 @@
  */
 
 #include "Ngram.hpp"
-#include "stdext.hpp"
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <filesystem>
-#include <chrono>
+
 #include <algorithm>
+#include <chrono>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+
+#include "stdext.hpp"
 
 using namespace nlp::preprocessing;
 
 static const char YEAR_DATA_DELIM = '\t';
-static const std::string_view YEAR_DELIM { "," };
-static const std::string_view DATABASE_DELIM { "\t" };
+static const std::string_view YEAR_DELIM {","};
+static const std::string_view DATABASE_DELIM {"\t"};
 
 const GoogleNgramYearlyCounts GoogleNgramYearlyCounts::DEFAULT = GoogleNgramYearlyCounts();
 
@@ -65,7 +67,8 @@ auto GoogleNgramTotalCounts::get_counts_of_year(const NgramYear &year) const noe
     return stdext::map_get_or_default(total_counts_map, year, GoogleNgramYearlyCounts::DEFAULT);
 }
 
-auto GoogleNgramTotalCounts::set_counts_of_year(const NgramYear year, const GoogleNgramYearlyCounts counts) noexcept -> void {
+auto GoogleNgramTotalCounts::set_counts_of_year(const NgramYear year, const GoogleNgramYearlyCounts counts) noexcept
+    -> void {
     total_counts_map.insert(std::make_pair(year, counts));
 }
 
@@ -105,8 +108,10 @@ auto GoogleUnigramDatabase::load(const std::filesystem::path &path) -> void {
     auto partition = load_partition(path / "1-00019-of-00024");
     auto time_stop = std::chrono::high_resolution_clock::now();
     auto time_duration = std::chrono::duration_cast<std::chrono::seconds>(time_stop - time_start);
-    std::cout << "Load partition " << "1-00019-of-00024" << " took " << time_duration.count() << "s\n";
-    std::vector<Partition> partitions { partition };
+    std::cout << "Load partition "
+              << "1-00019-of-00024"
+              << " took " << time_duration.count() << "s\n";
+    std::vector<Partition> partitions {partition};
 
     // Insert them
     normalize_and_insert_partitions(partitions);
@@ -128,7 +133,7 @@ auto GoogleUnigramDatabase::load_partition(const std::filesystem::path &partitio
     if (!partition_log.is_open()) {
         throw std::runtime_error("An unknown error (partition log file) occurred");
     }
-    auto partition = Partition { .name = partition_path.filename() };
+    auto partition = Partition {.name = partition_path.filename()};
     std::string line_str;
     std::string original_word;
     std::string cleaned_word;
@@ -174,13 +179,15 @@ auto GoogleUnigramDatabase::load_partition(const std::filesystem::path &partitio
     return partition;
 }
 
-auto GoogleUnigramDatabase::get_log_path(const std::filesystem::path &partition_path) const noexcept -> std::filesystem::path {
+auto GoogleUnigramDatabase::get_log_path(const std::filesystem::path &partition_path) const noexcept
+    -> std::filesystem::path {
     auto log_filename =
         constants::LOG_FILENAME_PREFIX + partition_path.filename().string() + constants::LOG_FILENAME_SUFFIX;
     return partition_path.parent_path() / log_filename;
 }
 
-auto GoogleUnigramDatabase::check_and_clean_raw_word(const std::string &original, std::string &cleaned, std::basic_ostream<char> &log) const noexcept -> bool {
+auto GoogleUnigramDatabase::check_and_clean_raw_word(const std::string &original, std::string &cleaned,
+                                                     std::basic_ostream<char> &log) const noexcept -> bool {
     // Check if URL
     if (original.starts_with("https://") || original.starts_with("http://") || original.starts_with("www.")) {
         log << "skip(url)\t" << original << "\n";
@@ -219,7 +226,7 @@ auto GoogleUnigramDatabase::check_and_clean_raw_word(const std::string &original
     }
 
     // At this point we assume it is a valid word
-    log << "take\t" << original << "\t" << cleaned << "\t"; // leave open so outer logic can append weight
+    log << "take\t" << original << "\t" << cleaned << "\t";  // leave open so outer logic can append weight
     return true;
 }
 
