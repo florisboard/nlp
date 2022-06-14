@@ -59,6 +59,8 @@ namespace nlp::preprocessing {
             auto set_counts_of_year(const NgramYear year, const GoogleNgramYearlyCounts counts) noexcept -> void;
 
             auto dump() const noexcept -> std::string;
+
+            auto dump(std::basic_ostream<char> &out) const noexcept -> void;
     };
 
     class GoogleUnigramDatabase {

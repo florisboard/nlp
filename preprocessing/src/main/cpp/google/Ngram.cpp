@@ -26,8 +26,8 @@
 using namespace nlp::preprocessing;
 
 static const char YEAR_DATA_DELIM = '\t';
-static const std::string YEAR_DELIM = ",";
-static const std::string DATABASE_DELIM = "\t";
+static const std::string_view YEAR_DELIM { "," };
+static const std::string_view DATABASE_DELIM { "\t" };
 
 const GoogleNgramYearlyCounts GoogleNgramYearlyCounts::DEFAULT = GoogleNgramYearlyCounts();
 
@@ -44,17 +44,17 @@ auto GoogleNgramTotalCounts::load(const std::filesystem::path &path) -> void {
         throw std::runtime_error("An unknown error occurred");
     }
     std::string year_data_str;
-    std::vector<std::string> year_data_vec;
+    std::vector<std::string_view> year_data_vec;
     while (std::getline(total_counts_file, year_data_str, YEAR_DATA_DELIM)) {
         if (year_data_str.empty()) continue;
         year_data_vec.clear();
-        stdext::str_split(year_data_str, YEAR_DELIM, year_data_vec);
+        stdext::string::split(year_data_vec, year_data_str, YEAR_DELIM);
         if (year_data_vec.size() != 4) continue;
-        NgramYear year = year_data_vec[0];
+        std::string year(year_data_vec[0]);
         GoogleNgramYearlyCounts year_data = {
-            .matches = std::strtoull(year_data_vec[1].c_str(), nullptr, 10),
-            .pages = std::strtoull(year_data_vec[2].c_str(), nullptr, 10),
-            .volumes = std::strtoull(year_data_vec[3].c_str(), nullptr, 10),
+            .matches = stdext::string::to_number<uint64_t>(year_data_vec[1]),
+            .pages = stdext::string::to_number<uint64_t>(year_data_vec[2]),
+            .volumes = stdext::string::to_number<uint64_t>(year_data_vec[3]),
         };
         set_counts_of_year(year, year_data);
     }
@@ -71,15 +71,19 @@ auto GoogleNgramTotalCounts::set_counts_of_year(const NgramYear year, const Goog
 
 auto GoogleNgramTotalCounts::dump() const noexcept -> std::string {
     std::stringstream ss;
-    ss << "GoogleNgramTotalCounts {\n";
-    for (auto &[year, counts] : total_counts_map) {
-        ss << "  " << year << " -> { ";
-        ss << "matches = " << counts.matches << ", ";
-        ss << "pages = " << counts.pages << ", ";
-        ss << "volumes = " << counts.volumes << " }\n";
-    }
-    ss << "}\n";
+    dump(ss);
     return ss.str();
+}
+
+auto GoogleNgramTotalCounts::dump(std::basic_ostream<char> &out) const noexcept -> void {
+    out << "GoogleNgramTotalCounts {\n";
+    for (auto &[year, counts] : total_counts_map) {
+        out << "  " << year << " -> { ";
+        out << "matches = " << counts.matches << ", ";
+        out << "pages = " << counts.pages << ", ";
+        out << "volumes = " << counts.volumes << " }\n";
+    }
+    out << "}\n";
 }
 
 // -------- GoogleNgramDatabase --------
@@ -128,13 +132,13 @@ auto GoogleUnigramDatabase::load_partition(const std::filesystem::path &partitio
     std::string line_str;
     std::string original_word;
     std::string cleaned_word;
-    std::vector<std::string> line_vec;
-    std::vector<std::string> token_vec;
+    std::vector<std::string_view> line_vec;
+    std::vector<std::string_view> token_vec;
     size_t lnum = 0;
     while (std::getline(partition_file, line_str)) {
-        if (lnum++ >= 40000) break;
+        if (lnum++ >= 160000) break;
         if (line_str.empty()) continue;
-        stdext::str_split(line_str, DATABASE_DELIM, line_vec);
+        stdext::string::split(line_vec, line_str, DATABASE_DELIM);
         if (line_vec.size() < 1) continue;
         partition.entry_count++;
         original_word.assign(line_vec[0]);
@@ -147,10 +151,10 @@ auto GoogleUnigramDatabase::load_partition(const std::filesystem::path &partitio
         size_t weight_count = 0;
         for (auto &token_str : line_vec) {
             if (n++ == 0 || token_str.empty()) continue;
-            stdext::str_split(token_str, YEAR_DELIM, token_vec);
+            stdext::string::split(token_vec, token_str, YEAR_DELIM);
             if (token_vec.size() != 3) continue;
-            NgramYear year = token_vec[0];
-            NgramCount matches = std::strtoull(token_vec[1].c_str(), nullptr, 10);
+            std::string year(token_vec[0]);
+            NgramCount matches = stdext::string::to_number<uint64_t>(token_vec[1]);
             auto yearlyData = total_counts.get_counts_of_year(year);
             if (yearlyData.matches <= 0) continue;
             weight_sum += (double)matches / (double)yearlyData.matches;
@@ -249,6 +253,7 @@ auto GoogleUnigramDatabase::dump() const noexcept -> std::string {
 }
 
 auto GoogleUnigramDatabase::dump(std::basic_ostream<char> &out) const noexcept -> void {
+    total_counts.dump(out);
     out << "GoogleNgramDatabase {\n";
     for (auto &[word, weight] : database) {
         out << "  " << word << " -> " << weight << "\n";

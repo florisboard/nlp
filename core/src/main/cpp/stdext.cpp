@@ -15,21 +15,3 @@
  */
 
 #include "stdext.hpp"
-
-auto stdext::str_split(const std::string &s, const std::string &delim, std::vector<std::string> &result) noexcept -> void {
-    if (s.empty()) return;
-    result.clear();
-    std::size_t start = 0;
-    std::size_t end;
-    while ((end = s.find(delim, start)) != std::string::npos) {
-        result.push_back(s.substr(start, end));
-        start = end + delim.length();
-    }
-    result.push_back(s.substr(start));
-}
-
-auto stdext::str_split(const std::string &s, const std::string &delim) noexcept -> std::vector<std::string> {
-    auto result = std::vector<std::string>();
-    stdext::str_split(s, delim, result);
-    return result;
-}
