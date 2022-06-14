@@ -36,7 +36,7 @@ namespace stdext::map {
  * @return The value of `key` or `def_value`.
  */
 template<typename K, typename V>
-auto get_or_default(const std::map<K, V> &map, const K &key, const V &def_value) noexcept -> V {
+auto get_or_default(const std::map<K, V>& map, const K& key, const V& def_value) noexcept -> V {
     auto pair = map.find(key);
     return pair != map.end() ? pair->second : def_value;
 }

@@ -33,16 +33,18 @@ namespace stdext::string {
  * @param strv The string which should be split up. May be empty, in which case `out` will also be empty.
  * @param delimv The delimiter, which is used to split `strv`. Undefined behavior if delimiter is empty.
  */
-auto split(std::vector<std::string_view> &out, const std::string_view &strv, const std::string_view &delimv) noexcept
+auto split(std::vector<std::string_view>& out, const std::string_view& strv, const std::string_view& delimv) noexcept
     -> void {
     if (!out.empty()) out.clear();
-    auto it = strv.cbegin();
-    while (it != strv.cend()) {
-        const auto delim_it = std::find_first_of(it, strv.cend(), delimv.cbegin(), delimv.cend());
+    const auto begin = strv.cbegin();
+    const auto end = strv.cend();
+    auto it = begin;
+    while (it != end) {
+        const auto delim_it = std::find_first_of(it, end, delimv.cbegin(), delimv.cend());
         if (it != delim_it) {
-            out.emplace_back(strv.substr(std::distance(strv.cbegin(), it), std::distance(it, delim_it)));
+            out.emplace_back(strv.substr(std::distance(begin, it), std::distance(it, delim_it)));
         }
-        if (delim_it == strv.cend()) break;
+        if (delim_it == end) break;
         it = std::next(delim_it);
     }
 }
@@ -55,7 +57,7 @@ auto split(std::vector<std::string_view> &out, const std::string_view &strv, con
  * @param str The string which should be split up. May be empty, in which case `out` will also be empty.
  * @param delim The delimiter, which is used to split `strv`. Undefined behavior if delimiter is empty.
  */
-inline auto split(std::vector<std::string_view> &out, const std::string &str, const std::string &delim) noexcept
+inline auto split(std::vector<std::string_view>& out, const std::string& str, const std::string& delim) noexcept
     -> void {
     const std::string_view strv(str);
     const std::string_view delimv(delim);
@@ -70,7 +72,7 @@ inline auto split(std::vector<std::string_view> &out, const std::string &str, co
  * @param str The string which should be split up. May be empty, in which case `out` will also be empty.
  * @param delimv The delimiter, which is used to split `strv`. Undefined behavior if delimiter is empty.
  */
-inline auto split(std::vector<std::string_view> &out, const std::string &str, const std::string_view &delimv) noexcept
+inline auto split(std::vector<std::string_view>& out, const std::string& str, const std::string_view& delimv) noexcept
     -> void {
     const std::string_view strv(str);
     split(out, strv, delimv);
@@ -84,7 +86,7 @@ inline auto split(std::vector<std::string_view> &out, const std::string &str, co
  * @param strv The string which should be split up. May be empty, in which case `out` will also be empty.
  * @param delim The delimiter, which is used to split `strv`. Undefined behavior if delimiter is empty.
  */
-inline auto split(std::vector<std::string_view> &out, const std::string_view &strv, const std::string &delim) noexcept
+inline auto split(std::vector<std::string_view>& out, const std::string_view& strv, const std::string& delim) noexcept
     -> void {
     const std::string_view delimv(delim);
     split(out, strv, delimv);
@@ -101,7 +103,7 @@ inline auto split(std::vector<std::string_view> &out, const std::string_view &st
  * @return The converted number.
  */
 template<typename IntegralType>
-auto to_number(const std::string_view &strv, const int base = 10) -> IntegralType {
+auto to_number(const std::string_view& strv, const int base = 10) -> IntegralType {
     if (!(base == 0 || base >= 2 && base <= 36)) {
         throw std::invalid_argument("Parameter base has invalid value (" + std::to_string(base) + ")!");
     }
@@ -126,7 +128,7 @@ auto to_number(const std::string_view &strv, const int base = 10) -> IntegralTyp
  * @return The converted number.
  */
 template<typename IntegralType>
-inline auto to_number(const std::string &str, const int base = 10) -> IntegralType {
+inline auto to_number(const std::string& str, const int base = 10) -> IntegralType {
     std::string_view strv(str);
     return to_number<IntegralType>(strv, base);
 }

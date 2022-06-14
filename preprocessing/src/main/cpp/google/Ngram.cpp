@@ -34,7 +34,7 @@ static const std::string_view DATABASE_DELIM { "\t" };
 
 const GoogleNgramYearlyCounts GoogleNgramYearlyCounts::DEFAULT = GoogleNgramYearlyCounts();
 
-auto GoogleNgramTotalCounts::load(const std::filesystem::path &path) -> void {
+auto GoogleNgramTotalCounts::load(const std::filesystem::path& path) -> void {
     if (!std::filesystem::exists(path)) {
         throw std::runtime_error("File '" + path.string() + "' not found!");
     }
@@ -53,7 +53,7 @@ auto GoogleNgramTotalCounts::load(const std::filesystem::path &path) -> void {
         year_data_vec.clear();
         stdext::string::split(year_data_vec, year_data_str, YEAR_DELIM);
         if (year_data_vec.size() != 4) continue;
-        std::string year(year_data_vec[0]);
+        auto year = stdext::string::to_number<uint16_t>(year_data_vec[0]);
         GoogleNgramYearlyCounts year_data = {
             .matches = stdext::string::to_number<uint64_t>(year_data_vec[1]),
             .pages = stdext::string::to_number<uint64_t>(year_data_vec[2]),
@@ -64,11 +64,11 @@ auto GoogleNgramTotalCounts::load(const std::filesystem::path &path) -> void {
     total_counts_file.close();
 }
 
-auto GoogleNgramTotalCounts::get_counts_of_year(const NgramYear &year) const noexcept -> GoogleNgramYearlyCounts {
+auto GoogleNgramTotalCounts::get_counts_of_year(const uint16_t& year) const noexcept -> GoogleNgramYearlyCounts {
     return stdext::map::get_or_default(total_counts_map, year, GoogleNgramYearlyCounts::DEFAULT);
 }
 
-auto GoogleNgramTotalCounts::set_counts_of_year(const NgramYear year, const GoogleNgramYearlyCounts counts) noexcept
+auto GoogleNgramTotalCounts::set_counts_of_year(const uint16_t year, const GoogleNgramYearlyCounts counts) noexcept
     -> void {
     total_counts_map.insert(std::make_pair(year, counts));
 }
@@ -79,9 +79,9 @@ auto GoogleNgramTotalCounts::dump() const noexcept -> std::string {
     return ss.str();
 }
 
-auto GoogleNgramTotalCounts::dump(std::basic_ostream<char> &out) const noexcept -> void {
+auto GoogleNgramTotalCounts::dump(std::basic_ostream<char>& out) const noexcept -> void {
     out << "GoogleNgramTotalCounts {\n";
-    for (auto &[year, counts] : total_counts_map) {
+    for (auto& [year, counts] : total_counts_map) {
         out << "  " << year << " -> { ";
         out << "matches = " << counts.matches << ", ";
         out << "pages = " << counts.pages << ", ";
@@ -92,7 +92,7 @@ auto GoogleNgramTotalCounts::dump(std::basic_ostream<char> &out) const noexcept 
 
 // -------- GoogleNgramDatabase --------
 
-auto GoogleUnigramDatabase::load(const std::filesystem::path &path) -> void {
+auto GoogleUnigramDatabase::load(const std::filesystem::path& path) -> void {
     if (!std::filesystem::exists(path)) {
         throw std::runtime_error("Directory '" + path.string() + "' not found!");
     }
@@ -118,7 +118,7 @@ auto GoogleUnigramDatabase::load(const std::filesystem::path &path) -> void {
     normalize_and_insert_partitions(partitions);
 }
 
-auto GoogleUnigramDatabase::load_partition(const std::filesystem::path &partition_path) const -> Partition {
+auto GoogleUnigramDatabase::load_partition(const std::filesystem::path& partition_path) const -> Partition {
     if (!std::filesystem::exists(partition_path)) {
         throw std::runtime_error("File '" + partition_path.string() + "' not found!");
     }
@@ -136,7 +136,6 @@ auto GoogleUnigramDatabase::load_partition(const std::filesystem::path &partitio
     }
     auto partition = Partition { .name = partition_path.filename() };
     std::string line_str;
-    std::string original_word;
     std::string cleaned_word;
     std::vector<std::string_view> line_vec;
     std::vector<std::string_view> token_vec;
@@ -147,7 +146,7 @@ auto GoogleUnigramDatabase::load_partition(const std::filesystem::path &partitio
         stdext::string::split(line_vec, line_str, DATABASE_DELIM);
         if (line_vec.size() < 1) continue;
         partition.entry_count++;
-        original_word.assign(line_vec[0]);
+        std::string_view original_word(line_vec[0]);
         if (!check_and_clean_raw_word(original_word, cleaned_word, partition_log)) {
             partition.skip_count++;
             continue;
@@ -155,12 +154,12 @@ auto GoogleUnigramDatabase::load_partition(const std::filesystem::path &partitio
         size_t n = 0;
         double weight_sum = 0.0;
         size_t weight_count = 0;
-        for (auto &token_str : line_vec) {
+        for (auto& token_str : line_vec) {
             if (n++ == 0 || token_str.empty()) continue;
             stdext::string::split(token_vec, token_str, YEAR_DELIM);
             if (token_vec.size() != 3) continue;
-            std::string year(token_vec[0]);
-            NgramCount matches = stdext::string::to_number<uint64_t>(token_vec[1]);
+            auto year = stdext::string::to_number<uint16_t>(token_vec[0]);
+            auto matches = stdext::string::to_number<uint64_t>(token_vec[1]);
             auto yearlyData = total_counts.get_counts_of_year(year);
             if (yearlyData.matches <= 0) continue;
             weight_sum += (double)matches / (double)yearlyData.matches;
@@ -180,15 +179,15 @@ auto GoogleUnigramDatabase::load_partition(const std::filesystem::path &partitio
     return partition;
 }
 
-auto GoogleUnigramDatabase::get_log_path(const std::filesystem::path &partition_path) const noexcept
+auto GoogleUnigramDatabase::get_log_path(const std::filesystem::path& partition_path) const noexcept
     -> std::filesystem::path {
     auto log_filename = LOG_FILENAME_PREFIX + partition_path.filename().string() + LOG_FILENAME_SUFFIX;
     return partition_path.parent_path() / log_filename;
 }
 
-auto GoogleUnigramDatabase::check_and_clean_raw_word(const std::string &original,
-                                                     std::string &cleaned,
-                                                     std::basic_ostream<char> &log) const noexcept -> bool {
+auto GoogleUnigramDatabase::check_and_clean_raw_word(const std::string_view& original,
+                                                     std::string& cleaned,
+                                                     std::basic_ostream<char>& log) const noexcept -> bool {
     // Check if URL
     if (original.starts_with("https://") || original.starts_with("http://") || original.starts_with("www.")) {
         log << "skip(url)\t" << original << "\n";
@@ -231,18 +230,18 @@ auto GoogleUnigramDatabase::check_and_clean_raw_word(const std::string &original
     return true;
 }
 
-auto GoogleUnigramDatabase::normalize_and_insert_partitions(const std::vector<Partition> &partitions) -> void {
+auto GoogleUnigramDatabase::normalize_and_insert_partitions(const std::vector<Partition>& partitions) -> void {
     // Find maximum weight in all partitions
     double max_weight = 0.0;
-    for (auto &partition : partitions) {
+    for (auto& partition : partitions) {
         if (partition.max_weight > max_weight) {
             max_weight = partition.max_weight;
         }
     }
 
     // Normalize and insert
-    for (auto &partition : partitions) {
-        for (auto &[word, weight] : partition.data) {
+    for (auto& partition : partitions) {
+        for (auto& [word, weight] : partition.data) {
             auto norm_weight = static_cast<uint16_t>(UINT16_MAX * (weight / max_weight));
             norm_weight += stdext::map::get_or_default(database, word, static_cast<uint16_t>(0));
             database.insert_or_assign(word, norm_weight);
@@ -260,10 +259,10 @@ auto GoogleUnigramDatabase::dump() const noexcept -> std::string {
     return ss.str();
 }
 
-auto GoogleUnigramDatabase::dump(std::basic_ostream<char> &out) const noexcept -> void {
+auto GoogleUnigramDatabase::dump(std::basic_ostream<char>& out) const noexcept -> void {
     total_counts.dump(out);
     out << "GoogleNgramDatabase {\n";
-    for (auto &[word, weight] : database) {
+    for (auto& [word, weight] : database) {
         out << "  " << word << " -> " << weight << "\n";
     }
     out << "}\n";
