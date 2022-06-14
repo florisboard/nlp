@@ -1,14 +1,16 @@
 ---
-BasedOnStyle: Google
+BasedOnStyle: LLVM
 ColumnLimit: 120
 IndentWidth: 4
 UseTab: Never
 ---
 Language: Cpp
 Standard: c++20
-BreakBeforeBraces: Attach
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AlwaysBreakTemplateDeclarations: Yes
+BinPackParameters: false
+Cpp11BracedListStyle: false
 DerivePointerAlignment: false
-IndentCaseLabels: true
 PointerAlignment: Right
 ReferenceAlignment: Pointer
 SpaceAfterTemplateKeyword: false

@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
-#include "stdext.hpp"
+#include "stdext/map.hpp"
+#include "stdext/string.hpp"

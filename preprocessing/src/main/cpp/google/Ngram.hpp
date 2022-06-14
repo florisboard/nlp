@@ -26,11 +26,10 @@
 #include <vector>
 
 namespace nlp::preprocessing {
-namespace constants {
+
 static const std::string TOTALCOUNTS_FILE_NAME = "totalcounts-1";
 static const std::string LOG_FILENAME_PREFIX = "prep_";
 static const std::string LOG_FILENAME_SUFFIX = ".log";
-}  // namespace constants
 
 using NgramYear = std::string;
 using NgramCount = uint64_t;
@@ -44,11 +43,11 @@ struct GoogleNgramYearlyCounts {
 };
 
 class GoogleNgramTotalCounts {
-   private:
+  private:
     using TotalCountsMap = std::map<NgramYear, GoogleNgramYearlyCounts>;
     TotalCountsMap total_counts_map;
 
-   public:
+  public:
     GoogleNgramTotalCounts() : total_counts_map(TotalCountsMap()) {};
     ~GoogleNgramTotalCounts() = default;
 
@@ -64,7 +63,7 @@ class GoogleNgramTotalCounts {
 };
 
 class GoogleUnigramDatabase {
-   private:
+  private:
     struct Partition {
         struct Unigram {
             std::string word;
@@ -86,12 +85,13 @@ class GoogleUnigramDatabase {
 
     auto get_log_path(const std::filesystem::path &partition_path) const noexcept -> std::filesystem::path;
 
-    auto check_and_clean_raw_word(const std::string &raw_word, std::string &cleaned_word,
+    auto check_and_clean_raw_word(const std::string &raw_word,
+                                  std::string &cleaned_word,
                                   std::basic_ostream<char> &log) const noexcept -> bool;
 
     auto normalize_and_insert_partitions(const std::vector<Partition> &partitions) -> void;
 
-   public:
+  public:
     GoogleUnigramDatabase() : database(Database()), total_counts(GoogleNgramTotalCounts()) {};
     ~GoogleUnigramDatabase() = default;
 
@@ -103,6 +103,6 @@ class GoogleUnigramDatabase {
 
     auto dump(std::basic_ostream<char> &out) const noexcept -> void;
 };
-}  // namespace nlp::preprocessing
+} // namespace nlp::preprocessing
 
-#endif  // _FLORISNLP_PREPROCESSING_GOOGLE_NGRAM
+#endif // _FLORISNLP_PREPROCESSING_GOOGLE_NGRAM
