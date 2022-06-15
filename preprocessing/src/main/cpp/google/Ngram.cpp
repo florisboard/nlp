@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -82,7 +83,7 @@ auto GoogleNgramTotalCounts::dump() const noexcept -> std::string {
 auto GoogleNgramTotalCounts::dump(std::basic_ostream<char>& out) const noexcept -> void {
     out << "GoogleNgramTotalCounts {\n";
     for (auto& [year, counts] : total_counts_map) {
-        out << "  " << year << " -> { ";
+        out << year << " -> { ";
         out << "matches = " << counts.matches << ", ";
         out << "pages = " << counts.pages << ", ";
         out << "volumes = " << counts.volumes << " }\n";
@@ -139,9 +140,7 @@ auto GoogleUnigramDatabase::load_partition(const std::filesystem::path& partitio
     std::string cleaned_word;
     std::vector<std::string_view> line_vec;
     std::vector<std::string_view> token_vec;
-    size_t lnum = 0;
     while (std::getline(partition_file, line_str)) {
-        if (lnum++ >= 160000) break;
         if (line_str.empty()) continue;
         stdext::string::split(line_vec, line_str, DATABASE_DELIM);
         if (line_vec.size() < 1) continue;
@@ -208,20 +207,8 @@ auto GoogleUnigramDatabase::check_and_clean_raw_word(const std::string_view& ori
 
     // Do cleaning operation
     cleaned.assign(original);
-    auto tag_begin = cleaned.find_last_of('_');
-    if (tag_begin == std::string::npos) {
-        tag_begin = cleaned.length();
-    }
-    for (auto it = cleaned.begin(), end = cleaned.begin() + tag_begin; it != end; it++) {
-        char c = *it;
-        if (std::isdigit(c) || c == ',' || c == '.') {
-            cleaned.erase(it);
-        }
-    }
-
-    // Check if cleaning operation caused word not be exposed as not a word
-    if (cleaned.empty() || cleaned.starts_with('_')) {
-        log << "skip(notaword)\t" << original << "\n";
+    if (!std::regex_match(cleaned, WORD_VALIDATION_REGEX)) {
+        log << "skip(invalid)\t" << original << "\n";
         return false;
     }
 
@@ -240,11 +227,14 @@ auto GoogleUnigramDatabase::normalize_and_insert_partitions(const std::vector<Pa
     }
 
     // Normalize and insert
+    // TODO: reevaluate normed weight calculation and if all 0 are really 0 (maybe spellcheck here??)
     for (auto& partition : partitions) {
         for (auto& [word, weight] : partition.data) {
-            auto norm_weight = static_cast<uint16_t>(UINT16_MAX * (weight / max_weight));
-            norm_weight += stdext::map::get_or_default(database, word, static_cast<uint16_t>(0));
-            database.insert_or_assign(word, norm_weight);
+            uint16_t norm_weight = std::round(UINT16_MAX * (weight / max_weight));
+            norm_weight += stdext::map::get_or_default(database, word, (uint16_t)0);
+            if (norm_weight > 0) {
+                database.insert_or_assign(word, norm_weight);
+            }
         }
     }
 }
@@ -261,9 +251,9 @@ auto GoogleUnigramDatabase::dump() const noexcept -> std::string {
 
 auto GoogleUnigramDatabase::dump(std::basic_ostream<char>& out) const noexcept -> void {
     total_counts.dump(out);
-    out << "GoogleNgramDatabase {\n";
+    out << "\nGoogleNgramDatabase {\n";
     for (auto& [word, weight] : database) {
-        out << "  " << word << " -> " << weight << "\n";
+        out << word << " -> " << weight << "\n";
     }
     out << "}\n";
 }

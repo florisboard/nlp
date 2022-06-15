@@ -30,6 +30,7 @@ namespace nlp::preprocessing {
 static const std::string TOTALCOUNTS_FILE_NAME = "totalcounts-1";
 static const std::string LOG_FILENAME_PREFIX = "prep_";
 static const std::string LOG_FILENAME_SUFFIX = ".log";
+static const std::regex WORD_VALIDATION_REGEX(R"(^(?:[^\d,.!?\"_+\-\\/#%*()[\]{}<>]+?|(?:[^\d,.!?\"_+\-\\/#%*()[\]{}<>]+?-[^\d,.!?\"_+\-\\/#%*()[\]{}<>]+?))(?:_[A-Z]+)?$)");
 
 struct GoogleNgramYearlyCounts {
     static const GoogleNgramYearlyCounts DEFAULT;
@@ -100,6 +101,7 @@ class GoogleUnigramDatabase {
 
     auto dump(std::basic_ostream<char>& out) const noexcept -> void;
 };
+
 } // namespace nlp::preprocessing
 
 #endif // _FLORISNLP_PREPROCESSING_GOOGLE_NGRAM
