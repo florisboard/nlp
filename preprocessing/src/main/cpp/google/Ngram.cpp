@@ -26,6 +26,7 @@
 
 #include "stdext/map.hpp"
 #include "stdext/string.hpp"
+#include "thread-pool/BS_thread_pool.hpp"
 
 using namespace nlp::preprocessing;
 
@@ -105,18 +106,51 @@ auto GoogleUnigramDatabase::load(const std::filesystem::path& path) -> void {
     total_counts.load(path / TOTALCOUNTS_FILE_NAME);
 
     // Load all partitions
-    // TODO: placeholder partition 20 is used; add support for multi-threading and processing of all partitions
-    auto time_start = std::chrono::high_resolution_clock::now();
-    auto partition = load_partition(path / "1-00019-of-00024");
-    auto time_stop = std::chrono::high_resolution_clock::now();
-    auto time_duration = std::chrono::duration_cast<std::chrono::seconds>(time_stop - time_start);
-    std::cout << "Load partition "
-              << "1-00019-of-00024"
-              << " took " << time_duration.count() << "s\n";
-    std::vector<Partition> partitions { partition };
+    std::mutex guard;
+    BS::thread_pool thread_pool(4);
+    std::vector<Partition> partitions;
+    for (const auto& dir_entry : std::filesystem::directory_iterator(path)) {
+        if (dir_entry.is_directory()) continue;
+        const auto partition_path = dir_entry.path();
+        const auto partition_name = partition_path.filename().string();
+        if (partition_name == TOTALCOUNTS_FILE_NAME || partition_name.ends_with(LOG_FILENAME_SUFFIX)) {
+            std::cout << "Skip file " << partition_name << "\n";
+            continue;
+        }
+
+        guard.lock();
+        std::cout << "Enqueue partition " << partition_name << "\n";
+        guard.unlock();
+
+        thread_pool.push_task([this, &guard, &partitions, partition_path, partition_name]() {
+            guard.lock();
+            std::cout << "Start loading partition " << partition_name << "\n";
+            guard.unlock();
+
+            auto time_start = std::chrono::steady_clock::now();
+            auto partition = load_partition(partition_path);
+            auto time_stop = std::chrono::steady_clock::now();
+            auto time_duration = std::chrono::duration_cast<std::chrono::seconds>(time_stop - time_start);
+
+            guard.lock();
+            partitions.emplace_back(partition);
+            auto skip_percent = ((partition.skip_count) / (float)partition.entry_count) * 100;
+            std::cout << "Finish loading partition" << partition_name << "\n  duration: " << time_duration.count()
+                      << "s\n  entries: " << partition.entry_count << " (" << std::fixed << std::setprecision(2)
+                      << 100 - skip_percent << "% take, " << skip_percent
+                      << "% skip)\n  max_weight: " << std::setprecision(16) << partition.max_weight << "\n";
+            guard.unlock();
+        });
+    }
+
+    thread_pool.wait_for_tasks();
 
     // Insert them
-    normalize_and_insert_partitions(partitions);
+    std::ofstream db_insert_log(path / "db_insert.log", std::ios::out | std::ios::trunc);
+    if (!db_insert_log.is_open()) {
+        throw std::runtime_error("An unknown error (db insert log file) occurred");
+    }
+    normalize_and_insert_partitions(partitions, db_insert_log);
 }
 
 auto GoogleUnigramDatabase::load_partition(const std::filesystem::path& partition_path) const -> Partition {
@@ -207,7 +241,7 @@ auto GoogleUnigramDatabase::check_and_clean_raw_word(const std::string_view& ori
 
     // Do cleaning operation
     cleaned.assign(original);
-    if (!std::regex_match(cleaned, WORD_VALIDATION_REGEX)) {
+    if (!std::regex_match(cleaned, WORD_VALIDATION_REGEX_INCL)) {
         log << "skip(invalid)\t" << original << "\n";
         return false;
     }
@@ -217,7 +251,12 @@ auto GoogleUnigramDatabase::check_and_clean_raw_word(const std::string_view& ori
     return true;
 }
 
-auto GoogleUnigramDatabase::normalize_and_insert_partitions(const std::vector<Partition>& partitions) -> void {
+constexpr auto norm_w(double wr) -> uint16_t {
+    return static_cast<uint16_t>(UINT16_MAX * (1.0 - std::pow(1.0 - wr, 10.0)));
+}
+
+auto GoogleUnigramDatabase::normalize_and_insert_partitions(const std::vector<Partition>& partitions,
+                                                            std::basic_ostream<char>& log) noexcept -> void {
     // Find maximum weight in all partitions
     double max_weight = 0.0;
     for (auto& partition : partitions) {
@@ -225,15 +264,17 @@ auto GoogleUnigramDatabase::normalize_and_insert_partitions(const std::vector<Pa
             max_weight = partition.max_weight;
         }
     }
+    log << "BASELINE MAX WEIGHT: " << max_weight << "\n";
 
     // Normalize and insert
-    // TODO: reevaluate normed weight calculation and if all 0 are really 0 (maybe spellcheck here??)
     for (auto& partition : partitions) {
         for (auto& [word, weight] : partition.data) {
-            uint16_t norm_weight = std::round(UINT16_MAX * (weight / max_weight));
-            norm_weight += stdext::map::get_or_default(database, word, (uint16_t)0);
+            auto norm_weight = norm_w(weight / max_weight);
             if (norm_weight > 0) {
                 database.insert_or_assign(word, norm_weight);
+                log << "++\t" << word << "\t" << norm_weight << "\n";
+            } else {
+                log << "--\t" << word << "\t" << norm_weight << "\n";
             }
         }
     }

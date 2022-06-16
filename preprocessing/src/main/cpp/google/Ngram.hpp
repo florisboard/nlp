@@ -30,7 +30,10 @@ namespace nlp::preprocessing {
 static const std::string TOTALCOUNTS_FILE_NAME = "totalcounts-1";
 static const std::string LOG_FILENAME_PREFIX = "prep_";
 static const std::string LOG_FILENAME_SUFFIX = ".log";
-static const std::regex WORD_VALIDATION_REGEX(R"(^(?:[^\d,.!?\"_+\-\\/#%*()[\]{}<>]+?|(?:[^\d,.!?\"_+\-\\/#%*()[\]{}<>]+?-[^\d,.!?\"_+\-\\/#%*()[\]{}<>]+?))(?:_[A-Z]+)?$)");
+static const std::regex WORD_VALIDATION_REGEX_EXCL(
+    R"(^(?:[^\d.,;:!?‽&%#§$€=+\-*/\\_\"()[\]{}<>|~•■]+?|(?:[^\d.,;:!?‽&%#§$€=+\-*/\\_\"()[\]{}<>|~•■]+?-[^\d.,;:!?‽&%#§$€=+\-*/\\_\"()[\]{}<>|~•■]+?))(?:_[A-Z]+)?$)");
+static const std::regex WORD_VALIDATION_REGEX_INCL(
+    R"(^(?:(?:[a-z]+(?:-[a-z]+)*)|(?:[A-Z][a-z]*(?:-[A-Z][a-z]*)*)|(?:[A-Z]+(?:-[A-Z]+)*))$)");
 
 struct GoogleNgramYearlyCounts {
     static const GoogleNgramYearlyCounts DEFAULT;
@@ -87,7 +90,8 @@ class GoogleUnigramDatabase {
                                   std::string& cleaned_word,
                                   std::basic_ostream<char>& log) const noexcept -> bool;
 
-    auto normalize_and_insert_partitions(const std::vector<Partition>& partitions) -> void;
+    auto normalize_and_insert_partitions(const std::vector<Partition>& partitions,
+                                         std::basic_ostream<char>& log) noexcept -> void;
 
   public:
     GoogleUnigramDatabase() : database(Database()), total_counts(GoogleNgramTotalCounts()) {};

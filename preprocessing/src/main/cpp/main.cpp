@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     try {
         auto database = GoogleUnigramDatabase();
         database.load(path);
-        std::string out_path = path + std::string("/norm_dump.log");
+        std::string out_path = path + std::string("/db_dump.log");
         std::ofstream norm_dump(out_path);
         if (norm_dump.is_open()) {
             database.dump(norm_dump);
