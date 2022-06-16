@@ -4,6 +4,10 @@ Tools for preprocessing raw word data into dictionary files and n-gram models.
 
 This repository is currently in alpha and will move along with the 0.4.0 FlorisBoard development cycle.
 
+## External libraries used
+
+- [bshoshany/thread-pool](https://github.com/bshoshany/thread-pool) (MIT) by [Barak Shoshany](https://github.com/bshoshany)
+
 ## License
 
 ```

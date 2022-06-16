@@ -15,6 +15,6 @@ tasks.withType<CppCompile> {
     compilerArgs.addAll("-std=c++2a")//, "-pg")
 }
 
-//tasks.withType<LinkExecutable> {
-//    linkerArgs.addAll("-pg")
-//}
+tasks.withType<LinkExecutable> {
+    linkerArgs.addAll("-pthread")//, "-pg")
+}
