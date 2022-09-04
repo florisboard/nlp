@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-#include "thread-pool/BS_thread_pool.hpp"
 #include "stdext/map.hpp"
 #include "stdext/string.hpp"

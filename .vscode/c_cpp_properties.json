@@ -4,7 +4,9 @@
     {
       "name": "Linux",
       "includePath": [
-        "${workspaceFolder}/core/src/main/public"
+        "${workspaceFolder}/core/src/main/public",
+        "${workspaceFolder}/hat-trie/hat-trie/include",
+        "${workspaceFolder}/thread-pool/thread-pool"
       ],
       "defines": [],
       "compilerPath": "/usr/bin/gcc",

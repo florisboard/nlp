@@ -4,3 +4,4 @@
 includeBuild("core")
 includeBuild("hat-trie")
 includeBuild("preprocessing")
+includeBuild("thread-pool")

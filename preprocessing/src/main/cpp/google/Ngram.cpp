@@ -26,7 +26,7 @@
 
 #include "stdext/map.hpp"
 #include "stdext/string.hpp"
-#include "thread-pool/BS_thread_pool.hpp"
+#include "BS_thread_pool.hpp"
 
 using namespace nlp::preprocessing;
 
