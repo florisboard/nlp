@@ -1,0 +1,3 @@
+[submodule "hat-trie/hat-trie"]
+	path = hat-trie/hat-trie
+	url = https://github.com/Tessil/hat-trie.git
