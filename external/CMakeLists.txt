@@ -1,12 +1,18 @@
 # External library: "hat-trie/hat-trie"
 add_subdirectory(hat-trie)
 
-# External library: "bshoshany/thread-pool"
-project(termbox_termbox2)
-add_library(termbox_termbox2 INTERFACE)
-add_library(termbox::termbox2 ALIAS termbox_termbox2)
-target_include_directories(termbox_termbox2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/termbox2")
-target_sources(termbox_termbox2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/termbox2/termbox.h")
+# External library: "termbox/termbox2"
+project(termbox)
+add_custom_target(build_termbox ALL
+                    COMMAND make libtermbox.a
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/termbox2"
+                    BYPRODUCTS "${CMAKE_CURRENT_SOURCE_DIR}/termbox2/libtermbox.a"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/termbox2/termbox.o")
+add_library(termbox STATIC IMPORTED GLOBAL)
+add_library(termbox::termbox ALIAS termbox)
+add_dependencies(termbox build_termbox)
+set_target_properties(termbox PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/termbox2/libtermbox.a")
+target_include_directories(termbox INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/termbox2")
 
 # External library: "bshoshany/thread-pool"
 project(bshoshany_thread_pool)
