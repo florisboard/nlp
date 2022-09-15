@@ -9,9 +9,8 @@
         "${workspaceFolder}/external/hat-trie/include",
         "${workspaceFolder}/external/thread-pool"
       ],
-      "defines": [],
-      "compilerPath": "/usr/bin/g++",
-      "compilerArgs": ["-fmodules-ts", "-fmodule-header"],
+      "defines": [ ],
+      "compilerPath": "/usr/bin/c++",
       "cStandard": "c17",
       "cppStandard": "c++20",
       "intelliSenseMode": "linux-gcc-x64"

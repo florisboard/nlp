@@ -1,0 +1,9 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "modifications",
+  "editor.rulers": [
+    120
+  ],
+  "json.format.enable": true,
+  "json.format.keepLines": true
+}
