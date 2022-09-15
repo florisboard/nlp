@@ -1,0 +1,9 @@
+project(floris_nlp_preprocessing)
+
+add_executable(floris_nlp_preprocessing main.cpp google/Ngram.cpp)
+add_executable(floris::nlp_preprocessing ALIAS floris_nlp_preprocessing)
+
+target_link_libraries(floris_nlp_preprocessing PUBLIC tsl::hat_trie)
+target_link_libraries(floris_nlp_preprocessing PUBLIC bshoshany::thread_pool)
+target_link_libraries(floris_nlp_preprocessing PUBLIC floris::nlp_core)
+target_include_directories(floris_nlp_preprocessing PUBLIC google)

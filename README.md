@@ -4,9 +4,19 @@ Tools for preprocessing raw word data into dictionary files and n-gram models.
 
 This repository is currently in alpha and will move along with the 0.4.0 FlorisBoard development cycle.
 
+## Building the project
+
+Requires CMake 3.22 or newer and Ninja 1.10 or newer.
+
+```shell
+cmake --preset=default .
+cmake --build --preset=default
+```
+
 ## External libraries used
 
 - [bshoshany/thread-pool](https://github.com/bshoshany/thread-pool) (MIT) by [Barak Shoshany](https://github.com/bshoshany)
+- [Tessil/hat-trie](https://github.com/Tessil/hat-trie) (MIT) by [Thibaut Goetghebuer-Planchon](https://github.com/Tessil)
 
 ## License
 

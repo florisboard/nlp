@@ -31,10 +31,19 @@
 *.out
 *.app
 
-# Gradle files
-.gradle/
+# CMake files
 build/
-release/
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
 
 # VSCode settings.json file
 .vscode/settings.json

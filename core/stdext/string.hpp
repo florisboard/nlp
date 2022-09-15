@@ -19,6 +19,7 @@
 
 #include <charconv>
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>

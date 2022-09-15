@@ -3,13 +3,15 @@
   "configurations": [
     {
       "name": "Linux",
+      "compileCommands": "${workspaceFolder}/build/default/compile_commands.json",
       "includePath": [
-        "${workspaceFolder}/core/src/main/public",
-        "${workspaceFolder}/hat-trie/hat-trie/include",
-        "${workspaceFolder}/thread-pool/thread-pool"
+        "${workspaceFolder}/core",
+        "${workspaceFolder}/external/hat-trie/include",
+        "${workspaceFolder}/external/thread-pool"
       ],
       "defines": [],
-      "compilerPath": "/usr/bin/gcc",
+      "compilerPath": "/usr/bin/g++",
+      "compilerArgs": ["-fmodules-ts", "-fmodule-header"],
       "cStandard": "c17",
       "cppStandard": "c++20",
       "intelliSenseMode": "linux-gcc-x64"

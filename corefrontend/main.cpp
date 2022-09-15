@@ -14,5 +14,13 @@
  * limitations under the License.
  */
 
-#include "stdext/map.hpp"
-#include "stdext/string.hpp"
+#include <iostream>
+#include <tsl/htrie_map.h>
+
+#include "ngram/spelling_result.hpp"
+
+int main(int argc, char **argv) {
+    auto x = floris::nlp::SpellingResult::valid_word();
+    std::cout << "corefrontend" << "\n";
+    return 0;
+}
