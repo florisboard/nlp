@@ -1,6 +1,9 @@
 [submodule "hat-trie/hat-trie"]
 	path = external/hat-trie
 	url = https://github.com/Tessil/hat-trie.git
+[submodule "external/termbox2"]
+	path = external/termbox2
+	url = https://github.com/termbox/termbox2
 [submodule "thread-pool/thread-pool"]
 	path = external/thread-pool
 	url = https://github.com/bshoshany/thread-pool.git

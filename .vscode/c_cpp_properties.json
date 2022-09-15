@@ -7,6 +7,7 @@
       "includePath": [
         "${workspaceFolder}/core",
         "${workspaceFolder}/external/hat-trie/include",
+        "${workspaceFolder}/external/termbox2",
         "${workspaceFolder}/external/thread-pool"
       ],
       "defines": [ ],
