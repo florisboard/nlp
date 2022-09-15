@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Linux",
-      "compileCommands": "${workspaceFolder}/build/default/compile_commands.json",
+      "compileCommands": "${workspaceFolder}/build/debug/compile_commands.json",
       "includePath": [
         "${workspaceFolder}/core",
         "${workspaceFolder}/external/hat-trie/include",
