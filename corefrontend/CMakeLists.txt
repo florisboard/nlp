@@ -7,6 +7,7 @@ target_link_libraries(
     floris_nlp_corefrontend
     PRIVATE
 
+    FlorisICU::uc
     tsl::hat_trie
     termbox::termbox
     floris::nlp_core
