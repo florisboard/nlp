@@ -5,5 +5,6 @@
     120
   ],
   "json.format.enable": true,
-  "json.format.keepLines": true
+  "json.format.keepLines": true,
+  "C_Cpp.autoAddFileAssociations": false
 }
