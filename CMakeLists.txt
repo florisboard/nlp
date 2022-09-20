@@ -17,6 +17,7 @@ add_subdirectory(external)
 add_subdirectory(icu4c)
 
 # Internal libraries
+add_subdirectory(icuext)
 add_subdirectory(core)
 add_subdirectory(corefrontend)
 add_subdirectory(preprocessing)
