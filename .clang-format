@@ -6,7 +6,7 @@ UseTab: Never
 ---
 Language: Cpp
 Standard: c++20
-AllowShortFunctionsOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AlwaysBreakTemplateDeclarations: Yes
 BinPackParameters: false
@@ -17,4 +17,19 @@ PointerAlignment: Left
 ReferenceAlignment: Pointer
 SpaceAfterTemplateKeyword: false
 SpaceBeforeCpp11BracedList: true
+SortIncludes: true
+IncludeBlocks: Regroup
+IncludeCategories:
+  # Headers in ""
+  - Regex:          '".+"'
+    Priority:       1
+  # Headers in <> from external libraries with own subdir
+  - Regex:          '<.+\/.+>'
+    Priority:       2
+  # Headers in <> with extension
+  - Regex:          '<.+\..+>'
+    Priority:       3
+  # Headers in <> without extension
+  - Regex:          '<.+>'
+    Priority:       4
 ---
