@@ -22,6 +22,9 @@
 #include <string>
 #include <tsl/htrie_map.h>
 
+#include "ngram.hpp"
+#include "spelling_result.hpp"
+
 namespace floris::nlp {
 
 enum DictionaryType {
