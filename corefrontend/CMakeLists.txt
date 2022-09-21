@@ -1,13 +1,13 @@
-project(floris_nlp_corefrontend)
+project(floris_nlpcorefrontend)
 
-add_executable(floris_nlp_corefrontend main.cpp)
-add_executable(floris::nlp_corefrontend ALIAS floris_nlp_corefrontend)
+add_executable(floris_nlpcorefrontend main.cpp)
+add_executable(floris::nlpcorefrontend ALIAS floris_nlpcorefrontend)
 
+target_link_icu4c_libraries(floris_nlpcorefrontend PUBLIC floris::icuext)
 target_link_libraries(
-    floris_nlp_corefrontend
-    PRIVATE
+    floris_nlpcorefrontend
+    PUBLIC
 
     tsl::hat_trie
     termbox::termbox
-    floris::icuext
-    floris::nlp_core)
+    floris::nlpcore)

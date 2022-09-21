@@ -1,13 +1,8 @@
-project(floris_nlp_core)
+add_library(floris_nlpcore)
+add_library(floris::nlpcore ALIAS floris_nlpcore)
 
-add_library(floris_nlp_core INTERFACE)
-add_library(floris::nlp_core ALIAS floris_nlp_core)
-
-target_include_directories(floris_nlp_core INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_sources(floris_nlp_core INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/ngram/dictionary.hpp"
-                                      "${CMAKE_CURRENT_SOURCE_DIR}/ngram/ngram.hpp"
-                                      "${CMAKE_CURRENT_SOURCE_DIR}/ngram/spelling_result.hpp"
-                                      "${CMAKE_CURRENT_SOURCE_DIR}/stdext/map.hpp"
-                                      "${CMAKE_CURRENT_SOURCE_DIR}/stdext/string.hpp")
-
-target_link_libraries(floris_nlp_core INTERFACE tsl::hat_trie)
+target_include_directories(floris_nlpcore PUBLIC "include")
+target_link_icu4c_libraries(floris_nlpcore PUBLIC floris::icuext)
+target_link_libraries(floris_nlpcore PUBLIC tsl::hat_trie)
+target_sources(floris_nlpcore PRIVATE
+    "src/nlp/spelling_result.cpp")

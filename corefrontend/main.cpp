@@ -16,8 +16,7 @@
 
 #include "icuext/data.hpp"
 #include "icuext/string.hpp"
-#include "ngram/ngram.hpp"
-#include "ngram/spelling_result.hpp"
+#include "nlp/spelling_result.hpp"
 
 #include <tsl/htrie_map.h>
 
@@ -27,7 +26,7 @@
 #include <iostream>
 
 // TODO: get this path dynamically and remove the hardcoded path
-const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu/71.1/icudt71l.dat";
+const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
 
 int main(int argc, char** argv) {
     if (icuext::load_and_set_common_data(ICU_DATA_FILE_PATH) != UErrorCode::U_ZERO_ERROR) {

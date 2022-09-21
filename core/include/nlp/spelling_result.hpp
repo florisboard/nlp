@@ -17,9 +17,10 @@
 #ifndef _FLORISNLP_CORE_NGRAM_SPELLING_RESULT
 #define _FLORISNLP_CORE_NGRAM_SPELLING_RESULT
 
+#include "icuext/string.hpp"
+
 #include <memory>
 #include <vector>
-#include "ngram.hpp"
 
 namespace floris::nlp {
 
@@ -33,29 +34,26 @@ static const int RESULT_ATTR_DONT_SHOW_UI_FOR_SUGGESTIONS = 0x0010;
 class SpellingResult {
   public:
     const int suggestion_attributes;
-    const std::shared_ptr<const std::vector<ustring_t>> suggestions;
+    const std::shared_ptr<const std::vector<icuext::u32str>> suggestions;
 
   public:
-    SpellingResult(const int suggestion_attributes, const std::shared_ptr<const std::vector<ustring_t>> suggestions)
+    SpellingResult(const int suggestion_attributes,
+                   const std::shared_ptr<const std::vector<icuext::u32str>> suggestions)
         : suggestion_attributes(suggestion_attributes), suggestions(suggestions) {}
     ~SpellingResult() = default;
 
-    static SpellingResult unspecified() noexcept {
-        return SpellingResult(RESULT_UNSPECIFIED, nullptr);
-    }
+    static SpellingResult unspecified() noexcept { return SpellingResult(RESULT_UNSPECIFIED, nullptr); }
 
-    static SpellingResult valid_word() noexcept {
-        return SpellingResult(RESULT_ATTR_IN_THE_DICTIONARY, nullptr);
-    }
+    static SpellingResult valid_word() noexcept { return SpellingResult(RESULT_ATTR_IN_THE_DICTIONARY, nullptr); }
 
-    static SpellingResult typo(const std::shared_ptr<const std::vector<ustring_t>> suggestions,
+    static SpellingResult typo(const std::shared_ptr<const std::vector<icuext::u32str>> suggestions,
                                bool is_high_confidence_result = false) noexcept {
         auto attributes =
             RESULT_ATTR_LOOKS_LIKE_TYPO | (is_high_confidence_result ? RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS : 0);
         return SpellingResult(attributes, std::move(suggestions));
     }
 
-    static SpellingResult grammar_error(const std::shared_ptr<const std::vector<ustring_t>> suggestions,
+    static SpellingResult grammar_error(const std::shared_ptr<const std::vector<icuext::u32str>> suggestions,
                                         bool is_high_confidence_result = false) noexcept {
         auto attributes = RESULT_ATTR_LOOKS_LIKE_GRAMMAR_ERROR |
                           (is_high_confidence_result ? RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS : 0);

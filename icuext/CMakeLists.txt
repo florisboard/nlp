@@ -1,8 +1,8 @@
-project(icuext)
+project(floris_icuext)
 
-add_library(icuext STATIC)
-add_library(floris::icuext ALIAS icuext)
+add_library(floris_icuext)
+add_library(floris::icuext ALIAS floris_icuext)
 
-target_include_directories(icuext PUBLIC include)
-target_sources(icuext PRIVATE src/data.cpp src/string.cpp)
-target_link_libraries(icuext PUBLIC FlorisICU::uc FlorisICU::data)
+target_include_directories(floris_icuext PUBLIC "include")
+target_link_icu4c_libraries(floris_icuext PUBLIC FlorisICU::uc FlorisICU::data)
+target_sources(floris_icuext PRIVATE "src/icuext/data.cpp" "src/icuext/string.cpp")

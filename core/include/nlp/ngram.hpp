@@ -17,17 +17,15 @@
 #ifndef _FLORISNLP_CORE_NGRAM_NGRAM
 #define _FLORISNLP_CORE_NGRAM_NGRAM
 
+#include "icuext/string.hpp"
+
 #include <cstdint>
 #include <string>
 
 namespace floris::nlp {
 
-using ucodepoint_t = uint32_t;
-static const ucodepoint_t UCODEPOINT_MIN = 0x0;
-static const ucodepoint_t UCODEPOINT_MAX = 0x10FFFF;
-
-using ustring_t = std::basic_string<ucodepoint_t>;
-using ustring_view_t = std::basic_string_view<ucodepoint_t>;
+static const icuext::u32char UCODEPOINT_MIN = 0x0;
+static const icuext::u32char UCODEPOINT_MAX = 0x10FFFF;
 
 using score_t = uint16_t;
 static const score_t SCORE_MIN = 0x0;

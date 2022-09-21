@@ -16,6 +16,10 @@
 
 #include "Ngram.hpp"
 
+#include "../stdext/map.hpp"
+#include "../stdext/string.hpp"
+#include "BS_thread_pool.hpp"
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -23,10 +27,6 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-
-#include "stdext/map.hpp"
-#include "stdext/string.hpp"
-#include "BS_thread_pool.hpp"
 
 using namespace nlp::preprocessing;
 

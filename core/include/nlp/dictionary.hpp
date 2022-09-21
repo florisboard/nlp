@@ -17,13 +17,15 @@
 #ifndef _FLORISNLP_CORE_NGRAM_DICTIONARY
 #define _FLORISNLP_CORE_NGRAM_DICTIONARY
 
+#include "icuext/string.hpp"
+#include "ngram.hpp"
+#include "spelling_result.hpp"
+
+#include <tsl/htrie_map.h>
+
 #include <filesystem>
 #include <locale>
 #include <string>
-#include <tsl/htrie_map.h>
-
-#include "ngram.hpp"
-#include "spelling_result.hpp"
 
 namespace floris::nlp {
 
@@ -38,13 +40,13 @@ struct HtrieNodeProperties {
     bool is_possibly_offensive : 1;
     bool is_hidden_by_user : 1;
 
-    uint8_t ngramLevel;
-    tsl::htrie_map<ucodepoint_t, HtrieNodeProperties> ngramChildren;
+    uint8_t ngram_level;
+    tsl::htrie_map<u32char, HtrieNodeProperties> ngram_children;
 };
 
 class Dictionary {
   protected:
-    tsl::htrie_map<ucodepoint_t, HtrieNodeProperties> ngram_data;
+    tsl::htrie_map<u32char, HtrieNodeProperties> ngram_data;
     score_t score_offset;
     bool is_open;
 
@@ -70,9 +72,7 @@ class Dictionary {
 
     virtual bool close();
 
-    bool is_mutable() const noexcept {
-        return type == DictionaryType::MutableDictionary;
-    }
+    bool is_mutable() const noexcept { return type == DictionaryType::MutableDictionary; }
 
     std::vector<ustring_t> get_list_of_words() const noexcept {
         std::vector<ustring_t> ret_list(ngram_data.size());
