@@ -6,16 +6,32 @@ This repository is currently in alpha and will move along with the 0.4.0 FlorisB
 
 ## Building the project
 
-Requires CMake 3.22 or newer and Ninja 1.10 or newer.
+### Requirements
+
+- Host system: UNIX-like (Windows is NOT supported)
+- CMake 3.22+
+- Ninja 1.10+
+- GNU make 3.80+
+- Clang (any version with proper C++20 support)
+- Git (only to clone and to intialize the submodules)
+
+### Seting up and building locally
 
 ```shell
-cmake --preset=default .
-cmake --build --preset=default
+# One-time setup
+git clone https://github.com/florisboard/nlp.git
+cd nlp
+git submodule update --init --recursive
+
+# Building the project
+cmake --preset=debug .
+cmake --build --preset=debug
 ```
 
 ## External libraries used
 
 - [bshoshany/thread-pool](https://github.com/bshoshany/thread-pool) (MIT) by [Barak Shoshany](https://github.com/bshoshany)
+- [termbox/termbox2](https://github.com/termbox/termbox2) (MIT) by [termbox](https://github.com/termbox)
 - [Tessil/hat-trie](https://github.com/Tessil/hat-trie) (MIT) by [Thibaut Goetghebuer-Planchon](https://github.com/Tessil)
 
 ## License
