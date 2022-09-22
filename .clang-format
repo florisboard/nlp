@@ -6,13 +6,17 @@ UseTab: Never
 ---
 Language: Cpp
 Standard: c++20
-AllowShortFunctionsOnASingleLine: All
+AlignAfterOpenBracket: BlockIndent
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: WithoutElse
+AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
 BinPackParameters: false
 Cpp11BracedListStyle: false
 DerivePointerAlignment: false
 IndentCaseLabels: true
+PenaltyReturnTypeOnItsOwnLine: 10000000
 PointerAlignment: Left
 ReferenceAlignment: Pointer
 SpaceAfterTemplateKeyword: false
