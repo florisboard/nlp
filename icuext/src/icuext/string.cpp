@@ -16,7 +16,10 @@
 
 #include "icuext/string.hpp"
 
+#include <unicode/uchar.h>
 #include <unicode/unistr.h>
+
+#include <ranges>
 
 namespace icuext {
 
@@ -203,6 +206,39 @@ void str::lowercase(u32str& str, const locale& locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toLower(locale);
     to_u32str(tmp, str);
+}
+
+static const auto NOT_SPACE_U8 = [](u8char c) { return !u_isWhitespace(c); };
+static const auto NOT_SPACE_U16 = [](u16char c) { return !u_isWhitespace(c); };
+static const auto NOT_SPACE_U32 = [](u32char c) { return !u_isWhitespace(c); };
+
+u8str str::trimmed(const u8str& src) noexcept {
+    u8str ret(src);
+    trim(ret);
+    return ret;
+}
+u16str str::trimmed(const u16str& src) noexcept {
+    u16str ret(src);
+    trim(ret);
+    return ret;
+}
+u32str str::trimmed(const u32str& src) noexcept {
+    u32str ret(src);
+    trim(ret);
+    return ret;
+}
+
+void str::trim(u8str& src) {
+    src.erase(std::ranges::find_if(src | std::views::reverse, NOT_SPACE_U8).base(), src.end());
+    src.erase(src.begin(), std::ranges::find_if(src, NOT_SPACE_U8));
+}
+void str::trim(u16str& src) {
+    src.erase(std::ranges::find_if(src | std::views::reverse, NOT_SPACE_U16).base(), src.end());
+    src.erase(src.begin(), std::ranges::find_if(src, NOT_SPACE_U16));
+}
+void str::trim(u32str& src) {
+    src.erase(std::ranges::find_if(src | std::views::reverse, NOT_SPACE_U32).base(), src.end());
+    src.erase(src.begin(), std::ranges::find_if(src, NOT_SPACE_U32));
 }
 
 } // namespace icuext

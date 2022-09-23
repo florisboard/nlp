@@ -99,6 +99,14 @@ void lowercase(u8str& str, const locale& locale) noexcept;
 void lowercase(u16str& str, const locale& locale) noexcept;
 void lowercase(u32str& str, const locale& locale) noexcept;
 
+u8str trimmed(const u8str& src) noexcept;
+u16str trimmed(const u16str& src) noexcept;
+u32str trimmed(const u32str& src) noexcept;
+
+void trim(u8str& src) noexcept;
+void trim(u16str& src) noexcept;
+void trim(u32str& src) noexcept;
+
 } // namespace str
 
 } // namespace icuext
