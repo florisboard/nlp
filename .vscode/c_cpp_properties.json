@@ -5,10 +5,11 @@
       "name": "Linux",
       "compileCommands": "${workspaceFolder}/build/debug/compile_commands.json",
       "includePath": [
-        "${workspaceFolder}/core",
+        "${workspaceFolder}/core/include",
         "${workspaceFolder}/external/hat-trie/include",
         "${workspaceFolder}/external/termbox2",
-        "${workspaceFolder}/external/thread-pool"
+        "${workspaceFolder}/external/thread-pool",
+        "${workspaceFolder}/icuext/include"
       ],
       "defines": [ ],
       "compilerPath": "/usr/bin/clang",

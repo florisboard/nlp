@@ -16,10 +16,7 @@
 
 #include "icuext/string.hpp"
 
-#include <unicode/uchar.h>
 #include <unicode/unistr.h>
-
-#include <ranges>
 
 namespace icuext {
 
@@ -130,22 +127,22 @@ u32str str::to_u32str(const u16str& src) noexcept {
     return tmp;
 }
 
-static const locale ROOT_LOCALE = locale::getRoot();
+static const icu::Locale ROOT_LOCALE = icu::Locale::getRoot();
 
 u8str str::to_uppercase(const u8str& str) noexcept { return to_uppercase(str, ROOT_LOCALE); }
 u16str str::to_uppercase(const u16str& str) noexcept { return to_uppercase(str, ROOT_LOCALE); }
 u32str str::to_uppercase(const u32str& str) noexcept { return to_uppercase(str, ROOT_LOCALE); }
-u8str str::to_uppercase(const u8str& str, const locale& locale) noexcept {
+u8str str::to_uppercase(const u8str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toUpper(locale);
     return to_u8str(tmp);
 }
-u16str str::to_uppercase(const u16str& str, const locale& locale) noexcept {
+u16str str::to_uppercase(const u16str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toUpper(locale);
     return to_u16str(tmp);
 }
-u32str str::to_uppercase(const u32str& str, const locale& locale) noexcept {
+u32str str::to_uppercase(const u32str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toUpper(locale);
     return to_u32str(tmp);
@@ -154,17 +151,17 @@ u32str str::to_uppercase(const u32str& str, const locale& locale) noexcept {
 u8str str::to_lowercase(const u8str& str) noexcept { return to_lowercase(str, ROOT_LOCALE); }
 u16str str::to_lowercase(const u16str& str) noexcept { return to_lowercase(str, ROOT_LOCALE); }
 u32str str::to_lowercase(const u32str& str) noexcept { return to_lowercase(str, ROOT_LOCALE); }
-u8str str::to_lowercase(const u8str& str, const locale& locale) noexcept {
+u8str str::to_lowercase(const u8str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toUpper(locale);
     return to_u8str(tmp);
 }
-u16str str::to_lowercase(const u16str& str, const locale& locale) noexcept {
+u16str str::to_lowercase(const u16str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toUpper(locale);
     return to_u16str(tmp);
 }
-u32str str::to_lowercase(const u32str& str, const locale& locale) noexcept {
+u32str str::to_lowercase(const u32str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toUpper(locale);
     return to_u32str(tmp);
@@ -173,17 +170,17 @@ u32str str::to_lowercase(const u32str& str, const locale& locale) noexcept {
 void str::uppercase(u8str& str) noexcept { uppercase(str, ROOT_LOCALE); }
 void str::uppercase(u16str& str) noexcept { uppercase(str, ROOT_LOCALE); }
 void str::uppercase(u32str& str) noexcept { uppercase(str, ROOT_LOCALE); }
-void str::uppercase(u8str& str, const locale& locale) noexcept {
+void str::uppercase(u8str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toUpper(locale);
     to_u8str(tmp, str);
 }
-void str::uppercase(u16str& str, const locale& locale) noexcept {
+void str::uppercase(u16str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toUpper(locale);
     to_u16str(tmp, str);
 }
-void str::uppercase(u32str& str, const locale& locale) noexcept {
+void str::uppercase(u32str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toUpper(locale);
     to_u32str(tmp, str);
@@ -192,53 +189,20 @@ void str::uppercase(u32str& str, const locale& locale) noexcept {
 void str::lowercase(u8str& str) noexcept { lowercase(str, ROOT_LOCALE); }
 void str::lowercase(u16str& str) noexcept { lowercase(str, ROOT_LOCALE); }
 void str::lowercase(u32str& str) noexcept { lowercase(str, ROOT_LOCALE); }
-void str::lowercase(u8str& str, const locale& locale) noexcept {
+void str::lowercase(u8str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toLower(locale);
     to_u8str(tmp, str);
 }
-void str::lowercase(u16str& str, const locale& locale) noexcept {
+void str::lowercase(u16str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toLower(locale);
     to_u16str(tmp, str);
 }
-void str::lowercase(u32str& str, const locale& locale) noexcept {
+void str::lowercase(u32str& str, const icu::Locale locale) noexcept {
     auto tmp = to_unistr(str);
     tmp.toLower(locale);
     to_u32str(tmp, str);
-}
-
-static const auto NOT_SPACE_U8 = [](u8char c) { return !u_isWhitespace(c); };
-static const auto NOT_SPACE_U16 = [](u16char c) { return !u_isWhitespace(c); };
-static const auto NOT_SPACE_U32 = [](u32char c) { return !u_isWhitespace(c); };
-
-u8str str::trimmed(const u8str& src) noexcept {
-    u8str ret(src);
-    trim(ret);
-    return ret;
-}
-u16str str::trimmed(const u16str& src) noexcept {
-    u16str ret(src);
-    trim(ret);
-    return ret;
-}
-u32str str::trimmed(const u32str& src) noexcept {
-    u32str ret(src);
-    trim(ret);
-    return ret;
-}
-
-void str::trim(u8str& src) {
-    src.erase(std::ranges::find_if(src | std::views::reverse, NOT_SPACE_U8).base(), src.end());
-    src.erase(src.begin(), std::ranges::find_if(src, NOT_SPACE_U8));
-}
-void str::trim(u16str& src) {
-    src.erase(std::ranges::find_if(src | std::views::reverse, NOT_SPACE_U16).base(), src.end());
-    src.erase(src.begin(), std::ranges::find_if(src, NOT_SPACE_U16));
-}
-void str::trim(u32str& src) {
-    src.erase(std::ranges::find_if(src | std::views::reverse, NOT_SPACE_U32).base(), src.end());
-    src.erase(src.begin(), std::ranges::find_if(src, NOT_SPACE_U32));
 }
 
 } // namespace icuext

@@ -11,7 +11,7 @@ AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AlwaysBreakAfterReturnType: None
-AlwaysBreakTemplateDeclarations: Yes
+AlwaysBreakTemplateDeclarations: true
 BinPackParameters: false
 Cpp11BracedListStyle: false
 DerivePointerAlignment: false
@@ -19,6 +19,9 @@ IndentCaseLabels: true
 PenaltyReturnTypeOnItsOwnLine: 10000000
 PointerAlignment: Left
 ReferenceAlignment: Pointer
+IndentRequires: false
+#IndentRequiresClause: false
+#RequiresClausePosition: OwnLine
 SpaceAfterTemplateKeyword: false
 SpaceBeforeCpp11BracedList: true
 SortIncludes: true
