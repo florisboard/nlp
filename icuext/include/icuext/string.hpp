@@ -138,6 +138,7 @@ requires(is_ustr<StrT> && (is_ustr<DelimT> || is_uchar<DelimT>)) void split(
     const DelimT& delim,
     std::vector<StrT>& dst
 ) noexcept {
+    dst.clear();
     size_t last = 0;
     size_t next = 0;
     while ((next = src.find(delim, last)) != std::string::npos) {
