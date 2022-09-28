@@ -14,82 +14,138 @@
  * limitations under the License.
  */
 
-#ifndef _FLORISNLP_CORE_NGRAM_DICTIONARY
-#define _FLORISNLP_CORE_NGRAM_DICTIONARY
+#ifndef __FLORISNLP_CORE_NLP_DICTIONARY_H__
+#define __FLORISNLP_CORE_NLP_DICTIONARY_H__
 
 #include "icuext/string.hpp"
-#include "ngram.hpp"
-#include "spelling_result.hpp"
+#include "nlp/common.hpp"
+#include "nlp/trie.hpp"
 
-#include <tsl/htrie_map.h>
+#include <unicode/locid.h>
 
 #include <filesystem>
+#include <istream>
 #include <locale>
+#include <map>
+#include <ostream>
+#include <stdexcept>
 #include <string>
 
 namespace floris::nlp {
 
-enum DictionaryType {
-    Unspecified = 0,
-    ReadOnlyDictionary = 1,
-    MutableDictionary = 2,
+class immutable_dictionary_error : public std::runtime_error {
+  public:
+    immutable_dictionary_error() : std::runtime_error("Trying to mutate dictionary that is not mutable!") {};
+    ~immutable_dictionary_error() = default;
 };
 
-struct HtrieNodeProperties {
-    score_t weighted_score;
-    bool is_possibly_offensive : 1;
-    bool is_hidden_by_user : 1;
+class dictionary_serialization_error : public std::runtime_error {
+  public:
+    dictionary_serialization_error(const std::filesystem::path& path, const size_t line_num, const char* msg)
+        : std::runtime_error(msg), path(path), line_num(line_num) {};
+    ~dictionary_serialization_error() = default;
 
-    uint8_t ngram_level;
-    tsl::htrie_map<u32char, HtrieNodeProperties> ngram_children;
+  private:
+    const std::filesystem::path path;
+    const size_t line_num;
 };
 
-class Dictionary {
-  protected:
-    tsl::htrie_map<u32char, HtrieNodeProperties> ngram_data;
-    score_t score_offset;
-    bool is_open;
+// Atm the schema URL is only used as a long version string, however for the future it enables us to define and support
+// different schemas.
+static const icuext::u8str FLDIC_SCHEMA_V0_DRAFT1 = "https://florisboard.org/schemas/fldic/v0~draft1/dictionary.txt";
+
+static const icuext::u8char FLDIC_ASSIGNMENT = '=';
+static const icuext::u8char FLDIC_NEWLINE = '\n';
+static const icuext::u8char FLDIC_LIST_SEPARATOR = ',';
+static const icuext::u8char FLDIC_SEPARATOR = '\t';
+
+static const icuext::u8str FLDIC_HEADER_SCHEMA = "schema";
+static const icuext::u8str FLDIC_HEADER_NAME = "name";
+static const icuext::u8str FLDIC_HEADER_LOCALES = "locales";
+static const icuext::u8str FLDIC_HEADER_GENERATED_BY = "generated_by";
+
+static const icuext::u8str FLDIC_SECTION_WORDS = "[words]";
+static const icuext::u8str FLDIC_SECTION_SHORTCUTS = "[shortcuts]";
+
+static const icuext::u8char FLDIC_FLAG_IS_POSSIBLY_OFFENSIVE = 'o';
+static const icuext::u8char FLDIC_FLAG_IS_HIDDEN_BY_USER = 'h';
+
+struct dictionary_header {
+    icuext::u8str schema = FLDIC_SCHEMA_V0_DRAFT1;
+    icuext::u8str name;
+    std::vector<icu::Locale> locales; // in serialization use BCP 47 tags!
+    icuext::u8str generated_by;
+
+    size_t read_from(std::basic_istream<icuext::u8char>& istream) noexcept;
+
+    size_t write_to(std::basic_ostream<icuext::u8char>& ostream) const noexcept;
+
+    void reset() noexcept;
+};
+
+class dictionary {
+  public:
+    dictionary(const std::filesystem::path& path);
+    dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path);
+    ~dictionary();
 
   public:
-    const DictionaryType type;
-    const std::vector<std::locale> locales;
-    const score_t learn_factor;
-    const score_t decay_factor;
+    const ngram_properties& view_ngram_properties(icuext::u8str& word1) const;
+    const ngram_properties& view_ngram_properties(icuext::u8str& word1, icuext::u8str& word2) const;
+    const ngram_properties& view_ngram_properties(icuext::u8str& word1, icuext::u8str& word2, icuext::u8str& word3)
+        const;
 
   protected:
-    Dictionary(const DictionaryType type,
-               const std::vector<std::locale>& locales,
-               const score_t learn_factor,
-               const score_t decay_factor)
-        : type(type), locales(locales), learn_factor(learn_factor), decay_factor(decay_factor), score_offset(0u) {};
-    ~Dictionary();
+    std::filesystem::path src_path;
+    std::filesystem::path dst_path;
 
+    dictionary_header header;
+    basic_trie_node root_node;
+    std::map<icuext::u8str, icuext::u8str> shortcuts;
+
+    score_t max_unigram_score;
+    score_t max_bigram_score;
+    score_t max_trigram_score;
+
+    void deserialize(std::basic_istream<icuext::u8char>& istream);
+    void serialize(std::basic_ostream<icuext::u8char>& ostream);
+
+  private:
+    void trie_write_ngrams_to(
+        std::basic_ostream<icuext::u8char>& ostream,
+        basic_trie_node* base_node,
+        uint8_t ngram_level
+    ) const;
+
+    // Using const char* on purpose as this method will almost always be called with string literals
+    void throw_fatal_deseralization_error(size_t line_num, const char* msg) const;
+};
+
+class mutable_dictionary : public dictionary {
   public:
-    virtual SpellingResult&
-    spell(ustring_t word, int max_suggestion_count, bool allow_possibly_offensive, bool is_private_session);
+    mutable_dictionary(const std::filesystem::path& path);
+    mutable_dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path);
+    ~mutable_dictionary();
 
-    virtual void suggest();
+    bool adjust_scores_if_necessary() noexcept;
 
-    virtual bool close();
+    void insert(const icuext::u8str& word1, const ngram_properties& properties) noexcept;
+    void insert(const icuext::u8str& word1, const icuext::u8str& word2, const ngram_properties& properties) noexcept;
+    void insert(
+        const icuext::u8str& word1,
+        const icuext::u8str& word2,
+        const icuext::u8str& word3,
+        const ngram_properties& properties
+    ) noexcept;
 
-    bool is_mutable() const noexcept { return type == DictionaryType::MutableDictionary; }
+    void remove(const icuext::u8str& word1) noexcept;
+    void remove(const icuext::u8str& word1, const icuext::u8str& word2) noexcept;
+    void remove(const icuext::u8str& word1, const icuext::u8str& word2, const icuext::u8str& word3) noexcept;
 
-    std::vector<ustring_t> get_list_of_words() const noexcept {
-        std::vector<ustring_t> ret_list(ngram_data.size());
-        for (auto it = ngram_data.begin(); it != ngram_data.end(); ++it) {
-            ret_list.push_back(it.key());
-        }
-        return ret_list;
-    }
+    void persist();
 
-    double get_frequency_for_word(ustring_t& word) const noexcept {
-        try {
-            auto& word_properties = ngram_data.at(word);
-            return static_cast<double>(word_properties.weighted_score) / SCORE_MAX;
-        } catch (std::out_of_range e) {
-            return 0.0;
-        }
-    }
+  private:
+    static const score_t SCORE_ADJUSTMENT_THRESHOLD = SCORE_MAX - 128;
 };
 
 } // namespace floris::nlp
