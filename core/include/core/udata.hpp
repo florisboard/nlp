@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-#ifndef __FLORISNLP_ICUEXT_TYPE_TRAITS_H__
-#define __FLORISNLP_ICUEXT_TYPE_TRAITS_H__
+#ifndef __FLORISNLP_ICUEXT_UDATA_H__
+#define __FLORISNLP_ICUEXT_UDATA_H__
 
-#include <string>
+#include "core/string.hpp"
 
-namespace icuext {
+#include <unicode/utypes.h>
 
-template<typename T>
-struct get_extents {
-    using type = T;
-};
+namespace fl::icu {
 
-template<typename T>
-struct get_extents<std::basic_string<T>> {
-    using type = T;
-};
+UErrorCode load_and_set_common_data(fl::u8str path);
 
-template<typename T>
-using get_extents_t = typename get_extents<T>::type;
-
-} // namespace icuext
+} // namespace fl::icu
 
 #endif

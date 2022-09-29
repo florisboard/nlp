@@ -17,8 +17,8 @@
 #ifndef __FLORISNLP_WORTSCHATZ_CORPORA_PREPROCESSOR_H__
 #define __FLORISNLP_WORTSCHATZ_CORPORA_PREPROCESSOR_H__
 
-#include "icuext/string.hpp"
-#include "nlp/dictionary.hpp"
+#include "core/dictionary.hpp"
+#include "core/string.hpp"
 
 #include <unicode/uchar.h>
 #include <unicode/utext.h>
@@ -42,7 +42,7 @@ bool validate_word(UText* ut) {
 
 void read_corpora_into_dictionary(
     const std::filesystem::path& word_list_path,
-    floris::nlp::mutable_dictionary& dict
+    fl::nlp::mutable_dictionary& dict
 ) noexcept {
     UText* ut = nullptr;
     UErrorCode status;
@@ -53,8 +53,8 @@ void read_corpora_into_dictionary(
     std::vector<std::string> columns;
 
     while (std::getline(word_list_file, line)) {
-        icuext::str::trim(line);
-        icuext::str::split(line, SEPARATOR, columns);
+        fl::str::trim(line);
+        fl::str::split(line, SEPARATOR, columns);
         if (columns.size() < 3) continue;
 
         auto& word = columns[1];
@@ -62,8 +62,8 @@ void read_corpora_into_dictionary(
         ut = utext_openUTF8(ut, word.c_str(), -1, &status);
         if (U_FAILURE(status) || !validate_word(ut)) continue;
 
-        auto score = static_cast<floris::nlp::score_t>(std::stoi(columns[2]));
-        auto properties = floris::nlp::ngram_properties { score };
+        auto score = static_cast<fl::nlp::score_t>(std::stoi(columns[2]));
+        auto properties = fl::nlp::ngram_properties { score };
 
         dict.insert(word, properties);
     }

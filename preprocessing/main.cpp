@@ -28,7 +28,7 @@ const std::filesystem::path TEST_WORD_LIST =
     "data/.wortschatz_corpora/eng/eng_news_2020_300K/eng_news_2020_300K-words.txt";
 
 int main(int argc, char** argv) {
-    floris::nlp::mutable_dictionary dict;
+    fl::nlp::mutable_dictionary dict;
     dict.dst_path = TEST_FLDIC_DST_PATH;
     fl::nlp::preprocessing::read_corpora_into_dictionary(TEST_WORD_LIST, dict);
     dict.persist();

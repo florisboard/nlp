@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-#ifndef __FLORISNLP_CORE_NLP_COMMON_H__
-#define __FLORISNLP_CORE_NLP_COMMON_H__
+#ifndef __FLORISNLP_CORE_COMMON_H__
+#define __FLORISNLP_CORE_COMMON_H__
 
-#include "icuext/string.hpp"
+#include "core/string.hpp"
 
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
 
-namespace floris::nlp {
-
-static const icuext::u32char UCODEPOINT_MIN = 0x0;
-static const icuext::u32char UCODEPOINT_MAX = 0x10FFFF;
+namespace fl::nlp {
 
 // Even though we use an unsigned integer we reserve the signed bit and only use the positive number range
 // available from int32_8. This is to ensure compatibility with Java's integers.
@@ -77,8 +74,8 @@ static const double SUGGESTION_CANDIDATE_MIN_CONFIDENCE = 0.0;
 static const double SUGGESTION_CANDIDATE_MAX_CONFIDENCE = 0.9;
 
 struct suggestion_candidate {
-    const icuext::u8str text = "";
-    const std::optional<icuext::u8str> secondary_text = std::nullopt;
+    const fl::u8str text = "";
+    const std::optional<fl::u8str> secondary_text = std::nullopt;
     const double confidence = SUGGESTION_CANDIDATE_MIN_CONFIDENCE;
     const bool is_eligible_for_auto_commit = false;
     const bool is_eligible_for_user_removal = true;
@@ -96,10 +93,10 @@ static const int32_t RESULT_ATTR_DONT_SHOW_UI_FOR_SUGGESTIONS = 0x0010;
 class spelling_result {
   public:
     const int32_t suggestion_attributes;
-    const std::optional<const std::vector<icuext::u32str>> suggestions;
+    const std::optional<const std::vector<fl::u8str>> suggestions;
 
   public:
-    spelling_result(const int suggestion_attributes, const std::optional<const std::vector<icuext::u32str>> suggestions)
+    spelling_result(const int suggestion_attributes, const std::optional<const std::vector<fl::u8str>> suggestions)
         : suggestion_attributes(suggestion_attributes), suggestions(suggestions) {}
     ~spelling_result() = default;
 
@@ -112,7 +109,7 @@ class spelling_result {
     }
 
     static spelling_result typo(
-        const std::optional<const std::vector<icuext::u32str>> suggestions,
+        const std::optional<const std::vector<fl::u8str>> suggestions,
         bool is_high_confidence_result = false
     ) noexcept {
         auto attributes =
@@ -121,7 +118,7 @@ class spelling_result {
     }
 
     static spelling_result grammar_error(
-        const std::optional<const std::vector<icuext::u32str>> suggestions,
+        const std::optional<const std::vector<fl::u8str>> suggestions,
         bool is_high_confidence_result = false
     ) noexcept {
         auto attributes = RESULT_ATTR_LOOKS_LIKE_GRAMMAR_ERROR |
@@ -130,6 +127,6 @@ class spelling_result {
     }
 };
 
-} // namespace floris::nlp
+} // namespace fl::nlp
 
 #endif

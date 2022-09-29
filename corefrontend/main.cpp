@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-#include "icuext/data.hpp"
-#include "icuext/string.hpp"
-#include "nlp/common.hpp"
-#include "nlp/dictionary.hpp"
+#include "core/common.hpp"
+#include "core/dictionary.hpp"
+#include "core/string.hpp"
+#include "core/udata.hpp"
+
+#include <unicode/unistr.h>
 
 #include <termbox.h>
 
@@ -28,15 +30,15 @@
 const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
 
 int main(int argc, char** argv) {
-    if (icuext::load_and_set_common_data(ICU_DATA_FILE_PATH) != UErrorCode::U_ZERO_ERROR) {
+    if (fl::icu::load_and_set_common_data(ICU_DATA_FILE_PATH) != UErrorCode::U_ZERO_ERROR) {
         std::cout << "Failed to load ICU data file!" << std::endl;
         return 1;
     }
     int y = 0;
     int width = 0;
     int height = 0;
-    icuext::u32str input_buffer;
-    icuext::u8str output_buffer;
+    icu::UnicodeString input_buffer;
+    fl::u8str output_buffer;
     tb_event ev;
     bool is_alive = true;
 
@@ -48,9 +50,11 @@ int main(int argc, char** argv) {
         tb_printf(0, y++, 0, 0, "---");
         tb_printf(0, y++, 0, 0, "Suggested words: <none>");
         tb_printf(0, y++, 0, 0, "");
-        icuext::str::to_u8str(input_buffer, output_buffer);
-        tb_set_cursor(7 + input_buffer.size(), y);
+        output_buffer.clear();
+        input_buffer.toUTF8String(output_buffer);
+        tb_set_cursor(7 + input_buffer.countChar32(), y);
         tb_printf(0, y++, 0, 0, "Input: %s", output_buffer.c_str());
+        tb_printf(0, y++, 0, 0, "Length: %d", output_buffer.length());
         tb_printf(0, y++, 0, 0, "");
         tb_printf(0, y++, 0, 0, "CTRL+C to quit");
         tb_present();
@@ -61,14 +65,13 @@ int main(int argc, char** argv) {
             height = ev.h;
         } else if (ev.type == TB_EVENT_KEY) {
             if (ev.key == TB_KEY_BACKSPACE || ev.key == TB_KEY_BACKSPACE2) {
-                if (!input_buffer.empty()) {
-                    input_buffer.pop_back();
+                if (!input_buffer.isEmpty()) {
+                    input_buffer.remove(input_buffer.countChar32() - 1, 1);
                 }
             } else if (ev.key == TB_KEY_CTRL_C) {
                 is_alive = false;
             } else if (ev.ch != 0x0) {
-                char32_t ch = ev.ch;
-                input_buffer.push_back(ch);
+                input_buffer.append(static_cast<UChar32>(ev.ch));
             }
         }
 

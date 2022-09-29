@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-#include "icuext/data.hpp"
+#include "core/udata.hpp"
 
 #include <unicode/udata.h>
 
 #include <fstream>
 
-UErrorCode icuext::load_and_set_common_data(std::string path) {
+UErrorCode fl::icu::load_and_set_common_data(std::string path) {
     std::ifstream in_file(path, std::ios::in | std::ios::binary);
     if (!in_file) {
         return U_FILE_ACCESS_ERROR;

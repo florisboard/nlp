@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-#ifndef __FLORISNLP_CORE_NLP_TRIE_H__
-#define __FLORISNLP_CORE_NLP_TRIE_H__
+#ifndef __FLORISNLP_CORE_TRIE_H__
+#define __FLORISNLP_CORE_TRIE_H__
 
-#include "nlp/common.hpp"
+#include "core/common.hpp"
 
 #include <array>
+#include <functional>
 #include <memory>
 #include <string>
 #include <type_traits>
 
-namespace floris::nlp {
+namespace fl::nlp {
 
 struct ngram_properties {
     score_t absolute_score = 0;
@@ -124,6 +125,6 @@ struct basic_trie_node {
     }
 };
 
-} // namespace floris::nlp
+} // namespace fl::nlp
 
 #endif

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "nlp/dictionary.hpp"
+#include "core/dictionary.hpp"
 
 #include <unicode/utypes.h>
 
@@ -22,32 +22,33 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace floris::nlp {
+namespace fl::nlp {
 
 // ----- dictionary_header ----- //
 
-size_t dictionary_header::read_from(std::basic_istream<icuext::u8char>& istream) noexcept {
+size_t dictionary_header::read_from(std::basic_istream<fl::u8char>& istream) noexcept {
     size_t line_count;
-    icuext::u8str line;
-    icuext::u8str key;
-    icuext::u8str value;
+    fl::u8str line;
+    fl::u8str key;
+    fl::u8str value;
     while (std::getline(istream, line)) {
         line_count++;
-        icuext::str::trim(line);
+        fl::str::trim(line);
         if (line.empty()) break;
         auto pos = std::find(line.begin(), line.end(), FLDIC_ASSIGNMENT);
         if (pos == line.end()) continue;
         key.assign(line.begin(), pos);
         value.assign(pos + 1, line.end());
-        icuext::str::trim(key);
-        icuext::str::trim(value);
+        fl::str::trim(key);
+        fl::str::trim(value);
         if (value.empty()) continue;
         if (key == FLDIC_HEADER_SCHEMA) {
             schema = value;
         } else if (key == FLDIC_HEADER_NAME) {
             name = value;
         } else if (key == FLDIC_HEADER_LOCALES) {
-            auto locale_tags = icuext::str::split(value, FLDIC_LIST_SEPARATOR);
+            std::vector<fl::u8str> locale_tags;
+            fl::str::split(value, FLDIC_LIST_SEPARATOR, locale_tags);
             for (auto& locale_tag : locale_tags) {
                 UErrorCode status;
                 auto locale = icu::Locale::forLanguageTag(locale_tag, status);
@@ -64,7 +65,7 @@ size_t dictionary_header::read_from(std::basic_istream<icuext::u8char>& istream)
     return line_count;
 }
 
-size_t dictionary_header::write_to(std::basic_ostream<icuext::u8char>& ostream) const noexcept {
+size_t dictionary_header::write_to(std::basic_ostream<fl::u8char>& ostream) const noexcept {
     size_t line_count = 3;
     ostream << FLDIC_HEADER_SCHEMA << FLDIC_ASSIGNMENT << schema << FLDIC_NEWLINE;
     ostream << FLDIC_HEADER_NAME << FLDIC_ASSIGNMENT << name << FLDIC_NEWLINE;
@@ -73,7 +74,7 @@ size_t dictionary_header::write_to(std::basic_ostream<icuext::u8char>& ostream) 
     for (auto& locale : locales) {
         if (i++ > 0) ss << FLDIC_LIST_SEPARATOR;
         UErrorCode status;
-        ss << locale.toLanguageTag<icuext::u8str>(status);
+        ss << locale.toLanguageTag<fl::u8str>(status);
         if (U_FAILURE(status)) {
             i--;
         }
@@ -114,11 +115,11 @@ dictionary::dictionary(const std::filesystem::path& src_path, const std::filesys
 
 dictionary::~dictionary() = default;
 
-void dictionary::deserialize(std::basic_istream<icuext::u8char>& istream) {
+void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
     size_t line_num = 1 + header.read_from(istream);
-    icuext::u8str line;
-    std::vector<icuext::u8str> line_split_results;
-    icuext::u8str word;
+    fl::u8str line;
+    std::vector<fl::u8str> line_split_results;
+    fl::u8str word;
     uint8_t prev_ngram_level = 1;
     std::array<basic_trie_node*, 9> prev_parent_nodes { &root_node, nullptr };
     while (std::getline(istream, line)) {
@@ -151,18 +152,18 @@ void dictionary::deserialize(std::basic_istream<icuext::u8char>& istream) {
         }
 
         // Read in node data
-        icuext::str::split(line, FLDIC_SEPARATOR, line_split_results);
+        fl::str::split(line, FLDIC_SEPARATOR, line_split_results);
         if (line_split_results.size() < 2) continue;
         // Word
-        icuext::str::trim(line_split_results[0]);
+        fl::str::trim(line_split_results[0]);
         word.assign(line_split_results[0]);
         if (word.empty()) continue;
         // Score
-        icuext::str::trim(line_split_results[1]);
+        fl::str::trim(line_split_results[1]);
         properties.absolute_score = std::stoi(line_split_results[1]);
         // Parameters (Optional)
         if (line_split_results.size() > 2) {
-            icuext::str::trim(line_split_results[2]);
+            fl::str::trim(line_split_results[2]);
             for (auto f : line_split_results[2]) {
                 if (f == FLDIC_FLAG_IS_POSSIBLY_OFFENSIVE) {
                     properties.is_possibly_offensive = true;
@@ -179,19 +180,19 @@ void dictionary::deserialize(std::basic_istream<icuext::u8char>& istream) {
     }
 }
 
-void dictionary::serialize(std::basic_ostream<icuext::u8char>& ostream) {
+void dictionary::serialize(std::basic_ostream<fl::u8char>& ostream) {
     header.write_to(ostream);
     ostream << FLDIC_SECTION_WORDS << FLDIC_NEWLINE;
     trie_write_ngrams_to(ostream, &root_node, 1);
 }
 
 void dictionary::trie_write_ngrams_to(
-    std::basic_ostream<icuext::u8char>& ostream,
+    std::basic_ostream<fl::u8char>& ostream,
     basic_trie_node* base_node,
     uint8_t ngram_level
 ) const {
     if (base_node == nullptr) return;
-    base_node->for_each([&](const icuext::u8str& word, basic_trie_node* node) {
+    base_node->for_each([&](const fl::u8str& word, basic_trie_node* node) {
         for (size_t n = 1; n < ngram_level; n++) {
             ostream << FLDIC_SEPARATOR;
         }
@@ -262,22 +263,22 @@ bool mutable_dictionary::adjust_scores_if_necessary() noexcept {
     return true;
 }
 
-void mutable_dictionary::insert(const icuext::u8str& word1, const ngram_properties& properties) noexcept {
+void mutable_dictionary::insert(const fl::u8str& word1, const ngram_properties& properties) noexcept {
     root_node.insert(word1, properties);
 }
 
 void mutable_dictionary::insert(
-    const icuext::u8str& word1,
-    const icuext::u8str& word2,
+    const fl::u8str& word1,
+    const fl::u8str& word2,
     const ngram_properties& properties
 ) noexcept {
     root_node.insert(word1, ngram_properties())->subsequent_words_or_create()->insert(word2, properties);
 }
 
 void mutable_dictionary::insert(
-    const icuext::u8str& word1,
-    const icuext::u8str& word2,
-    const icuext::u8str& word3,
+    const fl::u8str& word1,
+    const fl::u8str& word2,
+    const fl::u8str& word3,
     const ngram_properties& properties
 ) noexcept {
     root_node.insert(word1, ngram_properties())
@@ -296,4 +297,4 @@ void mutable_dictionary::persist() {
     }
 }
 
-} // namespace floris::nlp
+} // namespace fl::nlp

@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-#ifndef __FLORISNLP_ICUEXT_UDATA_H__
-#define __FLORISNLP_ICUEXT_UDATA_H__
+#include "core/dictionary_session.hpp"
 
-#include <unicode/utypes.h>
+#include "core/dictionary.hpp"
 
-#include <string>
+namespace fl::nlp {
 
-namespace icuext {
+void dictionary_session::load_base_dictionary(std::filesystem::path& dict_path) {
+    auto base_dict = std::make_unique<dictionary>(dict_path);
+    base_dictionaries.push_back(std::move(base_dict));
+}
 
-UErrorCode load_and_set_common_data(std::string path);
+void dictionary_session::load_user_dictionary(std::filesystem::path& dict_path) {
+    user_dictionary = std::make_unique<mutable_dictionary>(dict_path);
+}
 
-} // namespace icuext
-
-#endif
+} // namespace fl::nlp
