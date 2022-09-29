@@ -14,32 +14,43 @@
  * limitations under the License.
  */
 
+#include "google/Ngram.hpp"
+#include "wortschatz_corpora/preprocessor.hpp"
+
 #include <fstream>
 #include <iostream>
 
-#include "google/Ngram.hpp"
-
 using namespace nlp::preprocessing;
 
-int main(int argc, char **argv) {
-    if (argc <= 1) {
-        std::cout << "Please provide a path"
-                  << "\n";
-        return 1;
-    }
-    std::string path(argv[1]);
-    try {
-        auto database = GoogleUnigramDatabase();
-        database.load(path);
-        std::string out_path = path + std::string("/db_dump.log");
-        std::ofstream norm_dump(out_path);
-        if (norm_dump.is_open()) {
-            database.dump(norm_dump);
-            norm_dump.close();
-        }
-    } catch (std::runtime_error e) {
-        std::cout << e.what() << "\n";
-        return 2;
-    }
+const std::filesystem::path TEST_FLDIC_SRC_PATH = "data/test_in.fldic";
+const std::filesystem::path TEST_FLDIC_DST_PATH = "data/test_out.fldic";
+const std::filesystem::path TEST_WORD_LIST =
+    "data/.wortschatz_corpora/eng/eng_news_2020_300K/eng_news_2020_300K-words.txt";
+
+int main(int argc, char** argv) {
+    floris::nlp::mutable_dictionary dict;
+    dict.dst_path = TEST_FLDIC_DST_PATH;
+    fl::nlp::preprocessing::read_corpora_into_dictionary(TEST_WORD_LIST, dict);
+    dict.persist();
     return 0;
+    // if (argc <= 1) {
+    //     std::cout << "Please provide a path"
+    //               << "\n";
+    //     return 1;
+    // }
+    // std::string path(argv[1]);
+    // try {
+    //     auto database = GoogleUnigramDatabase();
+    //     database.load(path);
+    //     std::string out_path = path + std::string("/db_dump.log");
+    //     std::ofstream norm_dump(out_path);
+    //     if (norm_dump.is_open()) {
+    //         database.dump(norm_dump);
+    //         norm_dump.close();
+    //     }
+    // } catch (std::runtime_error e) {
+    //     std::cout << e.what() << "\n";
+    //     return 2;
+    // }
+    // return 0;
 }

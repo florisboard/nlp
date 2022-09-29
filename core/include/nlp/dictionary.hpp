@@ -85,6 +85,7 @@ struct dictionary_header {
 
 class dictionary {
   public:
+    dictionary();
     dictionary(const std::filesystem::path& path);
     dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path);
     ~dictionary();
@@ -95,10 +96,10 @@ class dictionary {
     const ngram_properties& view_ngram_properties(icuext::u8str& word1, icuext::u8str& word2, icuext::u8str& word3)
         const;
 
-  protected:
     std::filesystem::path src_path;
     std::filesystem::path dst_path;
 
+  protected:
     dictionary_header header;
     basic_trie_node root_node;
     std::map<icuext::u8str, icuext::u8str> shortcuts;
@@ -123,6 +124,7 @@ class dictionary {
 
 class mutable_dictionary : public dictionary {
   public:
+    mutable_dictionary();
     mutable_dictionary(const std::filesystem::path& path);
     mutable_dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path);
     ~mutable_dictionary();

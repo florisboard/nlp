@@ -16,13 +16,12 @@
 
 #include "icuext/data.hpp"
 #include "icuext/string.hpp"
-#include "nlp/spelling_result.hpp"
-
-#include <tsl/htrie_map.h>
+#include "nlp/common.hpp"
+#include "nlp/dictionary.hpp"
 
 #include <termbox.h>
 
-#include <fstream>
+#include <filesystem>
 #include <iostream>
 
 // TODO: get this path dynamically and remove the hardcoded path
@@ -33,8 +32,6 @@ int main(int argc, char** argv) {
         std::cout << "Failed to load ICU data file!" << std::endl;
         return 1;
     }
-
-    auto x = floris::nlp::SpellingResult::valid_word();
     int y = 0;
     int width = 0;
     int height = 0;

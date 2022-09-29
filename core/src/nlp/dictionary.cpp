@@ -96,6 +96,8 @@ void dictionary_header::reset() noexcept {
 
 // ----- dictionary ----- //
 
+dictionary::dictionary() = default;
+
 dictionary::dictionary(const std::filesystem::path& path) : dictionary(path, path) {};
 
 dictionary::dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path)
@@ -111,8 +113,6 @@ dictionary::dictionary(const std::filesystem::path& src_path, const std::filesys
 }
 
 dictionary::~dictionary() = default;
-
-#include <iostream>
 
 void dictionary::deserialize(std::basic_istream<icuext::u8char>& istream) {
     size_t line_num = 1 + header.read_from(istream);
@@ -215,6 +215,8 @@ void dictionary::throw_fatal_deseralization_error(size_t line_num, const char* m
 }
 
 // ----- mutable_dictionary ----- //
+
+mutable_dictionary::mutable_dictionary() : dictionary() {};
 
 mutable_dictionary::mutable_dictionary(const std::filesystem::path& path) : dictionary(path) {}
 

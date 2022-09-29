@@ -35,7 +35,7 @@ struct ngram_properties {
 struct basic_trie_node {
   private:
     using CharT = char;
-    using UCharT = size_t;
+    using UCharT = unsigned char;
     using StrT = std::basic_string<CharT>;
     using NodeT = basic_trie_node;
     using ValueT = ngram_properties;
@@ -64,7 +64,8 @@ struct basic_trie_node {
         if (is_terminal) {
             action(prefix, this);
         }
-        for (UCharT uch = 0; uch < ALPHABET_SIZE; uch++) {
+        for (size_t n = 0; n < ALPHABET_SIZE; n++) {
+            auto uch = static_cast<UChar>(n);
             if (!is_ctrl_char(uch) && children[uch] != nullptr) {
                 new_prefix[new_prefix.size() - 1] = static_cast<CharT>(uch);
                 children[uch]->for_each(new_prefix, action);
@@ -95,10 +96,6 @@ struct basic_trie_node {
   private:
     constexpr bool is_ctrl_char(UCharT uch) {
         return uch < 0x20;
-    }
-
-    constexpr bool is_ctrl_char(CharT ch) {
-        return ch < 0x20;
     }
 
     NodeT* get_child_or_null(UCharT ch) noexcept {
