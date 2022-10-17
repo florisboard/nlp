@@ -21,6 +21,8 @@
 #include "core/dictionary.hpp"
 #include "core/string.hpp"
 
+#include <unicode/utext.h>
+
 #include <filesystem>
 #include <string>
 
@@ -32,26 +34,27 @@ class dictionary_session {
     ~dictionary_session() = default;
 
   public:
-    void load_base_dictionary(std::filesystem::path& dict_path);
+    void load_base_dictionary(const std::filesystem::path& dict_path);
 
-    void load_user_dictionary(std::filesystem::path& dict_path);
+    void load_user_dictionary(const std::filesystem::path& dict_path);
 
-    spelling_result* spell(
+    spelling_result spell(
         fl::u8str& word,
-        std::vector<std::string> prev_words,
-        std::vector<std::string> next_words,
+        const std::vector<fl::u8str>& prev_words,
+        const std::vector<fl::u8str>& next_words,
         suggestion_request_flags& flags
     );
 
-    std::vector<suggestion_candidate*> suggest(
+    void suggest(
         fl::u8str& word,
-        std::vector<fl::u8str> prev_words,
-        suggestion_request_flags& flags
+        const std::vector<fl::u8str>& prev_words,
+        suggestion_request_flags& flags,
+        std::vector<std::unique_ptr<suggestion_candidate>>& results
     );
 
-    std::vector<fl::u8str> get_list_of_words() const noexcept;
+    // std::vector<fl::u8str> get_list_of_words() const noexcept;
 
-    freq_t get_frequency_for_word(fl::u8str& word);
+    // freq_t get_frequency_for_word(fl::u8str& word);
 
   private:
     std::vector<std::unique_ptr<dictionary>> base_dictionaries;

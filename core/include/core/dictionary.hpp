@@ -83,6 +83,8 @@ struct dictionary_header {
 };
 
 class dictionary {
+    friend class dictionary_session;
+
   public:
     dictionary();
     dictionary(const std::filesystem::path& path);

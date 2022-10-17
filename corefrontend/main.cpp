@@ -16,6 +16,7 @@
 
 #include "core/common.hpp"
 #include "core/dictionary.hpp"
+#include "core/dictionary_session.hpp"
 #include "core/string.hpp"
 #include "core/udata.hpp"
 
@@ -28,17 +29,25 @@
 
 // TODO: get this path dynamically and remove the hardcoded path
 const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
+const std::filesystem::path DICT_PATH = "data/test_out.fldic";
 
 int main(int argc, char** argv) {
     if (fl::icu::load_and_set_common_data(ICU_DATA_FILE_PATH) != UErrorCode::U_ZERO_ERROR) {
         std::cout << "Failed to load ICU data file!" << std::endl;
         return 1;
     }
+
+    fl::nlp::suggestion_request_flags flags = 8;
+    std::vector<std::unique_ptr<fl::nlp::suggestion_candidate>> results;
+    const std::vector<fl::u8str> prev_words;
+    fl::nlp::dictionary_session dict_session;
+    dict_session.load_base_dictionary(DICT_PATH);
+
     int y = 0;
     int width = 0;
     int height = 0;
-    icu::UnicodeString input_buffer;
-    fl::u8str output_buffer;
+    icu::UnicodeString raw_input_buffer;
+    fl::u8str input_buffer;
     tb_event ev;
     bool is_alive = true;
 
@@ -46,17 +55,22 @@ int main(int argc, char** argv) {
     width = tb_width();
     height = tb_height();
     while (is_alive) {
+        input_buffer.clear();
+        raw_input_buffer.toUTF8String(input_buffer);
+        dict_session.suggest(input_buffer, prev_words, flags, results);
+
         tb_printf(0, y++, 0, 0, "FlorisNLP Core Debug Frontend");
-        tb_printf(0, y++, 0, 0, "---");
-        tb_printf(0, y++, 0, 0, "Suggested words: <none>");
-        tb_printf(0, y++, 0, 0, "");
-        output_buffer.clear();
-        input_buffer.toUTF8String(output_buffer);
-        tb_set_cursor(7 + input_buffer.countChar32(), y);
-        tb_printf(0, y++, 0, 0, "Input: %s", output_buffer.c_str());
-        tb_printf(0, y++, 0, 0, "Length: %d", output_buffer.length());
-        tb_printf(0, y++, 0, 0, "");
         tb_printf(0, y++, 0, 0, "CTRL+C to quit");
+        tb_printf(0, y++, 0, 0, "---");
+        tb_set_cursor(7 + raw_input_buffer.countChar32(), y);
+        tb_printf(0, y++, 0, 0, "Input: %s", input_buffer.c_str());
+        tb_printf(0, y++, 0, 0, "Length: %d", input_buffer.length());
+        tb_printf(0, y++, 0, 0, "");
+        tb_printf(0, y++, 0, 0, "Suggested words:");
+        for (auto& result : results) {
+            tb_printf(0, y++, 0, 0, " %s | %.4f", result->text.c_str(), result->confidence);
+        }
+        tb_printf(0, y++, 0, 0, "");
         tb_present();
 
         tb_poll_event(&ev);
@@ -65,13 +79,13 @@ int main(int argc, char** argv) {
             height = ev.h;
         } else if (ev.type == TB_EVENT_KEY) {
             if (ev.key == TB_KEY_BACKSPACE || ev.key == TB_KEY_BACKSPACE2) {
-                if (!input_buffer.isEmpty()) {
-                    input_buffer.remove(input_buffer.countChar32() - 1, 1);
+                if (!raw_input_buffer.isEmpty()) {
+                    raw_input_buffer.remove(raw_input_buffer.countChar32() - 1, 1);
                 }
             } else if (ev.key == TB_KEY_CTRL_C) {
                 is_alive = false;
             } else if (ev.ch != 0x0) {
-                input_buffer.append(static_cast<UChar32>(ev.ch));
+                raw_input_buffer.append(static_cast<UChar32>(ev.ch));
             }
         }
 

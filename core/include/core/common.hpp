@@ -76,6 +76,7 @@ static const double SUGGESTION_CANDIDATE_MAX_CONFIDENCE = 0.9;
 struct suggestion_candidate {
     const fl::u8str text = "";
     const std::optional<fl::u8str> secondary_text = std::nullopt;
+    const int edit_distance;
     const double confidence = SUGGESTION_CANDIDATE_MIN_CONFIDENCE;
     const bool is_eligible_for_auto_commit = false;
     const bool is_eligible_for_user_removal = true;

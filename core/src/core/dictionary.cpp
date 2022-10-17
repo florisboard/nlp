@@ -177,6 +177,13 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
         auto node = parent_node->insert(word, properties);
         prev_parent_nodes[ngram_level] = node->subsequent_words_or_create();
         prev_ngram_level = ngram_level;
+        if (ngram_level == 1 && max_unigram_score < properties.absolute_score) {
+            max_unigram_score = properties.absolute_score;
+        } else if (ngram_level == 2 && max_bigram_score < properties.absolute_score) {
+            max_bigram_score = properties.absolute_score;
+        } else if (ngram_level == 3 && max_trigram_score < properties.absolute_score) {
+            max_trigram_score = properties.absolute_score;
+        }
     }
 }
 
