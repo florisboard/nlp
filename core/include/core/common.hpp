@@ -20,7 +20,6 @@
 #include "core/string.hpp"
 
 #include <cstdint>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -75,7 +74,7 @@ static const double SUGGESTION_CANDIDATE_MAX_CONFIDENCE = 0.9;
 
 struct suggestion_candidate {
     const fl::u8str text = "";
-    const std::optional<fl::u8str> secondary_text = std::nullopt;
+    const fl::u8str secondary_text = "";
     const int edit_distance;
     const double confidence = SUGGESTION_CANDIDATE_MIN_CONFIDENCE;
     const bool is_eligible_for_auto_commit = false;
@@ -93,38 +92,40 @@ static const int32_t RESULT_ATTR_DONT_SHOW_UI_FOR_SUGGESTIONS = 0x0010;
 
 class spelling_result {
   public:
-    const int32_t suggestion_attributes;
-    const std::optional<const std::vector<fl::u8str>> suggestions;
+    int32_t suggestion_attributes;
+    std::vector<fl::u8str> suggestions;
 
   public:
-    spelling_result(const int suggestion_attributes, const std::optional<const std::vector<fl::u8str>> suggestions)
+    spelling_result() : suggestion_attributes(RESULT_UNSPECIFIED) {}
+    spelling_result(const int32_t suggestion_attributes) : suggestion_attributes(suggestion_attributes) {}
+    spelling_result(const int32_t suggestion_attributes, const std::vector<fl::u8str>& suggestions)
         : suggestion_attributes(suggestion_attributes), suggestions(suggestions) {}
     ~spelling_result() = default;
 
     static spelling_result unspecified() noexcept {
-        return spelling_result(RESULT_UNSPECIFIED, std::nullopt);
+        return spelling_result(RESULT_UNSPECIFIED);
     }
 
     static spelling_result valid_word() noexcept {
-        return spelling_result(RESULT_ATTR_IN_THE_DICTIONARY, std::nullopt);
+        return spelling_result(RESULT_ATTR_IN_THE_DICTIONARY);
     }
 
     static spelling_result typo(
-        const std::optional<const std::vector<fl::u8str>> suggestions,
+        const std::vector<fl::u8str>& suggestions,
         bool is_high_confidence_result = false
     ) noexcept {
         auto attributes =
             RESULT_ATTR_LOOKS_LIKE_TYPO | (is_high_confidence_result ? RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS : 0);
-        return spelling_result(attributes, std::move(suggestions));
+        return spelling_result(attributes, suggestions);
     }
 
     static spelling_result grammar_error(
-        const std::optional<const std::vector<fl::u8str>> suggestions,
+        const std::vector<fl::u8str>& suggestions,
         bool is_high_confidence_result = false
     ) noexcept {
         auto attributes = RESULT_ATTR_LOOKS_LIKE_GRAMMAR_ERROR |
                           (is_high_confidence_result ? RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS : 0);
-        return spelling_result(attributes, std::move(suggestions));
+        return spelling_result(attributes, suggestions);
     }
 };
 

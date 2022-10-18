@@ -35,16 +35,29 @@ void dictionary_session::load_user_dictionary(const std::filesystem::path& dict_
     user_dictionary = std::make_unique<mutable_dictionary>(dict_path);
 }
 
-static const int MAX_COST = 3;
+static const int MAX_COST = 6;
 
 static const int COST_IS_EQUAL = 0;
-static const int COST_INSERT = 1;
-static const int COST_DELETE = 1;
-static const int COST_SUBSTITUTE = 1;
-static const int COST_TRANSPOSE = 1;
+static const int COST_INSERT = 2;
+static const int COST_DELETE = 2;
+static const int COST_SUBSTITUTE_DEFAULT = 2;
+static const int COST_SUBSTITUTE_IN_PROXIMITY = 1;
+static const int COST_TRANSPOSE = 2;
 static const int PENALTY_DEFAULT = 0;
-static const int PENALTY_START_OF_STR = 1;
-static const int PENALTY_END_OF_STR = 1;
+static const int PENALTY_START_OF_STR = 2;
+
+enum class fuzzy_search_type {
+    proximity_without_self,
+    prefix_or_proximity,
+};
+
+bool strcmp(const std::vector<fl::u8str>& a, const std::vector<fl::u8str>& b) {
+    if (a.size() != b.size()) return false;
+    for (int i = 0; i < a.size(); i++) {
+        if (a[i] != b[i]) return false;
+    }
+    return true;
+}
 
 /**
  * UTF-8 aware fuzzy search algorithm searching a trie and returning all words within a certain given distance.
@@ -57,22 +70,27 @@ static const int PENALTY_END_OF_STR = 1;
  */
 void fuzzy_search_recursive_dld(
     const basic_trie_node* node,
-    const std::vector<fl::u8str_view>& word_chars,
+    const std::vector<fl::u8str>& word_chars,
     int word_index,
     std::vector<fl::u8str>& prefix_chars,
     int prefix_index,
     int edit_distance, // = word.length if root node
     int max_distance,
+    fuzzy_search_type type,
     std::function<void(const fl::u8str&, const basic_trie_node*, int)> on_result
 ) {
     // Result check
-    if (word_index >= word_chars.size() && edit_distance <= max_distance && node->is_terminal &&
-        !prefix_chars.empty()) {
-        fl::u8str suggested_word;
-        for (int i = 0; i < prefix_index; i++) {
-            suggested_word.append(prefix_chars[i]);
+    if (word_index >= word_chars.size() && edit_distance <= max_distance && node->is_terminal) {
+        if (prefix_chars.empty() ||
+            type == fuzzy_search_type::proximity_without_self && strcmp(word_chars, prefix_chars)) {
+            // Ignore
+        } else {
+            fl::u8str suggested_word;
+            for (int i = 0; i < prefix_index; i++) {
+                suggested_word.append(prefix_chars[i]);
+            }
+            on_result(suggested_word, node, edit_distance);
         }
-        on_result(suggested_word, node, edit_distance);
     }
 
     // Exit unnecessary recursive loop
@@ -84,8 +102,6 @@ void fuzzy_search_recursive_dld(
     int penalty;
     if (word_index == 0 && edit_distance == word_chars.size()) {
         penalty = PENALTY_START_OF_STR;
-    } else if (word_index + 1 == word_chars.size()) {
-        penalty = PENALTY_END_OF_STR;
     } else {
         penalty = PENALTY_DEFAULT;
     }
@@ -94,7 +110,7 @@ void fuzzy_search_recursive_dld(
     if (word_index < word_chars.size()) {
         fuzzy_search_recursive_dld(
             node, word_chars, word_index + 1, prefix_chars, prefix_index, edit_distance - 1 + COST_DELETE + penalty,
-            max_distance, on_result
+            max_distance, type, on_result
         );
     }
 
@@ -113,7 +129,7 @@ void fuzzy_search_recursive_dld(
             // TRANSPOSE
             if (word_index + 1 < word_chars.size() && word_chars[word_index] != word_chars[word_index + 1] &&
                 chstr == word_chars[word_index + 1]) {
-                auto sub_chstr = std::string(word_chars[word_index]);
+                auto sub_chstr = word_chars[word_index];
                 auto sub_child_node = child_node->resolve_key_or_null_const(sub_chstr);
                 if (sub_child_node != nullptr) {
                     if (prefix_index + 1 == prefix_chars.size()) {
@@ -123,23 +139,24 @@ void fuzzy_search_recursive_dld(
                     }
                     fuzzy_search_recursive_dld(
                         sub_child_node, word_chars, word_index + 2, prefix_chars, prefix_index + 2,
-                        edit_distance - 2 + COST_TRANSPOSE + penalty, max_distance, on_result
+                        edit_distance - 2 + COST_TRANSPOSE + penalty, max_distance, type, on_result
                     );
                 }
             }
 
             // SUBSTITUTION / IS EQUAL
-            int substitution_cost = (word_chars[word_index] == chstr) ? COST_IS_EQUAL : (COST_SUBSTITUTE + penalty);
+            int substitution_cost =
+                (word_chars[word_index] == chstr) ? COST_IS_EQUAL : (COST_SUBSTITUTE_DEFAULT + penalty);
             fuzzy_search_recursive_dld(
                 child_node.get(), word_chars, word_index + 1, prefix_chars, prefix_index + 1,
-                edit_distance - 1 + substitution_cost, max_distance, on_result
+                edit_distance - 1 + substitution_cost, max_distance, type, on_result
             );
         }
 
         // INSERT
         fuzzy_search_recursive_dld(
             child_node.get(), word_chars, word_index, prefix_chars, prefix_index + 1,
-            edit_distance + COST_INSERT + penalty, max_distance, on_result
+            edit_distance + COST_INSERT + penalty, max_distance, type, on_result
         );
     }
 }
@@ -149,6 +166,7 @@ void fuzzy_search(
     const fl::u8str& word,
     const fl::u8str& locale_tag,
     int max_distance,
+    fuzzy_search_type type,
     std::function<void(const fl::u8str&, const basic_trie_node*, int)> on_result
 ) {
     if (word.empty()) return;
@@ -159,15 +177,17 @@ void fuzzy_search(
     ubrk_setUText(ub, ut, &status);
 
     if (U_SUCCESS(status)) {
-        std::vector<fl::u8str_view> word_chars;
+        std::vector<fl::u8str> word_chars;
         std::vector<fl::u8str> prefix_chars;
         int32_t prev_n = 0;
         int32_t curr_n = 0;
         while ((curr_n = ubrk_next(ub)) != UBRK_DONE) {
-            word_chars.push_back(std::string_view(word).substr(prev_n, curr_n - prev_n));
+            word_chars.push_back(word.substr(prev_n, curr_n - prev_n));
             prev_n = curr_n;
         }
-        fuzzy_search_recursive_dld(node, word_chars, 0, prefix_chars, 0, word_chars.size(), max_distance, on_result);
+        fuzzy_search_recursive_dld(
+            node, word_chars, 0, prefix_chars, 0, word_chars.size(), max_distance, type, on_result
+        );
     }
 
     utext_close(ut);
@@ -189,7 +209,7 @@ spelling_result dictionary_session::spell(
 
     std::vector<std::unique_ptr<suggestion_candidate>> results;
     fuzzy_search(
-        &base_dictionaries[0]->root_node, word, "en_us", MAX_COST,
+        &base_dictionaries[0]->root_node, word, "en_us", MAX_COST, fuzzy_search_type::proximity_without_self,
         [&](const fl::u8str& suggested_word, const fl::nlp::basic_trie_node* node, int cost) {
             double confidence =
                 (static_cast<double>(node->properties.absolute_score) / base_dictionaries[0]->max_unigram_score);
@@ -203,8 +223,8 @@ spelling_result dictionary_session::spell(
                 results.erase(existing_candidate);
             }
 
-            auto candidate = std::make_unique<suggestion_candidate>(suggestion_candidate { suggested_word, std::nullopt,
-                                                                                           cost, confidence });
+            auto candidate =
+                std::make_unique<suggestion_candidate>(suggestion_candidate { suggested_word, "", cost, confidence });
             results.push_back(std::move(candidate));
             std::sort(results.begin(), results.end(), [](auto& a, auto& b) -> bool {
                 if (a->edit_distance == b->edit_distance) {
@@ -220,12 +240,11 @@ spelling_result dictionary_session::spell(
     );
 
     std::vector<fl::u8str> suggested_corrections;
-    std::transform(
-        results.begin(), results.end(), suggested_corrections.begin(),
-        [](auto& candidate) -> auto{ return candidate->text; }
-    );
+    for (auto& candidate : results) {
+        suggested_corrections.push_back(std::move(candidate->text));
+    }
 
-    return spelling_result::typo(std::make_optional(std::move(suggested_corrections)));
+    return spelling_result::typo(suggested_corrections);
 }
 
 void dictionary_session::suggest(
@@ -240,7 +259,7 @@ void dictionary_session::suggest(
     test.open("test.txt");
 
     fuzzy_search(
-        &base_dictionaries[0]->root_node, word, "en_us", MAX_COST,
+        &base_dictionaries[0]->root_node, word, "en_us", MAX_COST, fuzzy_search_type::prefix_or_proximity,
         [&](const fl::u8str& suggested_word, const fl::nlp::basic_trie_node* node, int cost) {
             test << suggested_word << " " << cost << "\n";
             // double confidence =
@@ -259,8 +278,8 @@ void dictionary_session::suggest(
                 results.erase(existing_candidate);
             }
 
-            auto candidate = std::make_unique<suggestion_candidate>(suggestion_candidate { suggested_word, std::nullopt,
-                                                                                           cost, confidence });
+            auto candidate =
+                std::make_unique<suggestion_candidate>(suggestion_candidate { suggested_word, "", cost, confidence });
             results.push_back(std::move(candidate));
             std::sort(results.begin(), results.end(), [](auto& a, auto& b) -> bool {
                 if (a->edit_distance == b->edit_distance) {

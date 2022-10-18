@@ -26,10 +26,22 @@
 
 #include <filesystem>
 #include <iostream>
+#include <map>
+#include <vector>
 
 // TODO: get this path dynamically and remove the hardcoded path
 const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
 const std::filesystem::path DICT_PATH = "data/test_out.fldic";
+
+const char* attr_status_symbol(int32_t suggestion_attribute) noexcept {
+    if (suggestion_attribute == fl::nlp::RESULT_ATTR_IN_THE_DICTIONARY) {
+        return "✅";
+    } else if (suggestion_attribute == fl::nlp::RESULT_ATTR_LOOKS_LIKE_TYPO) {
+        return "❌";
+    } else {
+        return "❔";
+    }
+}
 
 int main(int argc, char** argv) {
     if (fl::icu::load_and_set_common_data(ICU_DATA_FILE_PATH) != UErrorCode::U_ZERO_ERROR) {
@@ -38,8 +50,8 @@ int main(int argc, char** argv) {
     }
 
     fl::nlp::suggestion_request_flags flags = 8;
-    std::vector<std::unique_ptr<fl::nlp::suggestion_candidate>> results;
-    const std::vector<fl::u8str> prev_words;
+    std::vector<std::unique_ptr<fl::nlp::suggestion_candidate>> suggestion_results;
+    std::vector<fl::u8str> prev_words;
     fl::nlp::dictionary_session dict_session;
     dict_session.load_base_dictionary(DICT_PATH);
 
@@ -48,8 +60,10 @@ int main(int argc, char** argv) {
     int height = 0;
     icu::UnicodeString raw_input_buffer;
     fl::u8str input_buffer;
+    std::vector<fl::u8str> input_words;
     tb_event ev;
     bool is_alive = true;
+    bool is_suggestion_mode = true;
 
     tb_init();
     width = tb_width();
@@ -57,18 +71,43 @@ int main(int argc, char** argv) {
     while (is_alive) {
         input_buffer.clear();
         raw_input_buffer.toUTF8String(input_buffer);
-        dict_session.suggest(input_buffer, prev_words, flags, results);
+        fl::str::split(input_buffer, ' ', input_words);
+        prev_words.clear();
+        for (std::size_t i = 0; i + 1 < input_words.size(); i++) {
+            prev_words.push_back(input_words[i]);
+        }
 
         tb_printf(0, y++, 0, 0, "FlorisNLP Core Debug Frontend");
-        tb_printf(0, y++, 0, 0, "CTRL+C to quit");
+        tb_printf(0, y++, 0, 0, "CTRL+C to quit | CTRL+D to toggle spell check/suggestion");
         tb_printf(0, y++, 0, 0, "---");
         tb_set_cursor(7 + raw_input_buffer.countChar32(), y);
         tb_printf(0, y++, 0, 0, "Input: %s", input_buffer.c_str());
         tb_printf(0, y++, 0, 0, "Length: %d", input_buffer.length());
         tb_printf(0, y++, 0, 0, "");
-        tb_printf(0, y++, 0, 0, "Suggested words:");
-        for (auto& result : results) {
-            tb_printf(0, y++, 0, 0, " %s | %.4f", result->text.c_str(), result->confidence);
+        if (is_suggestion_mode) {
+            dict_session.suggest(input_words[input_words.size() - 1], prev_words, flags, suggestion_results);
+            tb_printf(0, y++, 0, 0, "Suggested words (%d):", suggestion_results.size());
+            for (auto& result : suggestion_results) {
+                tb_printf(0, y++, 0, 0, " %s | %.4f", result->text.c_str(), result->confidence);
+            }
+        } else {
+            tb_printf(0, y++, 0, 0, "Spelling results:");
+            for (auto& input_word : input_words) {
+                auto result = dict_session.spell(input_word, prev_words, prev_words, flags);
+                std::stringstream ss;
+                ss << "  " << input_word << " " << attr_status_symbol(result.suggestion_attributes) << "  ->  ";
+                if (!result.suggestions.empty()) {
+                    std::size_t i = 0;
+                    for (auto& suggestion : result.suggestions) {
+                        if (i++ > 0) {
+                            ss << " , ";
+                        }
+                        ss << suggestion;
+                    }
+                }
+                auto output = ss.str();
+                tb_printf(0, y++, 0, 0, output.c_str());
+            }
         }
         tb_printf(0, y++, 0, 0, "");
         tb_present();
@@ -84,6 +123,8 @@ int main(int argc, char** argv) {
                 }
             } else if (ev.key == TB_KEY_CTRL_C) {
                 is_alive = false;
+            } else if (ev.key == TB_KEY_CTRL_D) {
+                is_suggestion_mode = !is_suggestion_mode;
             } else if (ev.ch != 0x0) {
                 raw_input_buffer.append(static_cast<UChar32>(ev.ch));
             }

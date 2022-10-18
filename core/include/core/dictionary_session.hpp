@@ -52,10 +52,6 @@ class dictionary_session {
         std::vector<std::unique_ptr<suggestion_candidate>>& results
     );
 
-    // std::vector<fl::u8str> get_list_of_words() const noexcept;
-
-    // freq_t get_frequency_for_word(fl::u8str& word);
-
   private:
     std::vector<std::unique_ptr<dictionary>> base_dictionaries;
     std::unique_ptr<mutable_dictionary> user_dictionary = nullptr;
