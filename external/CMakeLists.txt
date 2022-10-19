@@ -1,6 +1,9 @@
 # External library: "hat-trie/hat-trie"
 add_subdirectory(hat-trie)
 
+# External library: "nlohmann/json"
+add_subdirectory(nlohmann-json)
+
 # External library: "termbox/termbox2"
 project(termbox)
 set(TERMBOX_LIB_FILE ${FLORIS_LIBRARY_PREFIX}termbox${FLORIS_LIBRARY_SUFFIX})
