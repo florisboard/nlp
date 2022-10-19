@@ -47,8 +47,9 @@ static const int PENALTY_DEFAULT = 0;
 static const int PENALTY_START_OF_STR = 2;
 
 enum class fuzzy_search_type {
+    proximity,
     proximity_without_self,
-    prefix_or_proximity,
+    proximity_or_prefix,
 };
 
 bool strcmp(const std::vector<fl::u8str>& a, const std::vector<fl::u8str>& b) {
@@ -194,6 +195,16 @@ void fuzzy_search(
     ubrk_close(ub);
 }
 
+bool suggestions_sorter(
+    std::unique_ptr<fl::nlp::suggestion_candidate>& a,
+    std::unique_ptr<fl::nlp::suggestion_candidate>& b
+) {
+    if (a->edit_distance == b->edit_distance) {
+        return a->confidence > b->confidence;
+    }
+    return a->edit_distance < b->edit_distance && a->confidence * 100.0 > b->confidence;
+}
+
 spelling_result dictionary_session::spell(
     fl::u8str& word,
     const std::vector<fl::u8str>& prev_words,
@@ -226,12 +237,7 @@ spelling_result dictionary_session::spell(
             auto candidate =
                 std::make_unique<suggestion_candidate>(suggestion_candidate { suggested_word, "", cost, confidence });
             results.push_back(std::move(candidate));
-            std::sort(results.begin(), results.end(), [](auto& a, auto& b) -> bool {
-                if (a->edit_distance == b->edit_distance) {
-                    return a->confidence > b->confidence;
-                }
-                return a->edit_distance < b->edit_distance && a->confidence * 100.0 > b->confidence;
-            });
+            std::sort(results.begin(), results.end(), suggestions_sorter);
 
             if (results.size() > flags.max_suggestion_count()) {
                 results.erase(results.end());
@@ -255,17 +261,10 @@ void dictionary_session::suggest(
 ) {
     results.clear();
     if (word.empty()) return;
-    std::ofstream test;
-    test.open("test.txt");
 
     fuzzy_search(
-        &base_dictionaries[0]->root_node, word, "en_us", MAX_COST, fuzzy_search_type::prefix_or_proximity,
+        &base_dictionaries[0]->root_node, word, "en_us", MAX_COST, fuzzy_search_type::proximity_or_prefix,
         [&](const fl::u8str& suggested_word, const fl::nlp::basic_trie_node* node, int cost) {
-            test << suggested_word << " " << cost << "\n";
-            // double confidence =
-            //     ((1.0 / pow(static_cast<double>(cost + 1), 2.0)) +
-            //      (static_cast<double>(node->properties.absolute_score) / base_dictionaries[0]->max_unigram_score)) /
-            //     2.0;
             double confidence =
                 (static_cast<double>(node->properties.absolute_score) / base_dictionaries[0]->max_unigram_score);
 
@@ -281,12 +280,7 @@ void dictionary_session::suggest(
             auto candidate =
                 std::make_unique<suggestion_candidate>(suggestion_candidate { suggested_word, "", cost, confidence });
             results.push_back(std::move(candidate));
-            std::sort(results.begin(), results.end(), [](auto& a, auto& b) -> bool {
-                if (a->edit_distance == b->edit_distance) {
-                    return a->confidence > b->confidence;
-                }
-                return a->edit_distance < b->edit_distance && a->confidence * 100.0 > b->confidence;
-            });
+            std::sort(results.begin(), results.end(), suggestions_sorter);
 
             if (results.size() > flags.max_suggestion_count()) {
                 results.erase(results.end());
