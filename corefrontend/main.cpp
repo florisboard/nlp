@@ -31,7 +31,7 @@
 
 // TODO: get this path dynamically and remove the hardcoded path
 const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
-const std::filesystem::path DICT_PATH = "data/test_out.fldic";
+const std::filesystem::path DICT_PATH = "data/wikt_en.fldic";
 
 const char* attr_status_symbol(int32_t suggestion_attribute) noexcept {
     if (suggestion_attribute == fl::nlp::RESULT_ATTR_IN_THE_DICTIONARY) {

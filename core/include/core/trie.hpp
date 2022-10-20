@@ -29,9 +29,9 @@
 namespace fl::nlp {
 
 struct ngram_properties {
-    score_t absolute_score = 0;
-    bool is_possibly_offensive = false;
-    bool is_hidden_by_user = false;
+    score_t absolute_score : 24 = 0;
+    bool is_possibly_offensive : 1 = false;
+    bool is_hidden_by_user : 1 = false;
 };
 
 template<typename V>

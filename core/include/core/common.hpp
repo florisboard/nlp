@@ -19,6 +19,7 @@
 
 #include "core/string.hpp"
 
+#include <cmath>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -29,7 +30,7 @@ namespace fl::nlp {
 // available from int32_8. This is to ensure compatibility with Java's integers.
 using score_t = uint32_t;
 static const score_t SCORE_MIN = 0;
-static const score_t SCORE_MAX = INT32_MAX;
+static const score_t SCORE_MAX = 0x00FFFFFFu;
 
 using freq_t = double;
 static const freq_t FREQ_MIN = 0.0;

@@ -23,14 +23,21 @@
 using namespace nlp::preprocessing;
 
 const std::filesystem::path TEST_FLDIC_SRC_PATH = "data/test_in.fldic";
-const std::filesystem::path TEST_FLDIC_DST_PATH = "data/wiki16_en.fldic";
+const std::filesystem::path TEST_FLDIC_DST_PATH = "data/wikt_en.fldic";
 const std::filesystem::path TEST_WORD_LIST =
     "data/.wortschatz_corpora/eng/eng_wikipedia_2016_300K/eng_wikipedia_2016_300K-words.txt";
+const std::filesystem::path TEST_WIKTEXTRACT_FILE = "data/.wiktextract/kaikki.org-dictionary-English.json";
+
+void insert_project_specific_words(fl::nlp::mutable_dictionary& dict) {
+    dict.insert("FlorisBoard", fl::nlp::ngram_properties { 1 });
+    dict.insert("Smartbar", fl::nlp::ngram_properties { 1 });
+}
 
 int main(int argc, char** argv) {
     fl::nlp::mutable_dictionary dict;
     dict.dst_path = TEST_FLDIC_DST_PATH;
-    fl::nlp::preprocessing::read_corpora_into_dictionary(TEST_WORD_LIST, dict);
+    insert_project_specific_words(dict);
+    fl::nlp::preprocessing::read_wiktextract_data_into_dictionary(TEST_WIKTEXTRACT_FILE, dict);
     dict.persist();
     return 0;
 }

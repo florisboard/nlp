@@ -214,7 +214,8 @@ spelling_result dictionary_session::spell(
     if (word.empty()) {
         return spelling_result::unspecified();
     }
-    if (base_dictionaries[0]->root_node.resolve_key_or_null_const(word) != nullptr) {
+    auto word_node = base_dictionaries[0]->root_node.resolve_key_or_null_const(word);
+    if (word_node != nullptr && word_node->is_terminal) {
         return spelling_result::valid_word();
     }
 
