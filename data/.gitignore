@@ -1,1 +1,5 @@
 .wortschatz_corpora
+.wiktextract
+
+# For now exclude dictionary files too
+*.fldic
