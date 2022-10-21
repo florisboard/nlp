@@ -89,11 +89,9 @@ void dictionary_session::fuzzy_search_recursive_dld(
         );
     }
 
-    for (std::size_t i = 0; i < node->children.size(); i++) {
-        auto& child_node = node->children.at(i);
-        if (child_node == nullptr) continue;
-
-        auto chstr = fl::u8str(1, node->children.to_char(i));
+    for (auto& [ch, child_node] : node->children) {
+        // FIXME: below line is not correct for UTF-8 characters!!
+        auto chstr = fl::u8str(1, ch);
         if (prefix_index == prefix_chars.size()) {
             prefix_chars.push_back(chstr);
         } else {

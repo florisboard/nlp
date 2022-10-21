@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -32,59 +33,6 @@ struct ngram_properties {
     score_t absolute_score : 24 = 0;
     bool is_possibly_offensive : 1 = false;
     bool is_hidden_by_user : 1 = false;
-};
-
-template<typename V>
-class alphabet_array {
-  private:
-    static const std::size_t IDX_OFFSET = 32; // 0x00-0x1F control characters are not supported to save memory
-    static const std::size_t SIZE = 256 - IDX_OFFSET;
-
-    using PtrT = std::unique_ptr<V>;
-
-  public:
-    explicit alphabet_array() : data() {
-        std::fill_n(data, SIZE, nullptr);
-    };
-    ~alphabet_array() = default;
-
-    constexpr const PtrT& operator[](char ch) const {
-        return at(to_index(ch));
-    }
-
-    constexpr PtrT& operator[](char ch) {
-        return at(to_index(ch));
-    }
-
-    constexpr const PtrT& at(std::size_t idx) const {
-        return idx >= 0 && idx < SIZE ? data[idx] : throw std::out_of_range("");
-    }
-
-    constexpr PtrT& at(std::size_t idx) {
-        return idx >= 0 && idx < SIZE ? data[idx] : throw std::out_of_range("");
-    }
-
-    constexpr std::size_t size() const noexcept {
-        return SIZE;
-    }
-
-  private:
-    PtrT data[SIZE];
-
-    static constexpr bool validate_uchar(unsigned char uch) noexcept {
-        return uch >= 0x20 && uch <= 0xFF;
-    }
-
-  public:
-    static constexpr std::size_t to_index(char ch) {
-        auto uch = static_cast<unsigned char>(ch);
-        return validate_uchar(uch) ? (static_cast<std::size_t>(uch) - IDX_OFFSET) : throw std::out_of_range("");
-    }
-
-    static constexpr char to_char(std::size_t idx) {
-        auto uch = static_cast<unsigned char>(idx + IDX_OFFSET);
-        return validate_uchar(uch) ? static_cast<char>(uch) : throw std::out_of_range("");
-    }
 };
 
 class basic_trie_node {
@@ -101,7 +49,7 @@ class basic_trie_node {
 
     ValueT properties;
     bool is_terminal = false;
-    alphabet_array<NodeT> children;
+    std::map<char, std::unique_ptr<NodeT>> children;
 
     void for_each(std::function<void(const StrT&, NodeT*)> action) noexcept {
         StrT empty_prefix;
@@ -114,11 +62,10 @@ class basic_trie_node {
         if (is_terminal) {
             action(prefix, this);
         }
-        for (std::size_t n = 0; n < children.size(); n++) {
-            auto ch = children.to_char(n);
-            if (!is_ctrl_char(ch) && children.at(n) != nullptr) {
+        for (auto& [ch, child_node] : children) {
+            if (!is_ctrl_char(ch)) {
                 new_prefix[new_prefix.size() - 1] = ch;
-                children.at(n)->for_each(new_prefix, action);
+                child_node->for_each(new_prefix, action);
             }
         }
     }
@@ -161,11 +108,21 @@ class basic_trie_node {
     }
 
     const NodeT* get_child_or_null_const(char ch) const noexcept {
-        return children[ch].get();
+        auto res = children.find(ch);
+        if (res != children.end()) {
+            return (*res).second.get();
+        } else {
+            return nullptr;
+        }
     }
 
     NodeT* get_child_or_null(char ch) noexcept {
-        return children[ch].get();
+        auto res = children.find(ch);
+        if (res != children.end()) {
+            return (*res).second.get();
+        } else {
+            return nullptr;
+        }
     }
 
     NodeT* get_child_or_create(char ch) noexcept {
@@ -251,13 +208,9 @@ class basic_trie_node {
         if (prefix_length == prefix_buffer.length()) {
             prefix_buffer.push_back('?');
         }
-        for (std::size_t n = 0; n < children.size(); n++) {
-            if (children.at(n) != nullptr) {
-                prefix_buffer[prefix_length] = children.to_char(n);
-                children.at(n)->fuzzy_search_recursive(
-                    word, prefix_buffer, prefix_length + 1, distances, max_cost, on_result
-                );
-            }
+        for (auto& [ch, child_node] : children) {
+            prefix_buffer[prefix_length] = ch;
+            child_node->fuzzy_search_recursive(word, prefix_buffer, prefix_length + 1, distances, max_cost, on_result);
         }
     }
 };
