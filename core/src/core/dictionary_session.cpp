@@ -28,29 +28,12 @@ namespace fl::nlp {
 
 void dictionary_session::load_base_dictionary(const std::filesystem::path& dict_path) {
     auto base_dict = std::make_unique<dictionary>(dict_path);
-    base_dictionaries.push_back(std::move(base_dict));
+    _base_dictionaries.push_back(std::move(base_dict));
 }
 
 void dictionary_session::load_user_dictionary(const std::filesystem::path& dict_path) {
-    user_dictionary = std::make_unique<mutable_dictionary>(dict_path);
+    _user_dictionary = std::make_unique<mutable_dictionary>(dict_path);
 }
-
-static const int MAX_COST = 6;
-
-static const int COST_IS_EQUAL = 0;
-static const int COST_INSERT = 2;
-static const int COST_DELETE = 2;
-static const int COST_SUBSTITUTE_DEFAULT = 2;
-static const int COST_SUBSTITUTE_IN_PROXIMITY = 1;
-static const int COST_TRANSPOSE = 2;
-static const int PENALTY_DEFAULT = 0;
-static const int PENALTY_START_OF_STR = 2;
-
-enum class fuzzy_search_type {
-    proximity,
-    proximity_without_self,
-    proximity_or_prefix,
-};
 
 bool strcmp(const std::vector<fl::u8str>& a, const std::vector<fl::u8str>& b) {
     if (a.size() != b.size()) return false;
@@ -60,16 +43,7 @@ bool strcmp(const std::vector<fl::u8str>& a, const std::vector<fl::u8str>& b) {
     return true;
 }
 
-/**
- * UTF-8 aware fuzzy search algorithm searching a trie and returning all words within a certain given distance.
- *
- * This algorithm utilizes the
- * [Damerau–Levenshtein distance](https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance) as a bas
- * distance metric, together with a penalty system for unusual operations.
- *
- * TODO: This algorithm is not fully UTF-8 aware yet. Has severe issues outside ASCII in the prefix and chstr area
- */
-void fuzzy_search_recursive_dld(
+void dictionary_session::fuzzy_search_recursive_dld(
     const basic_trie_node* node,
     const std::vector<fl::u8str>& word_chars,
     int word_index,
@@ -146,8 +120,14 @@ void fuzzy_search_recursive_dld(
             }
 
             // SUBSTITUTION / IS EQUAL
-            int substitution_cost =
-                (word_chars[word_index] == chstr) ? COST_IS_EQUAL : (COST_SUBSTITUTE_DEFAULT + penalty);
+            int substitution_cost;
+            if (word_chars[word_index] == chstr) {
+                substitution_cost = COST_IS_EQUAL;
+            } else if (key_proximity_mapping.is_in_proximity(chstr, word_chars[word_index])) {
+                substitution_cost = COST_SUBSTITUTE_IN_PROXIMITY + penalty;
+            } else {
+                substitution_cost = COST_SUBSTITUTE_DEFAULT + penalty;
+            }
             fuzzy_search_recursive_dld(
                 child_node.get(), word_chars, word_index + 1, prefix_chars, prefix_index + 1,
                 edit_distance - 1 + substitution_cost, max_distance, type, on_result
@@ -162,7 +142,7 @@ void fuzzy_search_recursive_dld(
     }
 }
 
-void fuzzy_search(
+void dictionary_session::fuzzy_search(
     const basic_trie_node* node,
     const fl::u8str& word,
     const fl::u8str& locale_tag,
@@ -214,17 +194,17 @@ spelling_result dictionary_session::spell(
     if (word.empty()) {
         return spelling_result::unspecified();
     }
-    auto word_node = base_dictionaries[0]->root_node.resolve_key_or_null_const(word);
+    auto word_node = _base_dictionaries[0]->root_node.resolve_key_or_null_const(word);
     if (word_node != nullptr && word_node->is_terminal) {
         return spelling_result::valid_word();
     }
 
     std::vector<std::unique_ptr<suggestion_candidate>> results;
     fuzzy_search(
-        &base_dictionaries[0]->root_node, word, "en_us", MAX_COST, fuzzy_search_type::proximity_without_self,
+        &_base_dictionaries[0]->root_node, word, "en_us", MAX_COST, fuzzy_search_type::proximity_without_self,
         [&](const fl::u8str& suggested_word, const fl::nlp::basic_trie_node* node, int cost) {
             double confidence =
-                (static_cast<double>(node->properties.absolute_score) / base_dictionaries[0]->max_unigram_score);
+                (static_cast<double>(node->properties.absolute_score) / _base_dictionaries[0]->max_unigram_score);
 
             auto existing_candidate = std::find_if(results.begin(), results.end(), [&](auto& candidate) -> bool {
                 return candidate->text == suggested_word;
@@ -264,10 +244,10 @@ void dictionary_session::suggest(
     if (word.empty()) return;
 
     fuzzy_search(
-        &base_dictionaries[0]->root_node, word, "en_us", MAX_COST, fuzzy_search_type::proximity_or_prefix,
+        &_base_dictionaries[0]->root_node, word, "en_us", MAX_COST, fuzzy_search_type::proximity_or_prefix,
         [&](const fl::u8str& suggested_word, const fl::nlp::basic_trie_node* node, int cost) {
             double confidence =
-                (static_cast<double>(node->properties.absolute_score) / base_dictionaries[0]->max_unigram_score);
+                (static_cast<double>(node->properties.absolute_score) / _base_dictionaries[0]->max_unigram_score);
 
             auto existing_candidate = std::find_if(results.begin(), results.end(), [&](auto& candidate) -> bool {
                 return candidate->text == suggested_word;

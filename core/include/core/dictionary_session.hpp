@@ -19,6 +19,7 @@
 
 #include "core/common.hpp"
 #include "core/dictionary.hpp"
+#include "core/key_proximity_map.hpp"
 #include "core/string.hpp"
 
 #include <unicode/utext.h>
@@ -30,10 +31,21 @@ namespace fl::nlp {
 
 class dictionary_session {
   public:
+    static const int MAX_COST = 6;
+    static const int COST_IS_EQUAL = 0;
+    static const int COST_INSERT = 2;
+    static const int COST_DELETE = 2;
+    static const int COST_SUBSTITUTE_DEFAULT = 2;
+    static const int COST_SUBSTITUTE_IN_PROXIMITY = 1;
+    static const int COST_TRANSPOSE = 1;
+    static const int PENALTY_DEFAULT = 0;
+    static const int PENALTY_START_OF_STR = 2;
+
+    key_proximity_map key_proximity_mapping;
+
     dictionary_session() = default;
     ~dictionary_session() = default;
 
-  public:
     void load_base_dictionary(const std::filesystem::path& dict_path);
 
     void load_user_dictionary(const std::filesystem::path& dict_path);
@@ -53,8 +65,44 @@ class dictionary_session {
     );
 
   private:
-    std::vector<std::unique_ptr<dictionary>> base_dictionaries;
-    std::unique_ptr<mutable_dictionary> user_dictionary = nullptr;
+    std::vector<std::unique_ptr<dictionary>> _base_dictionaries;
+    std::unique_ptr<mutable_dictionary> _user_dictionary = nullptr;
+
+    enum class fuzzy_search_type {
+        proximity,
+        proximity_without_self,
+        proximity_or_prefix,
+    };
+
+    /**
+     * UTF-8 aware fuzzy search algorithm searching a trie and returning all words within a certain given distance.
+     *
+     * This algorithm utilizes the
+     * [Damerau–Levenshtein distance](https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance) as a bas
+     * distance metric, together with a penalty system for unusual operations.
+     *
+     * TODO: This algorithm is not fully UTF-8 aware yet. Has severe issues outside ASCII in the prefix and chstr area
+     */
+    void fuzzy_search_recursive_dld(
+        const basic_trie_node* node,
+        const std::vector<fl::u8str>& word_chars,
+        int word_index,
+        std::vector<fl::u8str>& prefix_chars,
+        int prefix_index,
+        int edit_distance, // = word.length if root node
+        int max_distance,
+        fuzzy_search_type type,
+        std::function<void(const fl::u8str&, const basic_trie_node*, int)> on_result
+    );
+
+    void fuzzy_search(
+        const basic_trie_node* node,
+        const fl::u8str& word,
+        const fl::u8str& locale_tag,
+        int max_distance,
+        fuzzy_search_type type,
+        std::function<void(const fl::u8str&, const basic_trie_node*, int)> on_result
+    );
 };
 
 } // namespace fl::nlp

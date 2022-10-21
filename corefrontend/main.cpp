@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
     std::vector<std::unique_ptr<fl::nlp::suggestion_candidate>> suggestion_results;
     std::vector<fl::u8str> prev_words;
     fl::nlp::dictionary_session dict_session;
+    dict_session.key_proximity_mapping.load_from_file("data/qwerty_proximity_map.json");
     dict_session.load_base_dictionary(DICT_PATH);
 
     int y = 0;
