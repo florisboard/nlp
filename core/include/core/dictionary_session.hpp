@@ -41,9 +41,12 @@ class dictionary_session {
     static const int PENALTY_DEFAULT = 0;
     static const int PENALTY_START_OF_STR = 2;
 
+    fl::u8str locale_tag = "en_us";
     key_proximity_map key_proximity_mapping;
 
     dictionary_session() = default;
+    dictionary_session(const dictionary_session&) = delete;
+    dictionary_session(dictionary_session&&) = delete;
     ~dictionary_session() = default;
 
     void load_base_dictionary(const std::filesystem::path& dict_path);
@@ -74,6 +77,40 @@ class dictionary_session {
         proximity_or_prefix,
     };
 
+    class fuzzy_search_state {
+      public:
+        const dictionary_session& session;
+        const fuzzy_search_type type;
+        const int max_distance;
+        std::vector<fl::u8str> word_chars;
+        std::vector<fl::u8str> prefix_chars;
+        std::vector<std::vector<int>> distances;
+        std::function<void(const fl::u8str&, const trie_node*, int)> on_result;
+
+        fuzzy_search_state(
+            const dictionary_session& session,
+            const fuzzy_search_type type,
+            const int max_distance,
+            const fl::u8str& word
+        );
+        fuzzy_search_state(const fuzzy_search_state&) = delete;
+        fuzzy_search_state(fuzzy_search_state&&) = delete;
+        ~fuzzy_search_state() = default;
+
+        void set_prefix_chstr_at(std::size_t prefix_index, const fl::u8str& chstr) noexcept;
+
+        int edit_distance_at(std::size_t prefix_index) const noexcept;
+
+        fl::u8str prefix_str_at(std::size_t prefix_index) const noexcept;
+
+        bool is_dead_end_at(std::size_t prefix_index) const noexcept;
+
+      private:
+        void init_word_chars(const fl::u8str& word) noexcept;
+
+        void ensure_capacity_for(std::size_t prefix_index) noexcept;
+    };
+
     /**
      * UTF-8 aware fuzzy search algorithm searching a trie and returning all words within a certain given distance.
      *
@@ -83,26 +120,15 @@ class dictionary_session {
      *
      * TODO: This algorithm is not fully UTF-8 aware yet. Has severe issues outside ASCII in the prefix and chstr area
      */
-    void fuzzy_search_recursive_dld(
-        const basic_trie_node* node,
-        const std::vector<fl::u8str>& word_chars,
-        int word_index,
-        std::vector<fl::u8str>& prefix_chars,
-        int prefix_index,
-        int edit_distance, // = word.length if root node
-        int max_distance,
-        fuzzy_search_type type,
-        std::function<void(const fl::u8str&, const basic_trie_node*, int)> on_result
-    );
+    void fuzzy_search_recursive_dld(const trie_node* node, fuzzy_search_state& state, int prefix_index) const noexcept;
 
     void fuzzy_search(
-        const basic_trie_node* node,
-        const fl::u8str& word,
-        const fl::u8str& locale_tag,
-        int max_distance,
+        const trie_node* root_node,
         fuzzy_search_type type,
-        std::function<void(const fl::u8str&, const basic_trie_node*, int)> on_result
-    );
+        int max_distance,
+        const fl::u8str& word,
+        std::function<void(const fl::u8str&, const trie_node*, int)> on_result
+    ) const noexcept;
 };
 
 } // namespace fl::nlp

@@ -24,6 +24,7 @@
 
 #include <termbox.h>
 
+#include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <map>
@@ -86,10 +87,15 @@ int main(int argc, char** argv) {
         tb_printf(0, y++, 0, 0, "Length: %d", input_buffer.length());
         tb_printf(0, y++, 0, 0, "");
         if (is_suggestion_mode) {
+            auto start = std::chrono::high_resolution_clock::now();
             dict_session.suggest(input_words[input_words.size() - 1], prev_words, flags, suggestion_results);
-            tb_printf(0, y++, 0, 0, "Suggested words (%d):", suggestion_results.size());
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+            tb_printf(0, y++, 0, 0, "Suggested words (%d, %dms):", suggestion_results.size(), duration.count());
             for (auto& result : suggestion_results) {
-                tb_printf(0, y++, 0, 0, " %s | %.4f", result->text.c_str(), result->confidence);
+                tb_printf(
+                    0, y++, 0, 0, " %s | e=%d | c=%.4f", result->text.c_str(), result->edit_distance, result->confidence
+                );
             }
         } else {
             tb_printf(0, y++, 0, 0, "Spelling results:");

@@ -101,7 +101,7 @@ class dictionary {
 
   protected:
     dictionary_header header;
-    basic_trie_node root_node;
+    trie_node root_node;
     std::map<fl::u8str, fl::u8str> shortcuts;
 
     score_t max_unigram_score;
@@ -112,8 +112,7 @@ class dictionary {
     void serialize(std::basic_ostream<fl::u8char>& ostream);
 
   private:
-    void trie_write_ngrams_to(std::basic_ostream<fl::u8char>& ostream, basic_trie_node* base_node, uint8_t ngram_level)
-        const;
+    void trie_write_ngrams_to(std::basic_ostream<fl::u8char>& ostream, trie_node* base_node, uint8_t ngram_level) const;
 
     // Using const char* on purpose as this method will almost always be called with string literals
     void throw_fatal_deseralization_error(size_t line_num, const char* msg) const;

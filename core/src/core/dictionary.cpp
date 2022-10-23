@@ -121,7 +121,7 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
     std::vector<fl::u8str> line_split_results;
     fl::u8str word;
     uint8_t prev_ngram_level = 1;
-    std::array<basic_trie_node*, 9> prev_parent_nodes { &root_node, nullptr };
+    std::array<trie_node*, 9> prev_parent_nodes { &root_node, nullptr };
     while (std::getline(istream, line)) {
         line_num++;
         // TODO: Add proper section support
@@ -144,11 +144,17 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
         if (ngram_level - prev_ngram_level > 1) {
             throw_fatal_deseralization_error(line_num, "Invalid definition of n-gram or bad formatting!");
         }
-        basic_trie_node* parent_node = prev_parent_nodes[ngram_level - 1];
+        trie_node* parent_node = prev_parent_nodes[ngram_level - 1];
         if (parent_node == nullptr) {
-            throw_fatal_deseralization_error(
-                line_num, "Encountered an ngram which does not have a corresponding parent!"
-            );
+            if (ngram_level <= 1) {
+                throw_fatal_deseralization_error(
+                    line_num, "Encountered an ngram which does not have a corresponding parent!"
+                );
+            } else {
+                auto new_node = prev_parent_nodes[ngram_level - 2]->subsequent_words_or_create();
+                prev_parent_nodes[ngram_level - 1] = new_node;
+                parent_node = new_node;
+            }
         }
 
         // Read in node data
@@ -175,7 +181,6 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
 
         // Insert node into trie
         auto node = parent_node->insert(word, properties);
-        prev_parent_nodes[ngram_level] = node->subsequent_words_or_create();
         prev_ngram_level = ngram_level;
         if (ngram_level == 1 && max_unigram_score < properties.absolute_score) {
             max_unigram_score = properties.absolute_score;
@@ -195,11 +200,11 @@ void dictionary::serialize(std::basic_ostream<fl::u8char>& ostream) {
 
 void dictionary::trie_write_ngrams_to(
     std::basic_ostream<fl::u8char>& ostream,
-    basic_trie_node* base_node,
+    trie_node* base_node,
     uint8_t ngram_level
 ) const {
     if (base_node == nullptr) return;
-    base_node->for_each([&](const fl::u8str& word, basic_trie_node* node) {
+    base_node->for_each([&](const fl::u8str& word, trie_node* node) {
         for (size_t n = 1; n < ngram_level; n++) {
             ostream << FLDIC_SEPARATOR;
         }
@@ -214,7 +219,7 @@ void dictionary::trie_write_ngrams_to(
             }
         }
         ostream << FLDIC_NEWLINE;
-        trie_write_ngrams_to(ostream, node->subsequent_words_or_null(), ngram_level + 1);
+        trie_write_ngrams_to(ostream, node->subsequent_words(), ngram_level + 1);
     });
 }
 

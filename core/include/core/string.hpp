@@ -25,6 +25,7 @@
 namespace fl {
 
 using u8char = char;
+using u8uchar = unsigned char;
 using u8str = std::basic_string<u8char>;
 using u8str_view = std::basic_string_view<u8char>;
 

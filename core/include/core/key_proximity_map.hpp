@@ -31,35 +31,23 @@
 namespace fl::nlp {
 
 class key_proximity_map {
-    using key_data_map = std::map<fl::u8str, std::vector<fl::u8str>>;
+    using raw_key_data_map = std::unordered_map<fl::u8str, std::vector<fl::u8str>>;
+    using key_data_map = basic_trie_node<int>;
 
   public:
     key_proximity_map() = default;
-    key_proximity_map(const key_data_map& data) : _data(data) {};
     ~key_proximity_map() = default;
 
     bool is_in_proximity(const fl::u8str& assumed, const fl::u8str& actual) const noexcept {
-        if (_data.contains(actual)) {
-            auto& surrounding_keys = _data.at(actual);
-            return std::find(surrounding_keys.begin(), surrounding_keys.end(), assumed) != surrounding_keys.end();
+        auto surrounding_keys = _data.resolve_key(actual);
+        if (surrounding_keys != nullptr) {
+            return surrounding_keys->subsequent_words()->resolve_key(assumed) != nullptr;
         }
         return false;
     }
 
-    constexpr std::vector<fl::u8str>& operator[](const fl::u8str& chstr) {
-        return _data[chstr];
-    }
-
-    constexpr const std::vector<fl::u8str>& at(const fl::u8str& chstr) const {
-        return _data.at(chstr);
-    }
-
-    constexpr std::vector<fl::u8str>& at(const fl::u8str& chstr) {
-        return _data.at(chstr);
-    }
-
     void clear() noexcept {
-        _data.clear();
+        //_data.clear();
     }
 
     void load_from_file(std::filesystem::path path, bool clear_existing = true) {
@@ -72,11 +60,16 @@ class key_proximity_map {
         auto json_mapping_data = nlohmann::json::parse(json_mapping_file);
         json_mapping_file.close();
 
-        auto parsed_data = json_mapping_data.get<key_data_map>();
+        auto parsed_data = json_mapping_data.get<raw_key_data_map>();
         if (clear_existing) {
-            _data.clear();
+            clear();
         }
-        _data.insert(parsed_data.begin(), parsed_data.end());
+        for (auto& [key, vector_value] : parsed_data) {
+            auto surrounding_keys = _data.resolve_key_or_create(key);
+            for (auto& value : vector_value) {
+                surrounding_keys->subsequent_words_or_create()->insert(value, 0);
+            }
+        }
     }
 
   private:
