@@ -33,6 +33,7 @@ class dictionary_session {
   public:
     static const int MAX_COST = 6;
     static const int COST_IS_EQUAL = 0;
+    static const int COST_IS_OPPOSITE_CASE = 1;
     static const int COST_INSERT = 2;
     static const int COST_DELETE = 2;
     static const int COST_SUBSTITUTE_DEFAULT = 2;
@@ -83,9 +84,10 @@ class dictionary_session {
         const fuzzy_search_type type;
         const int max_distance;
         std::vector<fl::u8str> word_chars;
+        std::vector<fl::u8str> word_chars_opposite_case;
         std::vector<fl::u8str> prefix_chars;
         std::vector<std::vector<int>> distances;
-        std::function<void(const fl::u8str&, const trie_node*, int)> on_result;
+        std::function<void(fl::u8str&&, const trie_node*, int)> on_result;
 
         fuzzy_search_state(
             const dictionary_session& session,
@@ -127,7 +129,7 @@ class dictionary_session {
         fuzzy_search_type type,
         int max_distance,
         const fl::u8str& word,
-        std::function<void(const fl::u8str&, const trie_node*, int)> on_result
+        std::function<void(fl::u8str&&, const trie_node*, int)> on_result
     ) const noexcept;
 };
 

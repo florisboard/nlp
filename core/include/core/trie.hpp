@@ -48,7 +48,7 @@ class basic_trie_node {
 
     ValueT properties;
     bool is_terminal = false;
-    std::map<fl::u8char, std::unique_ptr<NodeT>> children;
+    std::unordered_map<fl::u8char, std::unique_ptr<NodeT>> children;
 
     void for_each(std::function<void(const fl::u8str&, NodeT*)> action) noexcept {
         fl::u8str empty_prefix;

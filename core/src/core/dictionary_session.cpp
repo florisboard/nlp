@@ -34,10 +34,14 @@ void dictionary_session::load_user_dictionary(const std::filesystem::path& dict_
     _user_dictionary = std::make_unique<mutable_dictionary>(dict_path);
 }
 
-bool strcmp(const std::vector<fl::u8str>& a, const std::vector<fl::u8str>& b) {
-    if (a.size() != b.size()) return false;
-    for (int i = 0; i < a.size(); i++) {
-        if (a[i] != b[i]) return false;
+bool strcmp(
+    const std::vector<fl::u8str>& word_chars,
+    const std::vector<fl::u8str>& prefix_chars,
+    std::size_t prefix_index
+) {
+    if (word_chars.size() != prefix_index) return false;
+    for (int i = 0; i < word_chars.size(); i++) {
+        if (word_chars[i] != prefix_chars[i]) return false;
     }
     return true;
 }
@@ -48,7 +52,7 @@ void dictionary_session::fuzzy_search_recursive_dld(const trie_node* node, fuzzy
     if (state.edit_distance_at(prefix_index) <= state.max_distance && node->is_terminal) {
         auto prefix = state.prefix_str_at(prefix_index);
         if (!prefix.empty()) {
-            state.on_result(prefix, node, state.edit_distance_at(prefix_index));
+            state.on_result(std::move(prefix), node, state.edit_distance_at(prefix_index));
         }
     }
 
@@ -70,7 +74,7 @@ void dictionary_session::fuzzy_search(
     fuzzy_search_type type,
     int max_distance,
     const fl::u8str& word,
-    std::function<void(const fl::u8str&, const trie_node*, int)> on_result
+    std::function<void(fl::u8str&&, const trie_node*, int)> on_result
 ) const noexcept {
     if (word.empty()) return;
 
@@ -80,8 +84,8 @@ void dictionary_session::fuzzy_search(
 }
 
 bool suggestions_sorter(
-    std::unique_ptr<fl::nlp::suggestion_candidate>& a,
-    std::unique_ptr<fl::nlp::suggestion_candidate>& b
+    const std::unique_ptr<fl::nlp::suggestion_candidate>& a,
+    const std::unique_ptr<fl::nlp::suggestion_candidate>& b
 ) {
     if (a->edit_distance == b->edit_distance) {
         return a->confidence > b->confidence;
@@ -106,26 +110,17 @@ spelling_result dictionary_session::spell(
     std::vector<std::unique_ptr<suggestion_candidate>> results;
     fuzzy_search(
         &_base_dictionaries[0]->root_node, fuzzy_search_type::proximity_without_self, MAX_COST, word,
-        [&](const fl::u8str& suggested_word, const fl::nlp::trie_node* node, int cost) {
+        [&](fl::u8str&& suggested_word, const fl::nlp::trie_node* node, int cost) {
             double confidence =
                 (static_cast<double>(node->properties.absolute_score) / _base_dictionaries[0]->max_unigram_score);
 
-            auto existing_candidate = std::find_if(results.begin(), results.end(), [&](auto& candidate) -> bool {
-                return candidate->text == suggested_word;
-            });
-            if (existing_candidate != results.end()) {
-                cost = std::min(cost, (*existing_candidate)->edit_distance);
-                confidence = std::max(confidence, (*existing_candidate)->confidence);
-                results.erase(existing_candidate);
-            }
-
-            auto candidate =
-                std::make_unique<suggestion_candidate>(suggestion_candidate { suggested_word, "", cost, confidence });
+            auto candidate = std::make_unique<suggestion_candidate>(suggestion_candidate { std::move(suggested_word),
+                                                                                           "", cost, confidence });
             results.push_back(std::move(candidate));
             std::sort(results.begin(), results.end(), suggestions_sorter);
 
             if (results.size() > flags.max_suggestion_count()) {
-                results.erase(results.end());
+                results.erase(results.end() - 1);
             }
         }
     );
@@ -147,20 +142,12 @@ void dictionary_session::suggest(
     results.clear();
     if (word.empty()) return;
 
-    fuzzy_search(
-        &_base_dictionaries[0]->root_node, fuzzy_search_type::proximity_or_prefix, MAX_COST, word,
-        [&](const fl::u8str& suggested_word, const fl::nlp::trie_node* node, int cost) {
-            double confidence =
-                (static_cast<double>(node->properties.absolute_score) / _base_dictionaries[0]->max_unigram_score);
+    auto& dict = _base_dictionaries[0];
 
-            auto existing_candidate = std::find_if(results.begin(), results.end(), [&](auto& candidate) -> bool {
-                return candidate->text == suggested_word;
-            });
-            if (existing_candidate != results.end()) {
-                cost = std::min(cost, (*existing_candidate)->edit_distance);
-                confidence = std::max(confidence, (*existing_candidate)->confidence);
-                results.erase(existing_candidate);
-            }
+    fuzzy_search(
+        &dict->root_node, fuzzy_search_type::proximity_or_prefix, MAX_COST, word,
+        [&](fl::u8str&& suggested_word, const fl::nlp::trie_node* node, int cost) {
+            double confidence = (static_cast<double>(node->properties.absolute_score) / dict->max_unigram_score);
 
             auto candidate =
                 std::make_unique<suggestion_candidate>(suggestion_candidate { suggested_word, "", cost, confidence });
@@ -168,7 +155,7 @@ void dictionary_session::suggest(
             std::sort(results.begin(), results.end(), suggestions_sorter);
 
             if (results.size() > flags.max_suggestion_count()) {
-                results.erase(results.end());
+                results.erase(results.end() - 1);
             }
         }
     );
@@ -211,6 +198,8 @@ void dictionary_session::fuzzy_search_state::set_prefix_chstr_at(
             // Calculate SUBSTITUTION / IS EQUAL
             if (word_chars[i] == chstr) {
                 substitution_cost = COST_IS_EQUAL;
+            } else if (word_chars_opposite_case[i] == chstr) {
+                substitution_cost = COST_IS_OPPOSITE_CASE; // No penalty even on start of word
             } else if (prefix_index > 1 && i > 1 && prefix_chars[prefix_index - 1] == word_chars[i] && chstr == word_chars[i - 1]) {
                 // TODO: investigate if transpose calculation could be incorrect for certain edge cases
                 substitution_cost = COST_TRANSPOSE - 1 + penalty;
@@ -257,11 +246,13 @@ bool dictionary_session::fuzzy_search_state::is_dead_end_at(std::size_t prefix_i
 
 void dictionary_session::fuzzy_search_state::init_word_chars(const fl::u8str& word) noexcept {
     word_chars.push_back(""); // Empty top-left cell
+    word_chars_opposite_case.push_back(""); // Empty top-left cell
     if (word.empty()) return;
 
     UErrorCode status = U_ZERO_ERROR;
     auto ut = utext_openUTF8(nullptr, word.c_str(), -1, &status);
     auto ub = ubrk_open(UBRK_CHARACTER, session.locale_tag.c_str(), nullptr, 0, &status);
+    auto csm = ucasemap_open(session.locale_tag.c_str(), U_FOLD_CASE_DEFAULT, &status);
     ubrk_setUText(ub, ut, &status);
 
     if (U_SUCCESS(status)) {
@@ -269,13 +260,23 @@ void dictionary_session::fuzzy_search_state::init_word_chars(const fl::u8str& wo
         int32_t curr_n = 0;
 
         while ((curr_n = ubrk_next(ub)) != UBRK_DONE) {
-            word_chars.push_back(word.substr(prev_n, curr_n - prev_n));
+            auto chstr = word.substr(prev_n, curr_n - prev_n);
+            auto chstr_mod(chstr);
+            fl::str::uppercase(chstr_mod, csm);
+            if (chstr != chstr_mod) {
+                word_chars_opposite_case.push_back(std::move(chstr_mod));
+            } else {
+                fl::str::lowercase(chstr_mod, csm);
+                word_chars_opposite_case.push_back(std::move(chstr_mod));
+            }
+            word_chars.push_back(std::move(chstr));
             prev_n = curr_n;
         }
     }
 
-    utext_close(ut);
+    ucasemap_close(csm);
     ubrk_close(ub);
+    utext_close(ut);
 }
 
 void dictionary_session::fuzzy_search_state::ensure_capacity_for(std::size_t prefix_index) noexcept {
