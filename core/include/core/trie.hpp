@@ -104,13 +104,9 @@ class basic_trie_node {
         return node;
     }
 
-    const NodeT* subsequent_words() const noexcept {
-        return _subsequent_words.get();
-    }
+    const NodeT* subsequent_words() const noexcept { return _subsequent_words.get(); }
 
-    NodeT* subsequent_words() noexcept {
-        return _subsequent_words.get();
-    }
+    NodeT* subsequent_words() noexcept { return _subsequent_words.get(); }
 
     NodeT* subsequent_words_or_create() noexcept {
         if (_subsequent_words == nullptr) {

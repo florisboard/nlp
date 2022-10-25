@@ -99,9 +99,8 @@ int main(int argc, char** argv) {
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
             tb_printf(0, y++, 0, 0, "Suggested words (%d, %dms):", suggestion_results.size(), duration.count());
             for (auto& result : suggestion_results) {
-                tb_printf(
-                    0, y++, 0, 0, " %s | e=%d | c=%.4f", result->text.c_str(), result->edit_distance, result->confidence
-                );
+                tb_printf(0, y++, 0, 0, " %s | e=%d | c=%.4f", result->text.c_str(), result->edit_distance,
+                          result->confidence);
             }
         } else {
             tb_printf(0, y++, 0, 0, "Spelling results:");

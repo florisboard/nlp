@@ -22,10 +22,8 @@
 #include <functional>
 
 void apply_casemap(
-    fl::u8str& str,
-    UCaseMap* cached_csm,
-    std::function<int32_t(UCaseMap*, char*, int32_t, const char*, int32_t, UErrorCode*)> casemapper
-) noexcept {
+    fl::u8str& str, UCaseMap* cached_csm,
+    std::function<int32_t(UCaseMap*, char*, int32_t, const char*, int32_t, UErrorCode*)> casemapper) noexcept {
     if (str.empty()) return;
 
     // Set up case mapper
@@ -39,7 +37,7 @@ void apply_casemap(
     status = U_ZERO_ERROR;
 
     // Apply case mapping
-    char* dst_buffer = new char[dst_length + 1] { 0 };
+    char* dst_buffer = new char[dst_length + 1] {0};
     size_t dst_length_actually_written = casemapper(csm, dst_buffer, dst_length + 1, str.c_str(), -1, &status);
     if (dst_length_actually_written != dst_length || U_FAILURE(status)) return;
     str.assign(dst_buffer);
@@ -61,9 +59,7 @@ void fl::str::uppercase(u8str& str, UCaseMap* cached_csm) noexcept {
     apply_casemap(str, cached_csm, ucasemap_utf8ToUpper);
 }
 
-bool is_whitespace(fl::u8char c) noexcept {
-    return u_isWhitespace(c);
-}
+bool is_whitespace(fl::u8char c) noexcept { return u_isWhitespace(c); }
 
 void fl::str::trim(fl::u8str& src) noexcept {
     src.erase(std::find_if_not(src.rbegin(), src.rend(), is_whitespace).base(), src.end());

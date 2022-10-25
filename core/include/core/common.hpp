@@ -51,19 +51,11 @@ class suggestion_request_flags {
     suggestion_request_flags(int32_t flags) : __flags(flags) {};
     ~suggestion_request_flags() = default;
 
-    int32_t max_suggestion_count() const noexcept {
-        return (__flags & M_MAX_SUGGESTION_COUNT);
-    }
-    bool allow_possibly_offensive() const noexcept {
-        return (__flags & F_ALLOW_POSSIBLY_OFFENSIVE) != 0;
-    }
-    bool is_private_session() const noexcept {
-        return (__flags & F_IS_PRIVATE_SESSION) != 0;
-    }
+    int32_t max_suggestion_count() const noexcept { return (__flags & M_MAX_SUGGESTION_COUNT); }
+    bool allow_possibly_offensive() const noexcept { return (__flags & F_ALLOW_POSSIBLY_OFFENSIVE) != 0; }
+    bool is_private_session() const noexcept { return (__flags & F_IS_PRIVATE_SESSION) != 0; }
 
-    operator int32_t() const noexcept {
-        return __flags;
-    }
+    operator int32_t() const noexcept { return __flags; }
 };
 
 // ----- suggestion_candidate ----- //
@@ -103,27 +95,19 @@ class spelling_result {
         : suggestion_attributes(suggestion_attributes), suggestions(suggestions) {}
     ~spelling_result() = default;
 
-    static spelling_result unspecified() noexcept {
-        return spelling_result(RESULT_UNSPECIFIED);
-    }
+    static spelling_result unspecified() noexcept { return spelling_result(RESULT_UNSPECIFIED); }
 
-    static spelling_result valid_word() noexcept {
-        return spelling_result(RESULT_ATTR_IN_THE_DICTIONARY);
-    }
+    static spelling_result valid_word() noexcept { return spelling_result(RESULT_ATTR_IN_THE_DICTIONARY); }
 
-    static spelling_result typo(
-        const std::vector<fl::u8str>& suggestions,
-        bool is_high_confidence_result = false
-    ) noexcept {
+    static spelling_result typo(const std::vector<fl::u8str>& suggestions,
+                                bool is_high_confidence_result = false) noexcept {
         auto attributes =
             RESULT_ATTR_LOOKS_LIKE_TYPO | (is_high_confidence_result ? RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS : 0);
         return spelling_result(attributes, suggestions);
     }
 
-    static spelling_result grammar_error(
-        const std::vector<fl::u8str>& suggestions,
-        bool is_high_confidence_result = false
-    ) noexcept {
+    static spelling_result grammar_error(const std::vector<fl::u8str>& suggestions,
+                                         bool is_high_confidence_result = false) noexcept {
         auto attributes = RESULT_ATTR_LOOKS_LIKE_GRAMMAR_ERROR |
                           (is_high_confidence_result ? RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS : 0);
         return spelling_result(attributes, suggestions);

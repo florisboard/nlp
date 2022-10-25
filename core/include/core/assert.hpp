@@ -26,9 +26,7 @@ class assertion_error : public std::exception {
     explicit assertion_error(const char* msg) : exception(), __msg(msg) {};
     ~assertion_error() = default;
 
-    const char* what() const noexcept {
-        return __msg;
-    }
+    const char* what() const noexcept { return __msg; }
 
   private:
     const char* __msg;

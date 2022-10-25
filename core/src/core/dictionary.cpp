@@ -121,7 +121,7 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
     std::vector<fl::u8str> line_split_results;
     fl::u8str word;
     uint8_t prev_ngram_level = 1;
-    std::array<trie_node*, 9> prev_parent_nodes { &root_node, nullptr };
+    std::array<trie_node*, 9> prev_parent_nodes {&root_node, nullptr};
     while (std::getline(istream, line)) {
         line_num++;
         // TODO: Add proper section support
@@ -147,9 +147,8 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
         trie_node* parent_node = prev_parent_nodes[ngram_level - 1];
         if (parent_node == nullptr) {
             if (ngram_level <= 1) {
-                throw_fatal_deseralization_error(
-                    line_num, "Encountered an ngram which does not have a corresponding parent!"
-                );
+                throw_fatal_deseralization_error(line_num,
+                                                 "Encountered an ngram which does not have a corresponding parent!");
             } else {
                 auto new_node = prev_parent_nodes[ngram_level - 2]->subsequent_words_or_create();
                 prev_parent_nodes[ngram_level - 1] = new_node;
@@ -199,11 +198,8 @@ void dictionary::serialize(std::basic_ostream<fl::u8char>& ostream) {
     trie_write_ngrams_to(ostream, &root_node, 1);
 }
 
-void dictionary::trie_write_ngrams_to(
-    std::basic_ostream<fl::u8char>& ostream,
-    trie_node* base_node,
-    uint8_t ngram_level
-) const {
+void dictionary::trie_write_ngrams_to(std::basic_ostream<fl::u8char>& ostream, trie_node* base_node,
+                                      uint8_t ngram_level) const {
     if (base_node == nullptr) return;
     base_node->for_each([&](const fl::u8str& word, trie_node* node) {
         for (size_t n = 1; n < ngram_level; n++) {

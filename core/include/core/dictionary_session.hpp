@@ -54,19 +54,11 @@ class dictionary_session {
 
     void load_user_dictionary(const std::filesystem::path& dict_path);
 
-    spelling_result spell(
-        fl::u8str& word,
-        const std::vector<fl::u8str>& prev_words,
-        const std::vector<fl::u8str>& next_words,
-        suggestion_request_flags& flags
-    );
+    spelling_result spell(fl::u8str& word, const std::vector<fl::u8str>& prev_words,
+                          const std::vector<fl::u8str>& next_words, suggestion_request_flags& flags);
 
-    void suggest(
-        fl::u8str& word,
-        const std::vector<fl::u8str>& prev_words,
-        suggestion_request_flags& flags,
-        std::vector<std::unique_ptr<suggestion_candidate>>& results
-    );
+    void suggest(fl::u8str& word, const std::vector<fl::u8str>& prev_words, suggestion_request_flags& flags,
+                 std::vector<std::unique_ptr<suggestion_candidate>>& results);
 
   private:
     std::vector<std::unique_ptr<dictionary>> _base_dictionaries;
@@ -90,13 +82,8 @@ class dictionary_session {
         std::vector<std::vector<int>> distances;
         std::function<void(fl::u8str&&, const trie_node*, int)> on_result;
 
-        fuzzy_search_state(
-            const dictionary_session& session,
-            const fuzzy_search_type type,
-            const int max_distance,
-            const suggestion_request_flags& flags,
-            const fl::u8str& word
-        );
+        fuzzy_search_state(const dictionary_session& session, const fuzzy_search_type type, const int max_distance,
+                           const suggestion_request_flags& flags, const fl::u8str& word);
         fuzzy_search_state(const fuzzy_search_state&) = delete;
         fuzzy_search_state(fuzzy_search_state&&) = delete;
         ~fuzzy_search_state() = default;
@@ -126,14 +113,9 @@ class dictionary_session {
      */
     void fuzzy_search_recursive_dld(const trie_node* node, fuzzy_search_state& state, int prefix_index) const noexcept;
 
-    void fuzzy_search(
-        const trie_node* root_node,
-        fuzzy_search_type type,
-        int max_distance,
-        const suggestion_request_flags& flags,
-        const fl::u8str& word,
-        std::function<void(fl::u8str&&, const trie_node*, int)> on_result
-    ) const noexcept;
+    void fuzzy_search(const trie_node* root_node, fuzzy_search_type type, int max_distance,
+                      const suggestion_request_flags& flags, const fl::u8str& word,
+                      std::function<void(fl::u8str&&, const trie_node*, int)> on_result) const noexcept;
 };
 
 } // namespace fl::nlp

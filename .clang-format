@@ -6,22 +6,9 @@ UseTab: Never
 ---
 Language: Cpp
 Standard: c++20
-AlignAfterOpenBracket: BlockIndent
-AllowAllParametersOfDeclarationOnNextLine: false
-AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: WithoutElse
-AlwaysBreakAfterReturnType: None
-AlwaysBreakTemplateDeclarations: true
-BinPackParameters: false
-Cpp11BracedListStyle: false
-DerivePointerAlignment: false
-IndentCaseLabels: true
-PenaltyReturnTypeOnItsOwnLine: 10000000
+AlwaysBreakTemplateDeclarations: Yes
 PointerAlignment: Left
-ReferenceAlignment: Pointer
-IndentRequires: false
-#IndentRequiresClause: false
-#RequiresClausePosition: OwnLine
 SpaceAfterTemplateKeyword: false
 SpaceBeforeCpp11BracedList: true
 SortIncludes: true
