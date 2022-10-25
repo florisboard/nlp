@@ -180,7 +180,8 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
         }
 
         // Insert node into trie
-        auto node = parent_node->insert(word, properties);
+        auto node = parent_node->insert(word);
+        node->properties = properties;
         prev_ngram_level = ngram_level;
         if (ngram_level == 1 && max_unigram_score < properties.absolute_score) {
             max_unigram_score = properties.absolute_score;
@@ -275,29 +276,16 @@ bool mutable_dictionary::adjust_scores_if_necessary() noexcept {
     return true;
 }
 
-void mutable_dictionary::insert(const fl::u8str& word1, const ngram_properties& properties) noexcept {
-    root_node.insert(word1, properties);
+ngram_properties& mutable_dictionary::insert(const fl::u8str& word1) noexcept {
+    return root_node.insert(word1)->properties;
 }
 
-void mutable_dictionary::insert(
-    const fl::u8str& word1,
-    const fl::u8str& word2,
-    const ngram_properties& properties
-) noexcept {
-    root_node.insert(word1, ngram_properties())->subsequent_words_or_create()->insert(word2, properties);
+void mutable_dictionary::insert(const fl::u8str& word1, const fl::u8str& word2) noexcept {
+    root_node.insert(word1)->subsequent_words_or_create()->insert(word2);
 }
 
-void mutable_dictionary::insert(
-    const fl::u8str& word1,
-    const fl::u8str& word2,
-    const fl::u8str& word3,
-    const ngram_properties& properties
-) noexcept {
-    root_node.insert(word1, ngram_properties())
-        ->subsequent_words_or_create()
-        ->insert(word2, ngram_properties())
-        ->subsequent_words_or_create()
-        ->insert(word3, properties);
+void mutable_dictionary::insert(const fl::u8str& word1, const fl::u8str& word2, const fl::u8str& word3) noexcept {
+    root_node.insert(word1)->subsequent_words_or_create()->insert(word2)->subsequent_words_or_create()->insert(word3);
 }
 
 void mutable_dictionary::persist() {

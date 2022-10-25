@@ -29,8 +29,8 @@ const std::filesystem::path TEST_WORD_LIST =
 const std::filesystem::path TEST_WIKTEXTRACT_FILE = "data/.wiktextract/kaikki.org-dictionary-English.json";
 
 void insert_project_specific_words(fl::nlp::mutable_dictionary& dict) {
-    dict.insert("FlorisBoard", fl::nlp::ngram_properties { 1 });
-    dict.insert("Smartbar", fl::nlp::ngram_properties { 1 });
+    dict.insert("FlorisBoard");
+    dict.insert("Smartbar");
 }
 
 int main(int argc, char** argv) {

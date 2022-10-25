@@ -67,7 +67,7 @@ class key_proximity_map {
         for (auto& [key, vector_value] : parsed_data) {
             auto surrounding_keys = _data.resolve_key_or_create(key);
             for (auto& value : vector_value) {
-                surrounding_keys->subsequent_words_or_create()->insert(value, 0);
+                surrounding_keys->subsequent_words_or_create()->insert(value);
             }
         }
     }

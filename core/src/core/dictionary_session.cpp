@@ -50,9 +50,14 @@ void dictionary_session::fuzzy_search_recursive_dld(const trie_node* node, fuzzy
     const noexcept {
     // Result check
     if (state.edit_distance_at(prefix_index) <= state.max_distance && node->is_terminal) {
-        auto prefix = state.prefix_str_at(prefix_index);
-        if (!prefix.empty()) {
-            state.on_result(std::move(prefix), node, state.edit_distance_at(prefix_index));
+        if (node->properties.is_possibly_offensive && !state.flags.allow_possibly_offensive() ||
+            node->properties.is_hidden_by_user) {
+            // Ignore
+        } else {
+            auto prefix = state.prefix_str_at(prefix_index);
+            if (!prefix.empty()) {
+                state.on_result(std::move(prefix), node, state.edit_distance_at(prefix_index));
+            }
         }
     }
 
@@ -73,12 +78,13 @@ void dictionary_session::fuzzy_search(
     const trie_node* root_node,
     fuzzy_search_type type,
     int max_distance,
+    const suggestion_request_flags& flags,
     const fl::u8str& word,
     std::function<void(fl::u8str&&, const trie_node*, int)> on_result
 ) const noexcept {
     if (word.empty()) return;
 
-    fuzzy_search_state state(*this, type, max_distance, word);
+    fuzzy_search_state state(*this, type, max_distance, flags, word);
     state.on_result = on_result;
     fuzzy_search_recursive_dld(root_node, state, 0);
 }
@@ -109,10 +115,10 @@ spelling_result dictionary_session::spell(
 
     std::vector<std::unique_ptr<suggestion_candidate>> results;
     fuzzy_search(
-        &_base_dictionaries[0]->root_node, fuzzy_search_type::proximity_without_self, MAX_COST, word,
+        &_base_dictionaries[0]->root_node, fuzzy_search_type::proximity_without_self, MAX_COST, flags, word,
         [&](fl::u8str&& suggested_word, const fl::nlp::trie_node* node, int cost) {
-            double confidence =
-                (static_cast<double>(node->properties.absolute_score) / _base_dictionaries[0]->max_unigram_score);
+            double confidence = 1.0;
+            //    (static_cast<double>(node->properties.absolute_score) / _base_dictionaries[0]->max_unigram_score);
 
             auto candidate = std::make_unique<suggestion_candidate>(suggestion_candidate { std::move(suggested_word),
                                                                                            "", cost, confidence });
@@ -145,9 +151,9 @@ void dictionary_session::suggest(
     auto& dict = _base_dictionaries[0];
 
     fuzzy_search(
-        &dict->root_node, fuzzy_search_type::proximity_or_prefix, MAX_COST, word,
+        &dict->root_node, fuzzy_search_type::proximity_or_prefix, MAX_COST, flags, word,
         [&](fl::u8str&& suggested_word, const fl::nlp::trie_node* node, int cost) {
-            double confidence = (static_cast<double>(node->properties.absolute_score) / dict->max_unigram_score);
+            double confidence = 1.0; //(static_cast<double>(node->properties.absolute_score) / dict->max_unigram_score);
 
             auto candidate =
                 std::make_unique<suggestion_candidate>(suggestion_candidate { suggested_word, "", cost, confidence });
@@ -167,9 +173,10 @@ dictionary_session::fuzzy_search_state::fuzzy_search_state(
     const dictionary_session& session,
     const fuzzy_search_type type,
     const int max_distance,
+    const suggestion_request_flags& flags,
     const fl::u8str& word
 )
-    : session(session), type(type), max_distance(max_distance) {
+    : session(session), type(type), max_distance(max_distance), flags(flags) {
     init_word_chars(word);
     set_prefix_chstr_at(0, "");
 }

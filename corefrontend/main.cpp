@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    fl::nlp::suggestion_request_flags flags = 8;
+    fl::nlp::suggestion_request_flags flags(0);
     std::vector<std::unique_ptr<fl::nlp::suggestion_candidate>> suggestion_results;
     std::vector<fl::u8str> prev_words;
     fl::nlp::dictionary_session dict_session;
@@ -66,6 +66,7 @@ int main(int argc, char** argv) {
     tb_event ev;
     bool is_alive = true;
     bool is_suggestion_mode = true;
+    bool allow_possible_offensive = true;
 
     tb_init();
     width = tb_width();
@@ -86,6 +87,11 @@ int main(int argc, char** argv) {
         tb_printf(0, y++, 0, 0, "Input: %s", input_buffer.c_str());
         tb_printf(0, y++, 0, 0, "Length: %d", input_buffer.length());
         tb_printf(0, y++, 0, 0, "");
+        if (allow_possible_offensive) {
+            flags = 8 | fl::nlp::suggestion_request_flags::F_ALLOW_POSSIBLY_OFFENSIVE;
+        } else {
+            flags = 8;
+        }
         if (is_suggestion_mode) {
             auto start = std::chrono::high_resolution_clock::now();
             dict_session.suggest(input_words[input_words.size() - 1], prev_words, flags, suggestion_results);
@@ -132,6 +138,8 @@ int main(int argc, char** argv) {
                 is_alive = false;
             } else if (ev.key == TB_KEY_CTRL_D) {
                 is_suggestion_mode = !is_suggestion_mode;
+            } else if (ev.key == TB_KEY_CTRL_A) {
+                allow_possible_offensive = !allow_possible_offensive;
             } else if (ev.ch != 0x0) {
                 raw_input_buffer.append(static_cast<UChar32>(ev.ch));
             }

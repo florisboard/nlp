@@ -39,13 +39,13 @@ static const freq_t FREQ_MAX = 1.0;
 // ----- suggestion_request_flags ----- //
 
 class suggestion_request_flags {
-  private:
+  public:
     static const int32_t M_MAX_SUGGESTION_COUNT = 0x00FF;
     static const int32_t F_ALLOW_POSSIBLY_OFFENSIVE = 0x0100;
     static const int32_t F_IS_PRIVATE_SESSION = 0x0200;
 
   private:
-    const int32_t __flags;
+    int32_t __flags;
 
   public:
     suggestion_request_flags(int32_t flags) : __flags(flags) {};

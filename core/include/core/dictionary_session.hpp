@@ -83,6 +83,7 @@ class dictionary_session {
         const dictionary_session& session;
         const fuzzy_search_type type;
         const int max_distance;
+        const suggestion_request_flags flags;
         std::vector<fl::u8str> word_chars;
         std::vector<fl::u8str> word_chars_opposite_case;
         std::vector<fl::u8str> prefix_chars;
@@ -93,6 +94,7 @@ class dictionary_session {
             const dictionary_session& session,
             const fuzzy_search_type type,
             const int max_distance,
+            const suggestion_request_flags& flags,
             const fl::u8str& word
         );
         fuzzy_search_state(const fuzzy_search_state&) = delete;
@@ -128,6 +130,7 @@ class dictionary_session {
         const trie_node* root_node,
         fuzzy_search_type type,
         int max_distance,
+        const suggestion_request_flags& flags,
         const fl::u8str& word,
         std::function<void(fl::u8str&&, const trie_node*, int)> on_result
     ) const noexcept;

@@ -65,15 +65,14 @@ void read_corpora_into_dictionary(
         if (U_FAILURE(status) || !validate_word(ut)) continue;
 
         auto score = static_cast<fl::nlp::score_t>(std::stoi(columns[2]));
-        auto properties = fl::nlp::ngram_properties { score };
 
-        dict.insert(word, properties);
+        dict.insert(word).absolute_score = score;
     }
 
     utext_close(ut);
 }
 
-bool validate_is_word_relevant(nlohmann::json word_data) noexcept {
+bool validate_is_word_relevant(const nlohmann::json& word_data) noexcept {
     if (word_data.contains("senses")) {
         auto senses = word_data["senses"].get<std::vector<nlohmann::json>>();
         if (!senses.empty()) {
@@ -102,6 +101,26 @@ bool validate_is_word_relevant(nlohmann::json word_data) noexcept {
     return true;
 }
 
+bool check_is_word_vulgar(const nlohmann::json& word_data) noexcept {
+    if (word_data.contains("senses")) {
+        auto senses = word_data["senses"].get<std::vector<nlohmann::json>>();
+        for (auto& sense : senses) {
+            if (sense.contains("tags")) {
+                auto tags = sense["tags"].get<std::vector<fl::u8str>>();
+                auto has_vulgar_tag = std::find_if(tags.begin(), tags.end(), [](fl::u8str& tag) {
+                                          return tag == "vulgar";
+                                      }) != tags.end();
+                if (has_vulgar_tag) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    // We assume it is not vulgar in all other cases
+    return false;
+}
+
 void read_wiktextract_data_into_dictionary(
     const std::filesystem::path& wiktextract_json_path,
     fl::nlp::mutable_dictionary& dict
@@ -123,9 +142,12 @@ void read_wiktextract_data_into_dictionary(
             status = U_ZERO_ERROR;
             ut = utext_openUTF8(ut, word.c_str(), -1, &status);
             if (U_FAILURE(status) || !validate_word(ut)) continue;
-            auto score = 1u;
-            auto properties = fl::nlp::ngram_properties { score };
-            dict.insert(word, properties);
+            auto& properties = dict.insert(word);
+            // TODO: reevaluate this as it does not catch plurals of vulgar words and also misses some other offensive
+            // words
+            if (check_is_word_vulgar(json_data)) {
+                properties.is_possibly_offensive = true;
+            }
         }
     }
 

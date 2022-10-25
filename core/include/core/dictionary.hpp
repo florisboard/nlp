@@ -104,9 +104,9 @@ class dictionary {
     trie_node root_node;
     std::map<fl::u8str, fl::u8str> shortcuts;
 
-    score_t max_unigram_score;
-    score_t max_bigram_score;
-    score_t max_trigram_score;
+    score_t max_unigram_score = 1;
+    score_t max_bigram_score = 1;
+    score_t max_trigram_score = 1;
 
     void deserialize(std::basic_istream<fl::u8char>& istream);
     void serialize(std::basic_ostream<fl::u8char>& ostream);
@@ -127,14 +127,9 @@ class mutable_dictionary : public dictionary {
 
     bool adjust_scores_if_necessary() noexcept;
 
-    void insert(const fl::u8str& word1, const ngram_properties& properties) noexcept;
-    void insert(const fl::u8str& word1, const fl::u8str& word2, const ngram_properties& properties) noexcept;
-    void insert(
-        const fl::u8str& word1,
-        const fl::u8str& word2,
-        const fl::u8str& word3,
-        const ngram_properties& properties
-    ) noexcept;
+    ngram_properties& insert(const fl::u8str& word1) noexcept;
+    void insert(const fl::u8str& word1, const fl::u8str& word2) noexcept;
+    void insert(const fl::u8str& word1, const fl::u8str& word2, const fl::u8str& word3) noexcept;
 
     void remove(const fl::u8str& word1) noexcept;
     void remove(const fl::u8str& word1, const fl::u8str& word2) noexcept;

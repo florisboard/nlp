@@ -29,7 +29,7 @@
 namespace fl::nlp {
 
 struct ngram_properties {
-    score_t absolute_score : 24 = 0;
+    score_t absolute_score : 24 = 1;
     bool is_possibly_offensive : 1 = false;
     bool is_hidden_by_user : 1 = false;
 };
@@ -69,15 +69,9 @@ class basic_trie_node {
         }
     }
 
-    NodeT* insert(const fl::u8str& key, const ValueT& properties) noexcept {
+    NodeT* insert(const fl::u8str& key) noexcept {
         auto node = resolve_key_or_create(key);
         node->properties = properties;
-        return node;
-    }
-
-    NodeT* insert(const fl::u8str& key, ValueT&& properties) noexcept {
-        auto node = resolve_key_or_create(key);
-        node->properties = std::move(properties);
         return node;
     }
 
