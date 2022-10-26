@@ -31,5 +31,4 @@ add_subdirectory(icu4c)
 
 # Internal libraries
 add_subdirectory(core)
-add_subdirectory(corefrontend)
-add_subdirectory(preprocessing)
+add_subdirectory(tools)

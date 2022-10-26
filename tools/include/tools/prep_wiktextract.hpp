@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-#ifndef __FLORISNLP_ICUEXT_UDATA_H__
-#define __FLORISNLP_ICUEXT_UDATA_H__
+#ifndef __FLORISNLP_TOOLS_PREP_WIKTEXTRACT_H__
+#define __FLORISNLP_TOOLS_PREP_WIKTEXTRACT_H__
 
 #include "core/string.hpp"
 
-#include <unicode/utypes.h>
+#include <vector>
 
-namespace fl::icuext {
+namespace fl::nlp::tools {
 
-UErrorCode load_and_set_common_data(fl::u8str path);
+int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept;
 
-} // namespace fl::icuext
+} // namespace fl::nlp::tools
 
 #endif

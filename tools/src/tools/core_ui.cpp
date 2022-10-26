@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include "tools/core_ui.hpp"
+
 #include "core/common.hpp"
 #include "core/dictionary.hpp"
 #include "core/dictionary_session.hpp"
@@ -30,9 +32,11 @@
 #include <map>
 #include <vector>
 
+namespace fl::nlp::tools {
+
 // TODO: get this path dynamically and remove the hardcoded path
-const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
-const std::filesystem::path DICT_PATH = "data/wikt_en.fldic";
+static const fl::u8str ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
+static const fl::u8str KEY_MAPPING_FILE = "data/qwerty_proximity_map.json";
 
 const char* attr_status_symbol(int32_t suggestion_attribute) noexcept {
     if (suggestion_attribute == fl::nlp::RESULT_ATTR_IN_THE_DICTIONARY) {
@@ -44,9 +48,10 @@ const char* attr_status_symbol(int32_t suggestion_attribute) noexcept {
     }
 }
 
-int main(int argc, char** argv) {
-    if (fl::icu::load_and_set_common_data(ICU_DATA_FILE_PATH) != UErrorCode::U_ZERO_ERROR) {
-        std::cout << "Failed to load ICU data file!" << std::endl;
+// TODO: clean up code and restructure UI
+int main_core_ui(const fl::u8str& fldic_path) noexcept {
+    if (U_FAILURE(fl::icuext::load_and_set_common_data(ICU_DATA_FILE_PATH))) {
+        std::cerr << "Fatal: Failed to load ICU data file! Aborting.\n";
         return 1;
     }
 
@@ -54,8 +59,13 @@ int main(int argc, char** argv) {
     std::vector<std::unique_ptr<fl::nlp::suggestion_candidate>> suggestion_results;
     std::vector<fl::u8str> prev_words;
     fl::nlp::dictionary_session dict_session;
-    dict_session.key_proximity_mapping.load_from_file("data/qwerty_proximity_map.json");
-    dict_session.load_base_dictionary(DICT_PATH);
+    dict_session.key_proximity_mapping.load_from_file(KEY_MAPPING_FILE);
+    try {
+        dict_session.load_base_dictionary(fldic_path);
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Fatal: " << e.what() << " Aborting.\n";
+        return 1;
+    }
 
     int y = 0;
     int width = 0;
@@ -72,6 +82,7 @@ int main(int argc, char** argv) {
     width = tb_width();
     height = tb_height();
     while (is_alive) {
+        y = 0;
         input_buffer.clear();
         raw_input_buffer.toUTF8String(input_buffer);
         fl::str::split(input_buffer, ' ', input_words);
@@ -145,9 +156,28 @@ int main(int argc, char** argv) {
         }
 
         tb_clear();
-        y = 0;
     }
     tb_shutdown();
 
     return 0;
 }
+
+int handle_core_ui_action(const std::vector<fl::u8str>& flags) noexcept {
+    fl::u8str fldic_path;
+    if (!flags.empty()) {
+        fldic_path = flags[0];
+    }
+
+    fl::str::trim(fldic_path);
+    if (fldic_path.empty()) {
+        std::cerr << "Fatal: No dictionary path specified! Aborting.\n";
+        return 1;
+    } else if (!std::filesystem::exists(fldic_path)) {
+        std::cerr << "Fatal: Given dictionary path '" << fldic_path << "' does not exist! Aborting.\n";
+        return 1;
+    }
+
+    return main_core_ui(fldic_path);
+}
+
+} // namespace fl::nlp::tools

@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-#ifndef __FLORISNLP_WORTSCHATZ_CORPORA_PREPROCESSOR_H__
-#define __FLORISNLP_WORTSCHATZ_CORPORA_PREPROCESSOR_H__
+#include "tools/prep_wiktextract.hpp"
 
 #include "core/dictionary.hpp"
-#include "core/string.hpp"
 
 #include <nlohmann/json.hpp>
 #include <unicode/uchar.h>
@@ -26,13 +24,18 @@
 #include <unicode/utypes.h>
 
 #include <fstream>
-#include <string>
-#include <vector>
+#include <iostream>
 
-namespace fl::nlp::preprocessing {
+namespace fl::nlp::tools {
 
-// The separator of the Wortschatz Corpora word list file
-static const char SEPARATOR = '\t';
+static const fl::u8str FLAG_INDICATOR = "--";
+static const fl::u8str FLAG_SRC_PATH_LONG = "--src";
+static const fl::u8str FLAG_DST_PATH_LONG = "--dst";
+
+void insert_project_specific_words(fl::nlp::mutable_dictionary& dict) noexcept {
+    dict.insert("FlorisBoard");
+    dict.insert("Smartbar");
+}
 
 bool validate_word(UText* ut) {
     UChar32 cp;
@@ -40,36 +43,6 @@ bool validate_word(UText* ut) {
         if (!u_isalpha(cp) && cp != '\'' && cp != '-') return false;
     }
     return true;
-}
-
-void read_corpora_into_dictionary(
-    const std::filesystem::path& word_list_path,
-    fl::nlp::mutable_dictionary& dict
-) noexcept {
-    UText* ut = nullptr;
-    UErrorCode status;
-
-    std::ifstream word_list_file;
-    word_list_file.open(word_list_path, std::ios::in);
-    std::string line;
-    std::vector<std::string> columns;
-
-    while (std::getline(word_list_file, line)) {
-        fl::str::trim(line);
-        fl::str::split(line, SEPARATOR, columns);
-        if (columns.size() < 3) continue;
-
-        auto& word = columns[1];
-        status = U_ZERO_ERROR;
-        ut = utext_openUTF8(ut, word.c_str(), -1, &status);
-        if (U_FAILURE(status) || !validate_word(ut)) continue;
-
-        auto score = static_cast<fl::nlp::score_t>(std::stoi(columns[2]));
-
-        dict.insert(word).absolute_score = score;
-    }
-
-    utext_close(ut);
 }
 
 bool validate_is_word_relevant(const nlohmann::json& word_data) noexcept {
@@ -107,9 +80,8 @@ bool check_is_word_vulgar(const nlohmann::json& word_data) noexcept {
         for (auto& sense : senses) {
             if (sense.contains("tags")) {
                 auto tags = sense["tags"].get<std::vector<fl::u8str>>();
-                auto has_vulgar_tag = std::find_if(tags.begin(), tags.end(), [](fl::u8str& tag) {
-                                          return tag == "vulgar";
-                                      }) != tags.end();
+                auto has_vulgar_tag = std::find_if(tags.begin(), tags.end(),
+                                                   [](fl::u8str& tag) { return tag == "vulgar"; }) != tags.end();
                 if (has_vulgar_tag) {
                     return true;
                 }
@@ -121,16 +93,13 @@ bool check_is_word_vulgar(const nlohmann::json& word_data) noexcept {
     return false;
 }
 
-void read_wiktextract_data_into_dictionary(
-    const std::filesystem::path& wiktextract_json_path,
-    fl::nlp::mutable_dictionary& dict
-) noexcept {
+void read_wiktextract_data_into_dictionary(const std::filesystem::path& wiktextract_json_path,
+                                           fl::nlp::mutable_dictionary& dict) noexcept {
     UText* ut = nullptr;
     UErrorCode status;
 
-    std::ifstream wiktextract_json_file;
-    wiktextract_json_file.open(wiktextract_json_path, std::ios::in);
-    std::string line;
+    std::ifstream wiktextract_json_file(wiktextract_json_path, std::ios::in);
+    fl::u8str line;
     nlohmann::json json_data;
 
     while (std::getline(wiktextract_json_file, line)) {
@@ -154,6 +123,55 @@ void read_wiktextract_data_into_dictionary(
     utext_close(ut);
 }
 
-} // namespace fl::nlp::preprocessing
+int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept {
+    fl::u8str src_path;
+    fl::u8str dst_path;
 
-#endif
+    for (std::size_t i = 0; i < flags.size();) {
+        auto& flag = flags[i];
+        if (flag == FLAG_SRC_PATH_LONG) {
+            if (i + 1 < flags.size() && !flags[i + 1].starts_with(FLAG_INDICATOR)) {
+                src_path = flags[i + 1];
+                i += 2;
+            } else {
+                std::cerr << "Fatal: Using source path flag without corresponsing path! Aborting.\n";
+                return 1;
+            }
+        } else if (flag == FLAG_DST_PATH_LONG) {
+            if (i + 1 < flags.size() && !flags[i + 1].starts_with(FLAG_INDICATOR)) {
+                dst_path = flags[i + 1];
+                i += 2;
+            } else {
+                std::cerr << "Fatal: Using destination path flag without corresponsing path! Aborting.\n";
+                return 1;
+            }
+        } else {
+            std::cerr << "Warning: Unknown flag '" << flag << "'. Ignoring.\n";
+            i++;
+        }
+    }
+
+    fl::str::trim(src_path);
+    fl::str::trim(dst_path);
+    if (src_path.empty()) {
+        std::cerr << "Fatal: No source path specified! Aborting.\n";
+        return 1;
+    } else if (!std::filesystem::exists(src_path)) {
+        std::cerr << "Fatal: Given source path '" << src_path << "' does not exist! Aborting.\n";
+        return 1;
+    }
+    if (dst_path.empty()) {
+        std::cerr << "Fatal: No destination path specified! Aborting.\n";
+        return 1;
+    }
+
+    fl::nlp::mutable_dictionary dict;
+    dict.dst_path = dst_path;
+    insert_project_specific_words(dict);
+    read_wiktextract_data_into_dictionary(src_path, dict);
+    dict.persist();
+
+    return 0;
+}
+
+} // namespace fl::nlp::tools

@@ -6,6 +6,7 @@ UseTab: Never
 ---
 Language: Cpp
 Standard: c++20
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AlwaysBreakTemplateDeclarations: Yes
 PointerAlignment: Left
