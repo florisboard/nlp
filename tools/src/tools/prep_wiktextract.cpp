@@ -25,8 +25,11 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
 
 namespace fl::nlp::tools {
+
+using stats_counter_map = std::map<fl::u8str, uint64_t>;
 
 static const fl::u8str FLAG_INDICATOR = "--";
 static const fl::u8str FLAG_SRC_PATH_LONG = "--src";
@@ -102,10 +105,38 @@ void read_wiktextract_data_into_dictionary(const std::filesystem::path& wiktextr
     fl::u8str line;
     nlohmann::json json_data;
 
+    // Stats
+    uint64_t total_words;
+    uint64_t total_senses;
+    stats_counter_map pos_stats;
+    stats_counter_map tag_stats;
+    stats_counter_map category_stats;
+
     while (std::getline(wiktextract_json_file, line)) {
         json_data = nlohmann::json::parse(line);
 
         if (json_data.contains("word")) {
+            total_words++;
+            pos_stats[json_data["pos"].get<fl::u8str>()]++;
+            if (json_data.contains("senses")) {
+                auto senses = json_data["senses"].get<std::vector<nlohmann::json>>();
+                for (auto& sense : senses) {
+                    total_senses++;
+                    if (sense.contains("tags")) {
+                        auto tags = sense["tags"].get<std::vector<fl::u8str>>();
+                        for (auto& tag : tags) {
+                            tag_stats[tag]++;
+                        }
+                    }
+                    if (sense.contains("categories")) {
+                        auto categories = sense["categories"].get<std::vector<nlohmann::json>>();
+                        for (auto& category : categories) {
+                            category_stats[category["name"].get<fl::u8str>()]++;
+                        }
+                    }
+                }
+            }
+
             if (!validate_is_word_relevant(json_data)) continue;
             auto word = json_data["word"].get<fl::u8str>();
             status = U_ZERO_ERROR;
@@ -121,6 +152,15 @@ void read_wiktextract_data_into_dictionary(const std::filesystem::path& wiktextr
     }
 
     utext_close(ut);
+
+    std::ofstream out("data/stats.json");
+    nlohmann::json json_stats;
+    json_stats["total_words"] = total_words;
+    json_stats["total_senses"] = total_senses;
+    json_stats["pos_stats"] = pos_stats;
+    json_stats["tag_stats"] = tag_stats;
+    json_stats["category_stats"] = category_stats;
+    out << std::setw(2) << json_stats;
 }
 
 int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept {
