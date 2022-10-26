@@ -1,6 +1,3 @@
-# External library: "hat-trie/hat-trie"
-add_subdirectory(hat-trie)
-
 # External library: "nlohmann/json"
 add_subdirectory(nlohmann-json)
 
