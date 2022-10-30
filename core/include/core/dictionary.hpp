@@ -66,7 +66,7 @@ static const fl::u8str FLDIC_HEADER_GENERATED_BY = "generated_by";
 static const fl::u8str FLDIC_SECTION_WORDS = "[words]";
 static const fl::u8str FLDIC_SECTION_SHORTCUTS = "[shortcuts]";
 
-static const fl::u8char FLDIC_FLAG_IS_POSSIBLY_OFFENSIVE = 'o';
+static const fl::u8char FLDIC_FLAG_IS_POSSIBLY_OFFENSIVE = 'p';
 static const fl::u8char FLDIC_FLAG_IS_HIDDEN_BY_USER = 'h';
 
 struct dictionary_header {
@@ -110,6 +110,9 @@ class dictionary {
 
     void deserialize(std::basic_istream<fl::u8char>& istream);
     void serialize(std::basic_ostream<fl::u8char>& ostream);
+
+  public:
+    bool contains(const fl::u8str& word) const noexcept;
 
   private:
     void trie_write_ngrams_to(std::basic_ostream<fl::u8char>& ostream, trie_node* base_node, uint8_t ngram_level) const;

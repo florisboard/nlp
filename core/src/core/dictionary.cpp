@@ -224,6 +224,10 @@ void dictionary::throw_fatal_deseralization_error(size_t line_num, const char* m
     throw dictionary_serialization_error(src_path, line_num, msg);
 }
 
+bool dictionary::contains(const fl::u8str& word) const noexcept {
+    return root_node.resolve_key(word) != nullptr;
+}
+
 // ----- mutable_dictionary ----- //
 
 mutable_dictionary::mutable_dictionary() : dictionary() {};

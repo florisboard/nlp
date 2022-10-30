@@ -23,149 +23,245 @@
 #include <unicode/utext.h>
 #include <unicode/utypes.h>
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <vector>
 
 namespace fl::nlp::tools {
-
-using stats_counter_map = std::map<fl::u8str, uint64_t>;
 
 static const fl::u8str FLAG_INDICATOR = "--";
 static const fl::u8str FLAG_SRC_PATH_LONG = "--src";
 static const fl::u8str FLAG_DST_PATH_LONG = "--dst";
+static const fl::u8str FLAG_STATS_PATH_LONG = "--stats";
 
-void insert_project_specific_words(fl::nlp::mutable_dictionary& dict) noexcept {
-    dict.insert("FlorisBoard");
-    dict.insert("Smartbar");
-}
+static const uint8_t MAX_DEPTH = 2;
 
-bool validate_word(UText* ut) {
-    UChar32 cp;
-    while ((cp = utext_next32(ut)) != U_SENTINEL) {
-        if (!u_isalpha(cp) && cp != '\'' && cp != '-') return false;
-    }
-    return true;
-}
+static const auto EXCLUSION_FILTER = [](const fl::u8str& tc) { return tc == "obsolete" || tc == "misspelling"; };
+static const auto OFFENSIVE_FILTER = [](const fl::u8str& tc) {
+    return tc == "offensive" || tc == "vulgar" || tc == "English swear words" || tc == "English ethnic slurs" ||
+           tc == "Masturbation" || tc == "English religious slurs";
+};
 
-bool validate_is_word_relevant(const nlohmann::json& word_data) noexcept {
-    if (word_data.contains("senses")) {
-        auto senses = word_data["senses"].get<std::vector<nlohmann::json>>();
-        if (!senses.empty()) {
-            for (auto& sense : senses) {
-                if (sense.contains("tags")) {
-                    auto tags = sense["tags"].get<std::vector<fl::u8str>>();
-                    auto has_disallowed_tags = std::find_if(tags.begin(), tags.end(), [](fl::u8str& tag) {
-                                                   return tag == "misspelling" || tag == "obsolete";
-                                               }) != tags.end();
-                    if (!has_disallowed_tags) {
-                        // If at least one sense does not have a disallowed tag we see the word as relevant
-                        return true;
-                    }
-                } else {
-                    // If a sense has no tags it means it is relevant
-                    return true;
-                }
-            }
+struct word_evaluator {
+    std::vector<fl::u8str> form_ofs;
+    short exclusion_count = 0;
+    short offensive_count = 0;
+    short normal_count = 0;
 
-            // None of the senses didn't include the disallowed tags
-            return false;
-        }
+    void reset() {
+        exclusion_count = 0;
+        offensive_count = 0;
+        normal_count = 0;
     }
 
-    // We assume is relevant in all other cases
-    return true;
-}
-
-bool check_is_word_vulgar(const nlohmann::json& word_data) noexcept {
-    if (word_data.contains("senses")) {
-        auto senses = word_data["senses"].get<std::vector<nlohmann::json>>();
-        for (auto& sense : senses) {
-            if (sense.contains("tags")) {
-                auto tags = sense["tags"].get<std::vector<fl::u8str>>();
-                auto has_vulgar_tag = std::find_if(tags.begin(), tags.end(),
-                                                   [](fl::u8str& tag) { return tag == "vulgar"; }) != tags.end();
-                if (has_vulgar_tag) {
-                    return true;
-                }
-            }
-        }
+    bool is_word_excluded() const noexcept {
+        return exclusion_count >= offensive_count && exclusion_count >= normal_count;
     }
 
-    // We assume it is not vulgar in all other cases
-    return false;
-}
+    bool is_word_offensive() const noexcept {
+        return offensive_count >= normal_count;
+    }
+};
 
-void read_wiktextract_data_into_dictionary(const std::filesystem::path& wiktextract_json_path,
-                                           fl::nlp::mutable_dictionary& dict) noexcept {
-    UText* ut = nullptr;
-    UErrorCode status;
+class wiktextract_preprocessor {
+  public:
+    fl::nlp::mutable_dictionary dict;
 
-    std::ifstream wiktextract_json_file(wiktextract_json_path, std::ios::in);
-    fl::u8str line;
-    nlohmann::json json_data;
+    wiktextract_preprocessor() = default;
+    ~wiktextract_preprocessor() = default;
 
-    // Stats
-    uint64_t total_words;
-    uint64_t total_senses;
+  private:
+    std::map<fl::u8str, std::map<fl::u8str, word_evaluator>> parsed_data;
+
+    // Statistics
+    using stats_counter_map = std::map<fl::u8str, uint64_t>;
+    uint64_t total_raw_words = 0;
+    uint64_t total_raw_senses = 0;
+    uint64_t total_words_excluded = 0;
+    uint64_t total_words_offensive = 0;
+    uint64_t total_words_normal = 0;
     stats_counter_map pos_stats;
     stats_counter_map tag_stats;
     stats_counter_map category_stats;
+    std::chrono::seconds parse_duration_s;
 
-    while (std::getline(wiktextract_json_file, line)) {
-        json_data = nlohmann::json::parse(line);
+    void insert_project_specific_words() noexcept {
+        dict.insert("FlorisBoard");
+        dict.insert("Smartbar");
+    }
 
-        if (json_data.contains("word")) {
-            total_words++;
-            pos_stats[json_data["pos"].get<fl::u8str>()]++;
-            if (json_data.contains("senses")) {
-                auto senses = json_data["senses"].get<std::vector<nlohmann::json>>();
-                for (auto& sense : senses) {
-                    total_senses++;
-                    if (sense.contains("tags")) {
-                        auto tags = sense["tags"].get<std::vector<fl::u8str>>();
-                        for (auto& tag : tags) {
-                            tag_stats[tag]++;
-                        }
-                    }
-                    if (sense.contains("categories")) {
-                        auto categories = sense["categories"].get<std::vector<nlohmann::json>>();
-                        for (auto& category : categories) {
-                            category_stats[category["name"].get<fl::u8str>()]++;
-                        }
-                    }
+    bool validate_word(UText* ut) {
+        UChar32 cp;
+        std::size_t i;
+        while ((cp = utext_next32(ut)) != U_SENTINEL) {
+            if (i == 0 && cp == '-') return false;
+            if (!u_isalpha(cp) && cp != '\'' && cp != '-') return false;
+            i++;
+        }
+        return true;
+    }
+
+    bool check_is_excluded(const std::vector<fl::u8str>& tags) const noexcept {
+        return std::find_if(tags.begin(), tags.end(), EXCLUSION_FILTER) != tags.end();
+    }
+
+    bool check_is_offensive(const std::vector<fl::u8str>& tags,
+                            const std::vector<fl::u8str>& category_names) const noexcept {
+        return std::find_if(tags.begin(), tags.end(), OFFENSIVE_FILTER) != tags.end() ||
+               std::find_if(category_names.begin(), category_names.end(), OFFENSIVE_FILTER) != category_names.end();
+    }
+
+    void merge_evaluator_counts(word_evaluator& target_evaluator, const word_evaluator& pos_evaluator,
+                                const fl::u8str& pos, uint8_t depth) const noexcept {
+        target_evaluator.exclusion_count += (depth + 1) * pos_evaluator.exclusion_count;
+        target_evaluator.offensive_count += (depth + 1) * pos_evaluator.offensive_count;
+        target_evaluator.normal_count += (depth + 1) * pos_evaluator.normal_count;
+        if (depth >= MAX_DEPTH) return;
+        for (auto& form_of : pos_evaluator.form_ofs) {
+            if (parsed_data.contains(form_of)) {
+                auto& pos_map = parsed_data.at(form_of);
+                if (pos_map.contains(pos)) {
+                    merge_evaluator_counts(target_evaluator, pos_map.at(pos), pos, depth + 1);
                 }
-            }
-
-            if (!validate_is_word_relevant(json_data)) continue;
-            auto word = json_data["word"].get<fl::u8str>();
-            status = U_ZERO_ERROR;
-            ut = utext_openUTF8(ut, word.c_str(), -1, &status);
-            if (U_FAILURE(status) || !validate_word(ut)) continue;
-            auto& properties = dict.insert(word);
-            // TODO: reevaluate this as it does not catch plurals of vulgar words and also misses some other offensive
-            // words
-            if (check_is_word_vulgar(json_data)) {
-                properties.is_possibly_offensive = true;
             }
         }
     }
 
-    utext_close(ut);
+  public:
+    void read_wiktextract_data_into_dictionary(const std::filesystem::path& wiktextract_json_path) {
+        UText* ut = nullptr;
+        UErrorCode status;
 
-    std::ofstream out("data/stats.json");
-    nlohmann::json json_stats;
-    json_stats["total_words"] = total_words;
-    json_stats["total_senses"] = total_senses;
-    json_stats["pos_stats"] = pos_stats;
-    json_stats["tag_stats"] = tag_stats;
-    json_stats["category_stats"] = category_stats;
-    out << std::setw(2) << json_stats;
-}
+        std::ifstream wiktextract_json_file(wiktextract_json_path, std::ios::in);
+        fl::u8str line;
+        fl::u8str word;
+        fl::u8str pos;
+        std::vector<nlohmann::json> senses;
+        std::vector<fl::u8str> tags;
+        std::vector<nlohmann::json> categories;
+        std::vector<fl::u8str> category_names;
+        fl::u8str form_of;
+        nlohmann::json json_data;
+
+        auto parse_start_time = std::chrono::high_resolution_clock::now();
+
+        while (std::getline(wiktextract_json_file, line)) {
+            json_data = nlohmann::json::parse(line);
+            if (!json_data.contains("word") || !json_data.contains("pos") || !json_data.contains("senses")) continue;
+
+            json_data["word"].get_to(word);
+            json_data["pos"].get_to(pos);
+            json_data["senses"].get_to(senses);
+            auto& word_data = parsed_data[word][pos];
+
+            total_raw_words++;
+            pos_stats[pos]++;
+
+            for (auto& sense : senses) {
+                total_raw_senses++;
+                if (sense.contains("tags")) {
+                    sense["tags"].get_to(tags);
+                    for (auto& tag : tags) {
+                        tag_stats[tag]++;
+                    }
+                } else {
+                    tags.clear();
+                }
+                category_names.clear();
+                if (sense.contains("categories")) {
+                    sense["categories"].get_to(categories);
+                    for (auto& category : categories) {
+                        auto category_name = category["name"].get<fl::u8str>();
+                        category_stats[category_name]++;
+                        category_names.push_back(std::move(category_name));
+                    }
+                } else {
+                    categories.clear();
+                }
+                if (sense.contains("form_of")) {
+                    sense["form_of"][0]["word"].get_to(form_of);
+                    word_data.form_ofs.push_back(form_of);
+                } else if (sense.contains("alt_of")) {
+                    sense["alt_of"][0]["word"].get_to(form_of);
+                    word_data.form_ofs.push_back(form_of);
+                }
+
+                if (check_is_excluded(tags)) {
+                    word_data.exclusion_count++;
+                } else if (check_is_offensive(tags, category_names)) {
+                    word_data.offensive_count++;
+                } else {
+                    word_data.normal_count++;
+                }
+            }
+        }
+
+        // Insertion into dictionary
+        word_evaluator evaluator;
+        for (auto it = parsed_data.cbegin(); it != parsed_data.cend(); it++) {
+            auto& [word, pos_map] = *it;
+            evaluator.reset();
+
+            for (auto& [pos2, pos_evaluator] : pos_map) {
+                merge_evaluator_counts(evaluator, pos_evaluator, pos2, 0);
+            }
+
+            if (evaluator.is_word_excluded()) {
+                total_words_excluded++;
+                continue;
+            } else {
+                status = U_ZERO_ERROR;
+                ut = utext_openUTF8(ut, word.data(), -1, &status);
+                if (U_FAILURE(status) || !validate_word(ut)) {
+                    total_words_excluded++;
+                    continue;
+                } else if (evaluator.is_word_offensive()) {
+                    total_words_offensive++;
+                    auto& properties = dict.insert(word);
+                    properties.absolute_score += evaluator.offensive_count;
+                    properties.is_possibly_offensive = true;
+                } else {
+                    total_words_normal++;
+                    auto& properties = dict.insert(word);
+                    properties.absolute_score += evaluator.normal_count;
+                }
+            }
+        }
+
+        utext_close(ut);
+
+        auto parse_end_time = std::chrono::high_resolution_clock::now();
+        parse_duration_s = std::chrono::duration_cast<std::chrono::seconds>(parse_end_time - parse_start_time);
+    }
+
+    void persist_dictionary(const fl::u8str& dst_path) {
+        dict.dst_path = dst_path;
+        dict.persist();
+    }
+
+    void persist_stats(const fl::u8str& stats_path) const {
+        if (stats_path.empty()) return;
+        std::ofstream out(stats_path);
+        nlohmann::json json_stats;
+        json_stats["_parse_duration_in_seconds"] = parse_duration_s.count();
+        json_stats["_total_raw_words"] = total_raw_words;
+        json_stats["_total_raw_senses"] = total_raw_senses;
+        json_stats["_total_words_excluded"] = total_words_excluded;
+        json_stats["_total_words_offensive"] = total_words_offensive;
+        json_stats["_total_words_normal"] = total_words_normal;
+        json_stats["pos_stats"] = pos_stats;
+        json_stats["tag_stats"] = tag_stats;
+        json_stats["category_stats"] = category_stats;
+        out << std::setw(2) << json_stats;
+    }
+};
 
 int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept {
     fl::u8str src_path;
     fl::u8str dst_path;
+    fl::u8str stats_path;
 
     for (std::size_t i = 0; i < flags.size();) {
         auto& flag = flags[i];
@@ -185,6 +281,14 @@ int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept
                 std::cerr << "Fatal: Using destination path flag without corresponsing path! Aborting.\n";
                 return 1;
             }
+        } else if (flag == FLAG_STATS_PATH_LONG) {
+            if (i + 1 < flags.size() && !flags[i + 1].starts_with(FLAG_INDICATOR)) {
+                stats_path = flags[i + 1];
+                i += 2;
+            } else {
+                std::cerr << "Fatal: Using statistics path flag without corresponsing path! Aborting.\n";
+                return 1;
+            }
         } else {
             std::cerr << "Warning: Unknown flag '" << flag << "'. Ignoring.\n";
             i++;
@@ -193,6 +297,7 @@ int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept
 
     fl::str::trim(src_path);
     fl::str::trim(dst_path);
+    fl::str::trim(stats_path);
     if (src_path.empty()) {
         std::cerr << "Fatal: No source path specified! Aborting.\n";
         return 1;
@@ -205,11 +310,10 @@ int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept
         return 1;
     }
 
-    fl::nlp::mutable_dictionary dict;
-    dict.dst_path = dst_path;
-    insert_project_specific_words(dict);
-    read_wiktextract_data_into_dictionary(src_path, dict);
-    dict.persist();
+    wiktextract_preprocessor preprocessor;
+    preprocessor.read_wiktextract_data_into_dictionary(src_path);
+    preprocessor.persist_dictionary(dst_path);
+    preprocessor.persist_stats(stats_path);
 
     return 0;
 }
