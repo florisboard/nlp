@@ -17,6 +17,7 @@
 #include "core/dictionary_session.hpp"
 
 #include "core/dictionary.hpp"
+#include "core/string.hpp"
 
 #include <unicode/ubrk.h>
 #include <unicode/utext.h>
@@ -34,8 +35,7 @@ void dictionary_session::load_user_dictionary(const std::filesystem::path& dict_
     _user_dictionary = std::make_unique<mutable_dictionary>(dict_path);
 }
 
-bool strcmp(const std::vector<fl::u8str>& word_chars, const std::vector<fl::u8str>& prefix_chars,
-            std::size_t prefix_index) {
+bool strcmp(const fl::u8chstr_vec& word_chars, const fl::u8chstr_vec& prefix_chars, std::size_t prefix_index) {
     if (word_chars.size() != prefix_index) return false;
     for (int i = 0; i < word_chars.size(); i++) {
         if (word_chars[i] != prefix_chars[i]) return false;
@@ -63,9 +63,7 @@ void dictionary_session::fuzzy_search_recursive_dld(const trie_node* node, fuzzy
         return;
     }
 
-    for (auto& [ch, child_node] : node->children) {
-        // FIXME: below line is not correct for UTF-8 characters!!
-        fl::u8str chstr(1, ch);
+    for (auto& [chstr, child_node] : node->children) {
         state.set_prefix_chstr_at(prefix_index + 1, chstr);
         fuzzy_search_recursive_dld(child_node.get(), state, prefix_index + 1);
     }
@@ -94,7 +92,9 @@ spelling_result dictionary_session::spell(fl::u8str& word, const std::vector<fl:
     if (word.empty()) {
         return spelling_result::unspecified();
     }
-    auto word_node = _base_dictionaries[0]->root_node.resolve_key(word);
+    fl::u8chstr_vec word_chars;
+    fl::chstr::str_to_vec(word, word_chars);
+    auto word_node = _base_dictionaries[0]->root_node.resolve_key(word_chars);
     if (word_node != nullptr && word_node->is_terminal) {
         return spelling_result::valid_word();
     }
@@ -159,7 +159,7 @@ dictionary_session::fuzzy_search_state::fuzzy_search_state(const dictionary_sess
 }
 
 void dictionary_session::fuzzy_search_state::set_prefix_chstr_at(std::size_t prefix_index,
-                                                                 const fl::u8str& chstr) noexcept {
+                                                                 const fl::u8chstr& chstr) noexcept {
     ensure_capacity_for(prefix_index + 1);
     prefix_chars[prefix_index] = chstr;
     distances[prefix_index][0] = prefix_index * COST_INSERT;
@@ -225,11 +225,13 @@ bool dictionary_session::fuzzy_search_state::is_dead_end_at(std::size_t prefix_i
 }
 
 void dictionary_session::fuzzy_search_state::init_word_chars(const fl::u8str& word) noexcept {
-    word_chars.push_back("");               // Empty top-left cell
-    word_chars_opposite_case.push_back(""); // Empty top-left cell
+    fl::chstr::str_to_vec(word, word_chars, session.locale_tag);
+    fl::chstr::str_to_vec(word, word_chars_opposite_case, session.locale_tag);
+    word_chars.insert(word_chars.begin(), "");                             // Empty top-left cell
+    word_chars_opposite_case.insert(word_chars_opposite_case.begin(), ""); // Empty top-left cell
     if (word.empty()) return;
 
-    UErrorCode status = U_ZERO_ERROR;
+    /*UErrorCode status = U_ZERO_ERROR;
     auto ut = utext_openUTF8(nullptr, word.c_str(), -1, &status);
     auto ub = ubrk_open(UBRK_CHARACTER, session.locale_tag.c_str(), nullptr, 0, &status);
     auto csm = ucasemap_open(session.locale_tag.c_str(), U_FOLD_CASE_DEFAULT, &status);
@@ -256,7 +258,7 @@ void dictionary_session::fuzzy_search_state::init_word_chars(const fl::u8str& wo
 
     ucasemap_close(csm);
     ubrk_close(ub);
-    utext_close(ut);
+    utext_close(ut);*/
 }
 
 void dictionary_session::fuzzy_search_state::ensure_capacity_for(std::size_t prefix_index) noexcept {

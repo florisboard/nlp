@@ -16,19 +16,22 @@
 
 #include "core/string.hpp"
 
+#include <unicode/ubrk.h>
+#include <unicode/ucasemap.h>
 #include <unicode/uchar.h>
+#include <unicode/utext.h>
 #include <unicode/utypes.h>
 
 #include <functional>
 
 void apply_casemap(
-    fl::u8str& str, UCaseMap* cached_csm,
+    fl::u8str& str,
     std::function<int32_t(UCaseMap*, char*, int32_t, const char*, int32_t, UErrorCode*)> casemapper) noexcept {
     if (str.empty()) return;
 
     // Set up case mapper
     UErrorCode status = U_ZERO_ERROR;
-    UCaseMap* csm = cached_csm != nullptr ? cached_csm : ucasemap_open("", U_FOLD_CASE_DEFAULT, &status);
+    UCaseMap* csm = ucasemap_open("", U_FOLD_CASE_DEFAULT, &status);
     if (csm == nullptr || U_FAILURE(status)) return;
 
     // Calculate length of dst
@@ -43,20 +46,20 @@ void apply_casemap(
     str.assign(dst_buffer);
 
     // Clean up
-    if (cached_csm == nullptr) ucasemap_close(csm);
+    ucasemap_close(csm);
     delete[] dst_buffer;
 }
 
-void fl::str::lowercase(u8str& str, UCaseMap* cached_csm) noexcept {
-    apply_casemap(str, cached_csm, ucasemap_utf8ToLower);
+void fl::str::lowercase(u8str& str) noexcept {
+    apply_casemap(str, ucasemap_utf8ToLower);
 }
 
-void fl::str::titlecase(u8str& str, UCaseMap* cached_csm) noexcept {
-    apply_casemap(str, cached_csm, ucasemap_utf8ToTitle);
+void fl::str::titlecase(u8str& str) noexcept {
+    apply_casemap(str, ucasemap_utf8ToTitle);
 }
 
-void fl::str::uppercase(u8str& str, UCaseMap* cached_csm) noexcept {
-    apply_casemap(str, cached_csm, ucasemap_utf8ToUpper);
+void fl::str::uppercase(u8str& str) noexcept {
+    apply_casemap(str, ucasemap_utf8ToUpper);
 }
 
 bool is_whitespace(fl::u8char c) noexcept { return u_isWhitespace(c); }
@@ -86,4 +89,42 @@ void fl::str::split(const fl::u8str& src, fl::u8char delim, std::vector<fl::u8st
         last = next + 1;
     }
     dst.push_back(src.substr(last));
+}
+
+void fl::chstr::vec_to_str(const fl::u8chstr_vec& vec, fl::u8str& str) noexcept {
+    str.clear();
+    for (auto& chstr : vec) {
+        str.append(chstr);
+    }
+}
+
+void fl::chstr::str_to_vec(const u8str& str, u8chstr_vec& vec, const fl::u8str& locale_tag) noexcept {
+    vec.clear();
+
+    auto status = U_ZERO_ERROR;
+    auto ut = utext_openUTF8(nullptr, str.c_str(), str.size(), &status);
+    auto ub = ubrk_open(UBRK_CHARACTER, locale_tag.c_str(), nullptr, 0, &status);
+    ubrk_setUText(ub, ut, &status);
+
+    if (U_SUCCESS(status)) {
+        int32_t prev_n = 0;
+        int32_t curr_n = 0;
+
+        while ((curr_n = ubrk_next(ub)) != UBRK_DONE) {
+            auto chstr = str.substr(prev_n, curr_n - prev_n);
+            vec.push_back(std::move(chstr));
+            prev_n = curr_n;
+        }
+    }
+
+    ubrk_close(ub);
+    utext_close(ut);
+}
+
+bool fl::chstr::compare(const u8chstr_vec& a, const u8chstr_vec& b) noexcept {
+    if (a.size() != b.size()) return false;
+    for (int i = 0; i < a.size(); i++) {
+        if (a[i] != b[i]) return false;
+    }
+    return true;
 }

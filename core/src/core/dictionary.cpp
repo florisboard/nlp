@@ -120,6 +120,7 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
     fl::u8str line;
     std::vector<fl::u8str> line_split_results;
     fl::u8str word;
+    fl::u8chstr_vec word_chars;
     uint8_t prev_ngram_level = 1;
     std::array<trie_node*, 9> prev_parent_nodes {&root_node, nullptr};
     while (std::getline(istream, line)) {
@@ -179,7 +180,8 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
         }
 
         // Insert node into trie
-        auto node = parent_node->insert(word);
+        fl::chstr::str_to_vec(word, word_chars);
+        auto node = parent_node->insert(word_chars);
         node->properties = properties;
         prev_ngram_level = ngram_level;
         if (ngram_level == 1 && max_unigram_score < properties.absolute_score) {
@@ -200,11 +202,13 @@ void dictionary::serialize(std::basic_ostream<fl::u8char>& ostream) {
 
 void dictionary::trie_write_ngrams_to(std::basic_ostream<fl::u8char>& ostream, trie_node* base_node,
                                       uint8_t ngram_level) const {
+    fl::u8str word;
     if (base_node == nullptr) return;
-    base_node->for_each([&](const fl::u8str& word, trie_node* node) {
+    base_node->for_each([&](const fl::u8chstr_vec& word_chars, trie_node* node) {
         for (size_t n = 1; n < ngram_level; n++) {
             ostream << FLDIC_SEPARATOR;
         }
+        fl::chstr::vec_to_str(word_chars, word);
         ostream << word << FLDIC_SEPARATOR << node->properties.absolute_score;
         if (node->properties.is_possibly_offensive || node->properties.is_hidden_by_user) {
             ostream << FLDIC_SEPARATOR;
@@ -225,7 +229,9 @@ void dictionary::throw_fatal_deseralization_error(size_t line_num, const char* m
 }
 
 bool dictionary::contains(const fl::u8str& word) const noexcept {
-    return root_node.resolve_key(word) != nullptr;
+    fl::u8chstr_vec word_chars;
+    fl::chstr::str_to_vec(word, word_chars);
+    return root_node.resolve_key(word_chars) != nullptr;
 }
 
 // ----- mutable_dictionary ----- //
@@ -277,15 +283,31 @@ bool mutable_dictionary::adjust_scores_if_necessary() noexcept {
 }
 
 ngram_properties& mutable_dictionary::insert(const fl::u8str& word1) noexcept {
-    return root_node.insert(word1)->properties;
+    fl::u8chstr_vec word1_chars;
+    fl::chstr::str_to_vec(word1, word1_chars);
+    return root_node.insert(word1_chars)->properties;
 }
 
 void mutable_dictionary::insert(const fl::u8str& word1, const fl::u8str& word2) noexcept {
-    root_node.insert(word1)->subsequent_words_or_create()->insert(word2);
+    fl::u8chstr_vec word1_chars;
+    fl::u8chstr_vec word2_chars;
+    fl::chstr::str_to_vec(word1, word1_chars);
+    fl::chstr::str_to_vec(word2, word2_chars);
+    root_node.insert(word1_chars)->subsequent_words_or_create()->insert(word2_chars);
 }
 
 void mutable_dictionary::insert(const fl::u8str& word1, const fl::u8str& word2, const fl::u8str& word3) noexcept {
-    root_node.insert(word1)->subsequent_words_or_create()->insert(word2)->subsequent_words_or_create()->insert(word3);
+    fl::u8chstr_vec word1_chars;
+    fl::u8chstr_vec word2_chars;
+    fl::u8chstr_vec word3_chars;
+    fl::chstr::str_to_vec(word1, word1_chars);
+    fl::chstr::str_to_vec(word2, word2_chars);
+    fl::chstr::str_to_vec(word3, word3_chars);
+    root_node.insert(word1_chars)
+        ->subsequent_words_or_create()
+        ->insert(word2_chars)
+        ->subsequent_words_or_create()
+        ->insert(word3_chars);
 }
 
 void mutable_dictionary::persist() {

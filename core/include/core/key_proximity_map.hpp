@@ -31,19 +31,16 @@
 namespace fl::nlp {
 
 class key_proximity_map {
-    using raw_key_data_map = std::unordered_map<fl::u8str, std::vector<fl::u8str>>;
-    using key_data_map = basic_trie_node<int>;
+    using key_data_map = std::unordered_map<fl::u8str, std::vector<fl::u8str>>;
 
   public:
     key_proximity_map() = default;
     ~key_proximity_map() = default;
 
     bool is_in_proximity(const fl::u8str& assumed, const fl::u8str& actual) const noexcept {
-        auto surrounding_keys = _data.resolve_key(actual);
-        if (surrounding_keys != nullptr) {
-            return surrounding_keys->subsequent_words()->resolve_key(assumed) != nullptr;
-        }
-        return false;
+        if (!_data.contains(assumed)) return false;
+        auto keys = _data.at(assumed);
+        return std::find(keys.begin(), keys.end(), actual) != keys.end();
     }
 
     void clear() noexcept {
@@ -60,16 +57,10 @@ class key_proximity_map {
         auto json_mapping_data = nlohmann::json::parse(json_mapping_file);
         json_mapping_file.close();
 
-        auto parsed_data = json_mapping_data.get<raw_key_data_map>();
         if (clear_existing) {
             clear();
         }
-        for (auto& [key, vector_value] : parsed_data) {
-            auto surrounding_keys = _data.resolve_key_or_create(key);
-            for (auto& value : vector_value) {
-                surrounding_keys->subsequent_words_or_create()->insert(value);
-            }
-        }
+        json_mapping_data.get_to(_data);
     }
 
   private:
