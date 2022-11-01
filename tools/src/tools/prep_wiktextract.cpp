@@ -36,9 +36,12 @@ static const fl::u8str FLAG_SRC_PATH_LONG = "--src";
 static const fl::u8str FLAG_DST_PATH_LONG = "--dst";
 static const fl::u8str FLAG_STATS_PATH_LONG = "--stats";
 
-static const uint8_t MAX_DEPTH = 2;
+static const uint8_t MERGING_MAX_DEPTH = 0;
+static const uint8_t MERGING_MAX_DEPTH_WITH_FO = 2;
 
-static const auto EXCLUSION_FILTER = [](const fl::u8str& tc) { return tc == "obsolete" || tc == "misspelling"; };
+static const auto EXCLUSION_FILTER = [](const fl::u8str& tc) {
+    return tc == "obsolete" || tc == "misspelling" || tc == "morpheme";
+};
 static const auto OFFENSIVE_FILTER = [](const fl::u8str& tc) {
     return tc == "offensive" || tc == "vulgar" || tc == "English swear words" || tc == "English ethnic slurs" ||
            tc == "Masturbation" || tc == "English religious slurs";
@@ -114,16 +117,16 @@ class wiktextract_preprocessor {
     }
 
     void merge_evaluator_counts(word_evaluator& target_evaluator, const word_evaluator& pos_evaluator,
-                                const fl::u8str& pos, uint8_t depth) const noexcept {
+                                const fl::u8str& pos, uint8_t max_depth, uint8_t depth = 0) const noexcept {
         target_evaluator.exclusion_count += (depth + 1) * pos_evaluator.exclusion_count;
         target_evaluator.offensive_count += (depth + 1) * pos_evaluator.offensive_count;
         target_evaluator.normal_count += (depth + 1) * pos_evaluator.normal_count;
-        if (depth >= MAX_DEPTH) return;
+        if (depth >= max_depth) return;
         for (auto& form_of : pos_evaluator.form_ofs) {
             if (parsed_data.contains(form_of)) {
                 auto& pos_map = parsed_data.at(form_of);
                 if (pos_map.contains(pos)) {
-                    merge_evaluator_counts(target_evaluator, pos_map.at(pos), pos, depth + 1);
+                    merge_evaluator_counts(target_evaluator, pos_map.at(pos), pos, max_depth, depth + 1);
                 }
             }
         }
@@ -200,32 +203,35 @@ class wiktextract_preprocessor {
 
         // Insertion into dictionary
         word_evaluator evaluator;
+        word_evaluator evaluator_with_fo;
         for (auto it = parsed_data.cbegin(); it != parsed_data.cend(); it++) {
             auto& [word, pos_map] = *it;
             evaluator.reset();
+            evaluator_with_fo.reset();
 
             for (auto& [pos2, pos_evaluator] : pos_map) {
-                merge_evaluator_counts(evaluator, pos_evaluator, pos2, 0);
+                merge_evaluator_counts(evaluator, pos_evaluator, pos2, MERGING_MAX_DEPTH);
+                merge_evaluator_counts(evaluator_with_fo, pos_evaluator, pos2, MERGING_MAX_DEPTH_WITH_FO);
             }
 
-            if (evaluator.is_word_excluded()) {
+            if (evaluator.is_word_excluded() || evaluator_with_fo.is_word_excluded()) {
                 total_words_excluded++;
                 continue;
             } else {
                 status = U_ZERO_ERROR;
-                ut = utext_openUTF8(ut, word.data(), -1, &status);
+                ut = utext_openUTF8(ut, word.c_str(), word.size(), &status);
                 if (U_FAILURE(status) || !validate_word(ut)) {
                     total_words_excluded++;
                     continue;
-                } else if (evaluator.is_word_offensive()) {
+                } else if (evaluator_with_fo.is_word_offensive()) {
                     total_words_offensive++;
                     auto& properties = dict.insert(word);
-                    properties.absolute_score += evaluator.offensive_count;
+                    properties.absolute_score += evaluator_with_fo.offensive_count;
                     properties.is_possibly_offensive = true;
                 } else {
                     total_words_normal++;
                     auto& properties = dict.insert(word);
-                    properties.absolute_score += evaluator.normal_count;
+                    properties.absolute_score += evaluator_with_fo.normal_count;
                 }
             }
         }

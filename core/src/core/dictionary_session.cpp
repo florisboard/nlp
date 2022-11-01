@@ -225,16 +225,13 @@ bool dictionary_session::fuzzy_search_state::is_dead_end_at(std::size_t prefix_i
 }
 
 void dictionary_session::fuzzy_search_state::init_word_chars(const fl::u8str& word) noexcept {
-    fl::chstr::str_to_vec(word, word_chars, session.locale_tag);
-    fl::chstr::str_to_vec(word, word_chars_opposite_case, session.locale_tag);
-    word_chars.insert(word_chars.begin(), "");                             // Empty top-left cell
-    word_chars_opposite_case.insert(word_chars_opposite_case.begin(), ""); // Empty top-left cell
+    word_chars.push_back("");               // Empty top-left cell
+    word_chars_opposite_case.push_back(""); // Empty top-left cell
     if (word.empty()) return;
 
-    /*UErrorCode status = U_ZERO_ERROR;
+    UErrorCode status = U_ZERO_ERROR;
     auto ut = utext_openUTF8(nullptr, word.c_str(), -1, &status);
     auto ub = ubrk_open(UBRK_CHARACTER, session.locale_tag.c_str(), nullptr, 0, &status);
-    auto csm = ucasemap_open(session.locale_tag.c_str(), U_FOLD_CASE_DEFAULT, &status);
     ubrk_setUText(ub, ut, &status);
 
     if (U_SUCCESS(status)) {
@@ -244,11 +241,11 @@ void dictionary_session::fuzzy_search_state::init_word_chars(const fl::u8str& wo
         while ((curr_n = ubrk_next(ub)) != UBRK_DONE) {
             auto chstr = word.substr(prev_n, curr_n - prev_n);
             auto chstr_mod(chstr);
-            fl::str::uppercase(chstr_mod, csm);
+            fl::str::uppercase(chstr_mod);
             if (chstr != chstr_mod) {
                 word_chars_opposite_case.push_back(std::move(chstr_mod));
             } else {
-                fl::str::lowercase(chstr_mod, csm);
+                fl::str::lowercase(chstr_mod);
                 word_chars_opposite_case.push_back(std::move(chstr_mod));
             }
             word_chars.push_back(std::move(chstr));
@@ -256,9 +253,8 @@ void dictionary_session::fuzzy_search_state::init_word_chars(const fl::u8str& wo
         }
     }
 
-    ucasemap_close(csm);
     ubrk_close(ub);
-    utext_close(ut);*/
+    utext_close(ut);
 }
 
 void dictionary_session::fuzzy_search_state::ensure_capacity_for(std::size_t prefix_index) noexcept {
