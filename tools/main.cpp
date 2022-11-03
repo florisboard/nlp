@@ -25,21 +25,27 @@ static const fl::u8str VERSION = "0.1.0";
 
 static const fl::u8str ACTION_CORE_UI = "core-ui";
 static const fl::u8str ACTION_PREP_WIKTEXTRACT = "prep-wiktextract";
-static const fl::u8str ACTION_HELP = "--help";
-static const fl::u8str ACTION_VERSION = "--version";
+static const fl::u8str FLAG_INDICATOR = "-";
+static const fl::u8str FLAG_HELP = "--help";
+static const fl::u8str FLAG_VERSION = "--version";
 
 void print_version() noexcept {
     std::cout << "FlorisNLP Tools v" << VERSION << "\n";
+}
+
+void print_version_with_additional_newline() noexcept {
+    print_version();
+    std::cout << "\n";
 }
 
 void print_usage(char* arg0) noexcept {
     print_version();
     std::cout << "\nUsage: " << arg0 << " <action> [<flags>]\n\n"
               << "Available actions:\n"
-              << "    " << ACTION_CORE_UI << "\n\n"
-              << "    " << ACTION_PREP_WIKTEXTRACT << "\n\n"
-              << "    " << ACTION_HELP << "\n"
-              << "    " << ACTION_VERSION << "\n";
+              << "    " << ACTION_CORE_UI << "\n"
+              << "    " << ACTION_PREP_WIKTEXTRACT << "\n"
+              << "    " << FLAG_HELP << "\n"
+              << "    " << FLAG_VERSION << "\n";
 }
 
 auto collect_flags(int argc, char** argv) noexcept {
@@ -48,6 +54,13 @@ auto collect_flags(int argc, char** argv) noexcept {
         flags.push_back(fl::u8str(argv[i]));
     }
     return flags;
+}
+
+bool has_flag(const fl::u8str& flag_to_search, const std::vector<fl::u8str>& flags) noexcept {
+    for (auto& flag : flags) {
+        if (flag == flag_to_search) return true;
+    }
+    return false;
 }
 
 int main(int argc, char** argv) {
@@ -59,16 +72,30 @@ int main(int argc, char** argv) {
 
     auto action = fl::u8str(argv[1]);
     auto flags = collect_flags(argc, argv);
-    if (action == ACTION_HELP) {
+    if (action == FLAG_HELP) {
         print_usage(argv[0]);
-    } else if (action == ACTION_VERSION) {
+    } else if (action == FLAG_VERSION) {
         print_version();
     } else if (action == ACTION_CORE_UI) {
-        return fl::nlp::tools::handle_core_ui_action(flags);
+        if (has_flag(FLAG_HELP, flags)) {
+            print_version_with_additional_newline();
+            return fl::nlp::tools::print_core_ui_usage(argv[0]);
+        } else {
+            return fl::nlp::tools::handle_core_ui_action(flags);
+        }
     } else if (action == ACTION_PREP_WIKTEXTRACT) {
-        return fl::nlp::tools::handle_prep_wiktextract_action(flags);
+        if (has_flag(FLAG_HELP, flags)) {
+            print_version_with_additional_newline();
+            return fl::nlp::tools::print_prep_wiktextract_usage(argv[0]);
+        } else {
+            return fl::nlp::tools::handle_prep_wiktextract_action(flags);
+        }
     } else {
-        std::cerr << "Fatal: '" << action << "' is not a known action. See '" << argv[0] << " --help'.\n";
+        if (action.starts_with(FLAG_INDICATOR)) {
+            std::cerr << "Fatal: Unknown flag'" << action << "'. See '" << argv[0] << " --help'.\n";
+        } else {
+            std::cerr << "Fatal: Unknown action '" << action << "'. See '" << argv[0] << " --help'.\n";
+        }
         return 1;
     }
 

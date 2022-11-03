@@ -25,6 +25,8 @@ namespace fl::nlp::tools {
 
 int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept;
 
+int print_prep_wiktextract_usage(char* arg0) noexcept;
+
 } // namespace fl::nlp::tools
 
 #endif

@@ -27,24 +27,72 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <regex>
 #include <vector>
 
 namespace fl::nlp::tools {
 
-static const fl::u8str FLAG_INDICATOR = "--";
-static const fl::u8str FLAG_SRC_PATH_LONG = "--src";
-static const fl::u8str FLAG_DST_PATH_LONG = "--dst";
-static const fl::u8str FLAG_STATS_PATH_LONG = "--stats";
+static const fl::u8str FLAG_INDICATOR = "-";
+static const fl::u8str FLAG_SRC_PATH = "--src";
+static const fl::u8str FLAG_DST_PATH = "--dst";
+static const fl::u8str FLAG_CONFIG_PATH = "--config";
+static const fl::u8str FLAG_CONFIG_PATH_DEFAULT_VALUE = "data/wiktextract-config.json";
+static const fl::u8str FLAG_FILTER_NAME = "--filter";
+static const fl::u8str FLAG_FILTER_NAME_DEFAULT_VALUE = "root";
+static const fl::u8str FLAG_STATS_PATH = "--stats";
 
 static const uint8_t MERGING_MAX_DEPTH = 0;
 static const uint8_t MERGING_MAX_DEPTH_WITH_FO = 2;
 
-static const auto EXCLUSION_FILTER = [](const fl::u8str& tc) {
-    return tc == "obsolete" || tc == "misspelling" || tc == "morpheme";
+struct filter_rule {
+    std::vector<std::regex> words;
+    std::vector<fl::u8str> tags;
+    std::vector<fl::u8str> categories;
+
+    bool matches(const fl::u8str& _word, const std::vector<fl::u8str>& _tags,
+                 const std::vector<fl::u8str>& _categories) const noexcept {
+        for (auto& word : words) {
+            if (std::regex_match(_word, word)) return true;
+        }
+        for (auto& tag : tags) {
+            for (auto& _tag : _tags) {
+                if (_tag == tag) return true;
+            }
+        }
+        for (auto& category : categories) {
+            for (auto& _category : _categories) {
+                if (_category == category) return true;
+            }
+        }
+        return false;
+    }
 };
-static const auto OFFENSIVE_FILTER = [](const fl::u8str& tc) {
-    return tc == "offensive" || tc == "vulgar" || tc == "English swear words" || tc == "English ethnic slurs" ||
-           tc == "Masturbation" || tc == "English religious slurs";
+
+struct filter {
+    fl::u8str name;
+    filter_rule excluded;
+    filter_rule offensive;
+};
+
+static const filter FALLBACK_FILTER = {"fallback"};
+
+struct wiktextract_config {
+    std::vector<fl::u8str> project_specific_words;
+    std::vector<filter> filters;
+
+    const filter& get_filter(const fl::u8str& filter_name) const noexcept {
+        for (auto& filter : filters) {
+            if (filter.name == filter_name) {
+                return filter;
+            }
+        }
+        for (auto& filter : filters) {
+            if (filter.name == FLAG_FILTER_NAME_DEFAULT_VALUE) {
+                return filter;
+            }
+        }
+        return FALLBACK_FILTER;
+    }
 };
 
 struct word_evaluator {
@@ -70,6 +118,7 @@ struct word_evaluator {
 
 class wiktextract_preprocessor {
   public:
+    wiktextract_config config;
     fl::nlp::mutable_dictionary dict;
 
     wiktextract_preprocessor() = default;
@@ -91,29 +140,18 @@ class wiktextract_preprocessor {
     std::chrono::seconds parse_duration_s;
 
     void insert_project_specific_words() noexcept {
-        dict.insert("FlorisBoard");
-        dict.insert("Smartbar");
+        for (auto& word : config.project_specific_words) {
+            auto& properties = dict.insert(word);
+            properties.absolute_score++;
+        }
     }
 
     bool validate_word(UText* ut) {
         UChar32 cp;
-        std::size_t i;
         while ((cp = utext_next32(ut)) != U_SENTINEL) {
-            if (i == 0 && cp == '-') return false;
             if (!u_isalpha(cp) && cp != '\'' && cp != '-') return false;
-            i++;
         }
         return true;
-    }
-
-    bool check_is_excluded(const std::vector<fl::u8str>& tags) const noexcept {
-        return std::find_if(tags.begin(), tags.end(), EXCLUSION_FILTER) != tags.end();
-    }
-
-    bool check_is_offensive(const std::vector<fl::u8str>& tags,
-                            const std::vector<fl::u8str>& category_names) const noexcept {
-        return std::find_if(tags.begin(), tags.end(), OFFENSIVE_FILTER) != tags.end() ||
-               std::find_if(category_names.begin(), category_names.end(), OFFENSIVE_FILTER) != category_names.end();
     }
 
     void merge_evaluator_counts(word_evaluator& target_evaluator, const word_evaluator& pos_evaluator,
@@ -133,7 +171,26 @@ class wiktextract_preprocessor {
     }
 
   public:
-    void read_wiktextract_data_into_dictionary(const std::filesystem::path& wiktextract_json_path) {
+    void load_config(const fl::u8str& config_path) {
+        std::ifstream config_file(config_path);
+        nlohmann::json config_json = nlohmann::json::parse(config_file);
+        config_json["projectSpecificWords"].get_to(config.project_specific_words);
+        auto filter_json_list = config_json["filters"];
+        for (auto& filter_json : filter_json_list) {
+            filter filter;
+            filter_json["name"].get_to(filter.name);
+            filter_json["excluded"]["words"].get_to(filter.excluded.words);
+            filter_json["excluded"]["tags"].get_to(filter.excluded.tags);
+            filter_json["excluded"]["categories"].get_to(filter.excluded.categories);
+            filter_json["offensive"]["words"].get_to(filter.offensive.words);
+            filter_json["offensive"]["tags"].get_to(filter.offensive.tags);
+            filter_json["offensive"]["categories"].get_to(filter.offensive.categories);
+            config.filters.push_back(std::move(filter));
+        }
+    }
+
+    void read_wiktextract_data_into_dictionary(const std::filesystem::path& wiktextract_json_path,
+                                               const fl::u8str& filter_name) {
         UText* ut = nullptr;
         UErrorCode status;
 
@@ -147,6 +204,7 @@ class wiktextract_preprocessor {
         std::vector<fl::u8str> category_names;
         fl::u8str form_of;
         nlohmann::json json_data;
+        filter filter = config.get_filter(filter_name);
 
         auto parse_start_time = std::chrono::high_resolution_clock::now();
 
@@ -191,9 +249,9 @@ class wiktextract_preprocessor {
                     word_data.form_ofs.push_back(form_of);
                 }
 
-                if (check_is_excluded(tags)) {
+                if (filter.excluded.matches(word, tags, category_names)) {
                     word_data.exclusion_count++;
-                } else if (check_is_offensive(tags, category_names)) {
+                } else if (filter.offensive.matches(word, tags, category_names)) {
                     word_data.offensive_count++;
                 } else {
                     word_data.normal_count++;
@@ -235,6 +293,7 @@ class wiktextract_preprocessor {
                 }
             }
         }
+        insert_project_specific_words();
 
         utext_close(ut);
 
@@ -264,37 +323,37 @@ class wiktextract_preprocessor {
     }
 };
 
+bool parse_flag_to(fl::u8str& path, const std::vector<fl::u8str>& flags, std::size_t& i,
+                   const fl::u8str& err_display_name) noexcept {
+    if (i + 1 < flags.size() && !flags[i + 1].starts_with(FLAG_INDICATOR)) {
+        path = flags[i + 1];
+        i += 2;
+        return true;
+    } else {
+        std::cerr << "Fatal: Using " << err_display_name << " flag without corresponsing value! Aborting.\n";
+        return false;
+    }
+}
+
 int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept {
     fl::u8str src_path;
     fl::u8str dst_path;
+    fl::u8str config_path = FLAG_CONFIG_PATH_DEFAULT_VALUE;
+    fl::u8str filter_name = FLAG_FILTER_NAME_DEFAULT_VALUE;
     fl::u8str stats_path;
 
     for (std::size_t i = 0; i < flags.size();) {
         auto& flag = flags[i];
-        if (flag == FLAG_SRC_PATH_LONG) {
-            if (i + 1 < flags.size() && !flags[i + 1].starts_with(FLAG_INDICATOR)) {
-                src_path = flags[i + 1];
-                i += 2;
-            } else {
-                std::cerr << "Fatal: Using source path flag without corresponsing path! Aborting.\n";
-                return 1;
-            }
-        } else if (flag == FLAG_DST_PATH_LONG) {
-            if (i + 1 < flags.size() && !flags[i + 1].starts_with(FLAG_INDICATOR)) {
-                dst_path = flags[i + 1];
-                i += 2;
-            } else {
-                std::cerr << "Fatal: Using destination path flag without corresponsing path! Aborting.\n";
-                return 1;
-            }
-        } else if (flag == FLAG_STATS_PATH_LONG) {
-            if (i + 1 < flags.size() && !flags[i + 1].starts_with(FLAG_INDICATOR)) {
-                stats_path = flags[i + 1];
-                i += 2;
-            } else {
-                std::cerr << "Fatal: Using statistics path flag without corresponsing path! Aborting.\n";
-                return 1;
-            }
+        if (flag == FLAG_SRC_PATH) {
+            if (!parse_flag_to(src_path, flags, i, "source path")) return 1;
+        } else if (flag == FLAG_DST_PATH) {
+            if (!parse_flag_to(dst_path, flags, i, "destination path")) return 1;
+        } else if (flag == FLAG_CONFIG_PATH) {
+            if (!parse_flag_to(config_path, flags, i, "config path")) return 1;
+        } else if (flag == FLAG_FILTER_NAME) {
+            if (!parse_flag_to(filter_name, flags, i, "filter name")) return 1;
+        } else if (flag == FLAG_STATS_PATH) {
+            if (!parse_flag_to(stats_path, flags, i, "statistics path")) return 1;
         } else {
             std::cerr << "Warning: Unknown flag '" << flag << "'. Ignoring.\n";
             i++;
@@ -303,6 +362,8 @@ int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept
 
     fl::str::trim(src_path);
     fl::str::trim(dst_path);
+    fl::str::trim(config_path);
+    fl::str::trim(filter_name);
     fl::str::trim(stats_path);
     if (src_path.empty()) {
         std::cerr << "Fatal: No source path specified! Aborting.\n";
@@ -315,12 +376,50 @@ int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept
         std::cerr << "Fatal: No destination path specified! Aborting.\n";
         return 1;
     }
+    if (config_path.empty()) {
+        std::cerr << "Fatal: No config path specified! Aborting.\n";
+        return 1;
+    } else if (!std::filesystem::exists(config_path)) {
+        std::cerr << "Fatal: Given config path '" << config_path << "' does not exist! Aborting.\n";
+        return 1;
+    }
+    if (filter_name.empty()) {
+        std::cerr << "Fatal: No filter name specified! Aborting.\n";
+        return 1;
+    }
 
     wiktextract_preprocessor preprocessor;
-    preprocessor.read_wiktextract_data_into_dictionary(src_path);
+    preprocessor.load_config(config_path);
+    preprocessor.read_wiktextract_data_into_dictionary(src_path, filter_name);
     preprocessor.persist_dictionary(dst_path);
     preprocessor.persist_stats(stats_path);
 
+    return 0;
+}
+
+int print_prep_wiktextract_usage(char* arg0) noexcept {
+    std::cout
+        << "Usage: " << arg0
+        << " prep-wiktextract --src <src-path> --dst <dst-path> [--config <config-path>] [--filter "
+           "<filter_name>] [--stats <stats-path>]\n\n"
+        << "Description\n"
+        << "  Preprocessing tool which assists in creating FlorisBoard dictionaries (fldic files) using wiktextract\n"
+        << "  json archives from https://kaikki.org/.\n\n"
+        << "Options\n"
+        << "  " << FLAG_SRC_PATH << " <src-path>\n"
+        << "    The source path pointing to a wiktextract json file. Must not be empty.\n"
+        << "  " << FLAG_DST_PATH << " <dst-path>\n"
+        << "    The path where the resulting fldic file should be written. The path must be writable and must not "
+           "point to a directory. If a file with this name already exists, it will be overwritten. Must not be empty.\n"
+        << "  " << FLAG_CONFIG_PATH << " <config-path>\n"
+        << "    Specify a config file to use. If provided, must not be empty. Defaults to '"
+        << FLAG_CONFIG_PATH_DEFAULT_VALUE << "'.\n"
+        << "  " << FLAG_FILTER_NAME << " <filter-name>\n"
+        << "    Specify a specific filter to use from the given config. If provided, must not be empty. Defaults to '"
+        << FLAG_FILTER_NAME_DEFAULT_VALUE << "'\n"
+        << "  " << FLAG_STATS_PATH << " <stats-path>\n"
+        << "    The path where the resulting statistics from parsing will be written. May be empty, in which case no "
+           "statistics file will be written.\n";
     return 0;
 }
 

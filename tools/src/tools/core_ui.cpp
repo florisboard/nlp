@@ -180,4 +180,9 @@ int handle_core_ui_action(const std::vector<fl::u8str>& flags) noexcept {
     return main_core_ui(fldic_path);
 }
 
+int print_core_ui_usage(char* arg0) noexcept {
+    std::cout << "TODO!!!\n";
+    return 0;
+}
+
 } // namespace fl::nlp::tools

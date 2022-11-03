@@ -1,0 +1,44 @@
+{
+  "projectSpecificWords": ["FlorisBoard", "Smartbar"],
+  "filters": [
+    {
+      "name": "root",
+      "excluded": {
+        "words": [],
+        "tags": ["obsolete", "misspelling", "morpheme"],
+        "categories": []
+      },
+      "offensive": {
+        "words": [],
+        "tags": ["offensive", "vulgar"],
+        "categories": []
+      }
+    },
+    {
+      "name": "en",
+      "excluded": {
+        "words": ["^['ʻʾ-].*[-]*$"],
+        "tags": ["obsolete", "misspelling", "morpheme"],
+        "categories": []
+      },
+      "offensive": {
+        "words": ["^.*[Nn]igg(?:er|a).*$"],
+        "tags": ["offensive", "vulgar"],
+        "categories": ["English swear words", "English ethnic slurs", "English religious slurs", "Masturbation"]
+      }
+    },
+    {
+      "name": "de",
+      "excluded": {
+        "words": ["^'.*$"],
+        "tags": ["obsolete", "misspelling", "morpheme"],
+        "categories": []
+      },
+      "offensive": {
+        "words": ["^.*[Nn](?:eger|igg(?:er|a)).*$"],
+        "tags": ["offensive", "vulgar"],
+        "categories": ["German ethnic slurs", "German religious slurs"]
+      }
+    }
+  ]
+}
