@@ -32,17 +32,17 @@
 
 namespace fl::nlp {
 
-class immutable_dictionary_error : public std::runtime_error {
+class ImmutableDictionaryError : public std::runtime_error {
   public:
-    immutable_dictionary_error() : std::runtime_error("Trying to mutate dictionary that is not mutable!") {};
-    ~immutable_dictionary_error() = default;
+    ImmutableDictionaryError() : std::runtime_error("Trying to mutate dictionary that is not mutable!") {};
+    ~ImmutableDictionaryError() = default;
 };
 
-class dictionary_serialization_error : public std::runtime_error {
+class DictionarySerializationError : public std::runtime_error {
   public:
-    dictionary_serialization_error(const std::filesystem::path& path, const size_t line_num, const char* msg)
+    DictionarySerializationError(const std::filesystem::path& path, const size_t line_num, const char* msg)
         : std::runtime_error(msg), path(path), line_num(line_num) {};
-    ~dictionary_serialization_error() = default;
+    ~DictionarySerializationError() = default;
 
   private:
     const std::filesystem::path path;
@@ -69,39 +69,39 @@ static const fl::u8str FLDIC_SECTION_SHORTCUTS = "[shortcuts]";
 static const fl::u8char FLDIC_FLAG_IS_POSSIBLY_OFFENSIVE = 'p';
 static const fl::u8char FLDIC_FLAG_IS_HIDDEN_BY_USER = 'h';
 
-struct dictionary_header {
+struct DictionaryHeader {
     fl::u8str schema = FLDIC_SCHEMA_V0_DRAFT1;
     fl::u8str name;
     std::vector<icu::Locale> locales; // in serialization use BCP 47 tags!
     fl::u8str generated_by;
 
-    size_t read_from(std::basic_istream<fl::u8char>& istream) noexcept;
+    size_t readFrom(std::basic_istream<fl::u8char>& istream) noexcept;
 
-    size_t write_to(std::basic_ostream<fl::u8char>& ostream) const noexcept;
+    size_t writeTo(std::basic_ostream<fl::u8char>& ostream) const noexcept;
 
     void reset() noexcept;
 };
 
-class dictionary {
-    friend class dictionary_session;
+class Dictionary {
+    friend class DictionarySession;
 
   public:
-    dictionary();
-    dictionary(const std::filesystem::path& path);
-    dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path);
-    ~dictionary();
+    Dictionary();
+    Dictionary(const std::filesystem::path& path);
+    Dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path);
+    ~Dictionary();
 
   public:
-    const ngram_properties& view_ngram_properties(fl::u8str& word1) const;
-    const ngram_properties& view_ngram_properties(fl::u8str& word1, fl::u8str& word2) const;
-    const ngram_properties& view_ngram_properties(fl::u8str& word1, fl::u8str& word2, fl::u8str& word3) const;
+    const NgramProperties& viewNgramProperties(fl::u8str& word1) const;
+    const NgramProperties& viewNgramProperties(fl::u8str& word1, fl::u8str& word2) const;
+    const NgramProperties& viewNgramProperties(fl::u8str& word1, fl::u8str& word2, fl::u8str& word3) const;
 
     std::filesystem::path src_path;
     std::filesystem::path dst_path;
 
   protected:
-    dictionary_header header;
-    trie_node root_node;
+    DictionaryHeader header;
+    TrieNode root_node;
     std::map<fl::u8str, fl::u8str> shortcuts;
 
     score_t max_unigram_score = 1;
@@ -115,22 +115,22 @@ class dictionary {
     bool contains(const fl::u8str& word) const noexcept;
 
   private:
-    void trie_write_ngrams_to(std::basic_ostream<fl::u8char>& ostream, trie_node* base_node, uint8_t ngram_level) const;
+    void trieWriteNgramsTo(std::basic_ostream<fl::u8char>& ostream, TrieNode* base_node, uint8_t ngram_level) const;
 
     // Using const char* on purpose as this method will almost always be called with string literals
-    void throw_fatal_deseralization_error(size_t line_num, const char* msg) const;
+    void throwFatalDeseralizationError(size_t line_num, const char* msg) const;
 };
 
-class mutable_dictionary : public dictionary {
+class MutableDictionary : public Dictionary {
   public:
-    mutable_dictionary();
-    mutable_dictionary(const std::filesystem::path& path);
-    mutable_dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path);
-    ~mutable_dictionary();
+    MutableDictionary();
+    MutableDictionary(const std::filesystem::path& path);
+    MutableDictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path);
+    ~MutableDictionary();
 
-    bool adjust_scores_if_necessary() noexcept;
+    bool adjustScoresIfNecessary() noexcept;
 
-    ngram_properties& insert(const fl::u8str& word1) noexcept;
+    NgramProperties& insert(const fl::u8str& word1) noexcept;
     void insert(const fl::u8str& word1, const fl::u8str& word2) noexcept;
     void insert(const fl::u8str& word1, const fl::u8str& word2, const fl::u8str& word3) noexcept;
 

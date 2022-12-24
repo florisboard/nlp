@@ -23,7 +23,7 @@
 
 namespace fl::icuext {
 
-UErrorCode load_and_set_common_data(fl::u8str path);
+UErrorCode loadAndSetCommonData(fl::u8str path);
 
 } // namespace fl::icuext
 

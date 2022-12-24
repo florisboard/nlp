@@ -23,9 +23,9 @@
 
 namespace fl::nlp::tools {
 
-int handle_core_ui_action(const std::vector<fl::u8str>& flags) noexcept;
+int handleCoreUiAction(const std::vector<fl::u8str>& flags) noexcept;
 
-int print_core_ui_usage(char* arg0) noexcept;
+int printCoreUiAction(char* arg0) noexcept;
 
 } // namespace fl::nlp::tools
 

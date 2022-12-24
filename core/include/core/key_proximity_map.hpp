@@ -30,14 +30,14 @@
 
 namespace fl::nlp {
 
-class key_proximity_map {
-    using key_data_map = std::unordered_map<fl::u8str, std::vector<fl::u8str>>;
+class KeyProximityMap {
+    using KeyDataMapT = std::unordered_map<fl::u8str, std::vector<fl::u8str>>;
 
   public:
-    key_proximity_map() = default;
-    ~key_proximity_map() = default;
+    KeyProximityMap() = default;
+    ~KeyProximityMap() = default;
 
-    bool is_in_proximity(const fl::u8str& assumed, const fl::u8str& actual) const noexcept {
+    bool isInProximity(const fl::u8str& assumed, const fl::u8str& actual) const noexcept {
         if (!_data.contains(assumed)) return false;
         auto keys = _data.at(assumed);
         return std::find(keys.begin(), keys.end(), actual) != keys.end();
@@ -47,7 +47,7 @@ class key_proximity_map {
         //_data.clear();
     }
 
-    void load_from_file(std::filesystem::path path, bool clear_existing = true) {
+    void loadFromFile(std::filesystem::path path, bool clear_existing = true) {
         using namespace std::string_literals;
 
         std::ifstream json_mapping_file(path);
@@ -64,7 +64,7 @@ class key_proximity_map {
     }
 
   private:
-    key_data_map _data;
+    KeyDataMapT _data;
 };
 
 } // namespace fl::nlp

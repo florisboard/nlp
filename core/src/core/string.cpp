@@ -24,7 +24,7 @@
 
 #include <functional>
 
-void apply_casemap(
+void applyCasemap(
     fl::u8str& str,
     std::function<int32_t(UCaseMap*, char*, int32_t, const char*, int32_t, UErrorCode*)> casemapper) noexcept {
     if (str.empty()) return;
@@ -51,15 +51,15 @@ void apply_casemap(
 }
 
 void fl::str::lowercase(u8str& str) noexcept {
-    apply_casemap(str, ucasemap_utf8ToLower);
+    applyCasemap(str, ucasemap_utf8ToLower);
 }
 
 void fl::str::titlecase(u8str& str) noexcept {
-    apply_casemap(str, ucasemap_utf8ToTitle);
+    applyCasemap(str, ucasemap_utf8ToTitle);
 }
 
 void fl::str::uppercase(u8str& str) noexcept {
-    apply_casemap(str, ucasemap_utf8ToUpper);
+    applyCasemap(str, ucasemap_utf8ToUpper);
 }
 
 bool is_whitespace(fl::u8char c) noexcept { return u_isWhitespace(c); }
@@ -91,14 +91,14 @@ void fl::str::split(const fl::u8str& src, fl::u8char delim, std::vector<fl::u8st
     dst.push_back(src.substr(last));
 }
 
-void fl::chstr::vec_to_str(const fl::u8chstr_vec& vec, fl::u8str& str) noexcept {
+void fl::chstr::vecToStr(const fl::u8chstr_vec& vec, fl::u8str& str) noexcept {
     str.clear();
     for (auto& chstr : vec) {
         str.append(chstr);
     }
 }
 
-void fl::chstr::str_to_vec(const u8str& str, u8chstr_vec& vec, const fl::u8str& locale_tag) noexcept {
+void fl::chstr::strToVec(const u8str& str, u8chstr_vec& vec, const fl::u8str& locale_tag) noexcept {
     vec.clear();
 
     auto status = U_ZERO_ERROR;

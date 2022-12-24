@@ -38,7 +38,7 @@ namespace fl::nlp::tools {
 static const fl::u8str ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
 static const fl::u8str KEY_MAPPING_FILE = "data/qwerty_proximity_map.json";
 
-const char* attr_status_symbol(int32_t suggestion_attribute) noexcept {
+const char* attrStatusSymbol(int32_t suggestion_attribute) noexcept {
     if (suggestion_attribute == fl::nlp::RESULT_ATTR_IN_THE_DICTIONARY) {
         return "✅";
     } else if (suggestion_attribute == fl::nlp::RESULT_ATTR_LOOKS_LIKE_TYPO) {
@@ -49,19 +49,19 @@ const char* attr_status_symbol(int32_t suggestion_attribute) noexcept {
 }
 
 // TODO: clean up code and restructure UI
-int main_core_ui(const fl::u8str& fldic_path) noexcept {
-    if (U_FAILURE(fl::icuext::load_and_set_common_data(ICU_DATA_FILE_PATH))) {
+int mainCoreUi(const fl::u8str& fldic_path) noexcept {
+    if (U_FAILURE(fl::icuext::loadAndSetCommonData(ICU_DATA_FILE_PATH))) {
         std::cerr << "Fatal: Failed to load ICU data file! Aborting.\n";
         return 1;
     }
 
-    fl::nlp::suggestion_request_flags flags(0);
-    std::vector<std::unique_ptr<fl::nlp::suggestion_candidate>> suggestion_results;
+    fl::nlp::SuggestionRequestFlags flags(0);
+    std::vector<std::unique_ptr<fl::nlp::SuggestionCandidate>> suggestion_results;
     std::vector<fl::u8str> prev_words;
-    fl::nlp::dictionary_session dict_session;
-    dict_session.key_proximity_mapping.load_from_file(KEY_MAPPING_FILE);
+    fl::nlp::DictionarySession dict_session;
+    dict_session.key_proximity_mapping.loadFromFile(KEY_MAPPING_FILE);
     try {
-        dict_session.load_base_dictionary(fldic_path);
+        dict_session.loadBaseDictionary(fldic_path);
     } catch (const std::runtime_error& e) {
         std::cerr << "Fatal: " << e.what() << " Aborting.\n";
         return 1;
@@ -99,7 +99,7 @@ int main_core_ui(const fl::u8str& fldic_path) noexcept {
         tb_printf(0, y++, 0, 0, "Length: %d", input_buffer.length());
         tb_printf(0, y++, 0, 0, "");
         if (allow_possible_offensive) {
-            flags = 8 | fl::nlp::suggestion_request_flags::F_ALLOW_POSSIBLY_OFFENSIVE;
+            flags = 8 | fl::nlp::SuggestionRequestFlags::F_ALLOW_POSSIBLY_OFFENSIVE;
         } else {
             flags = 8;
         }
@@ -118,7 +118,7 @@ int main_core_ui(const fl::u8str& fldic_path) noexcept {
             for (auto& input_word : input_words) {
                 auto result = dict_session.spell(input_word, prev_words, prev_words, flags);
                 std::stringstream ss;
-                ss << "  " << input_word << " " << attr_status_symbol(result.suggestion_attributes) << "  ->  ";
+                ss << "  " << input_word << " " << attrStatusSymbol(result.suggestion_attributes) << "  ->  ";
                 if (!result.suggestions.empty()) {
                     std::size_t i = 0;
                     for (auto& suggestion : result.suggestions) {
@@ -162,7 +162,7 @@ int main_core_ui(const fl::u8str& fldic_path) noexcept {
     return 0;
 }
 
-int handle_core_ui_action(const std::vector<fl::u8str>& flags) noexcept {
+int handleCoreUiAction(const std::vector<fl::u8str>& flags) noexcept {
     fl::u8str fldic_path;
     if (!flags.empty()) {
         fldic_path = flags[0];
@@ -177,10 +177,10 @@ int handle_core_ui_action(const std::vector<fl::u8str>& flags) noexcept {
         return 1;
     }
 
-    return main_core_ui(fldic_path);
+    return mainCoreUi(fldic_path);
 }
 
-int print_core_ui_usage(char* arg0) noexcept {
+int printCoreUiAction(char* arg0) noexcept {
     std::cout << "TODO!!!\n";
     return 0;
 }

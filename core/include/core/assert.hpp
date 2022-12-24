@@ -21,10 +21,10 @@
 
 namespace fl {
 
-class assertion_error : public std::exception {
+class AssertionError : public std::exception {
   public:
-    explicit assertion_error(const char* msg) : exception(), __msg(msg) {};
-    ~assertion_error() = default;
+    explicit AssertionError(const char* msg) : std::exception(), __msg(msg) {};
+    ~AssertionError() = default;
 
     const char* what() const noexcept { return __msg; }
 
@@ -33,11 +33,11 @@ class assertion_error : public std::exception {
 };
 
 inline void assert(bool condition) {
-    if (!condition) throw assertion_error("");
+    if (!condition) throw AssertionError("");
 }
 
 inline void assert(bool condition, const char* msg) {
-    if (!condition) throw assertion_error(msg);
+    if (!condition) throw AssertionError(msg);
 }
 
 } // namespace fl

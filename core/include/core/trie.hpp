@@ -29,7 +29,7 @@
 
 namespace fl::nlp {
 
-struct ngram_properties {
+struct NgramProperties {
     score_t absolute_score : 24 = 0;
     bool is_possibly_offensive : 1 = false;
     bool is_hidden_by_user : 1 = false;
@@ -37,67 +37,67 @@ struct ngram_properties {
 
 template<class ValueT>
 requires std::is_copy_assignable_v<ValueT> && std::is_move_assignable_v<ValueT>
-class basic_trie_node {
+class BasicTrieNode {
   private:
-    using NodeT = basic_trie_node<ValueT>;
+    using NodeT = BasicTrieNode<ValueT>;
 
   public:
-    basic_trie_node() {};
-    basic_trie_node(const NodeT&) = delete;
-    basic_trie_node(NodeT&&) = delete;
-    ~basic_trie_node() = default;
+    BasicTrieNode() {};
+    BasicTrieNode(const NodeT&) = delete;
+    BasicTrieNode(NodeT&&) = delete;
+    ~BasicTrieNode() = default;
 
     ValueT properties;
     bool is_terminal = false;
     std::map<fl::u8chstr, std::unique_ptr<NodeT>> children;
 
-    void for_each(std::function<void(const fl::u8chstr_vec&, NodeT*)> action) noexcept {
+    void forEach(std::function<void(const fl::u8chstr_vec&, NodeT*)> action) noexcept {
         fl::u8chstr_vec empty_prefix;
-        for_each(empty_prefix, action);
+        forEach(empty_prefix, action);
     }
 
-    void for_each(const fl::u8chstr_vec& prefix, std::function<void(const fl::u8chstr_vec&, NodeT*)> action) noexcept {
+    void forEach(const fl::u8chstr_vec& prefix, std::function<void(const fl::u8chstr_vec&, NodeT*)> action) noexcept {
         auto new_prefix = prefix;
         new_prefix.push_back(fl::u8str()); // Placeholder
         if (is_terminal) {
             action(prefix, this);
         }
         for (auto& [chstr, child_node] : children) {
-            if (!is_ctrl_char(chstr)) {
+            if (!isCtrlChar(chstr)) {
                 new_prefix[new_prefix.size() - 1] = chstr;
-                child_node->for_each(new_prefix, action);
+                child_node->forEach(new_prefix, action);
             }
         }
     }
 
     NodeT* insert(const fl::u8chstr_vec& key) noexcept {
-        auto node = resolve_key_or_create(key);
+        auto node = resolveKeyOrCreate(key);
         node->properties = properties;
         return node;
     }
 
-    const NodeT* resolve_key(const fl::u8chstr_vec& key) const noexcept {
+    const NodeT* resolveKey(const fl::u8chstr_vec& key) const noexcept {
         const NodeT* node = this;
         for (auto& chstr : key) {
-            node = node->get_child(chstr);
+            node = node->getChild(chstr);
             if (node == nullptr) return nullptr;
         }
         return node->is_terminal ? node : nullptr;
     }
 
-    NodeT* resolve_key(const fl::u8chstr_vec& key) noexcept {
+    NodeT* resolveKey(const fl::u8chstr_vec& key) noexcept {
         NodeT* node = this;
         for (auto& chstr : key) {
-            node = node->get_child(chstr);
+            node = node->getChild(chstr);
             if (node == nullptr) return nullptr;
         }
         return node->is_terminal ? node : nullptr;
     }
 
-    NodeT* resolve_key_or_create(const fl::u8chstr_vec& key) noexcept {
+    NodeT* resolveKeyOrCreate(const fl::u8chstr_vec& key) noexcept {
         NodeT* node = this;
         for (auto& chstr : key) {
-            node = node->get_child_or_create(chstr);
+            node = node->getChildOrCreate(chstr);
         }
         if (!node->is_terminal) {
             node->is_terminal = true;
@@ -105,11 +105,15 @@ class basic_trie_node {
         return node;
     }
 
-    const NodeT* subsequent_words() const noexcept { return _subsequent_words.get(); }
+    const NodeT* subsequentWords() const noexcept {
+        return _subsequent_words.get();
+    }
 
-    NodeT* subsequent_words() noexcept { return _subsequent_words.get(); }
+    NodeT* subsequentWords() noexcept {
+        return _subsequent_words.get();
+    }
 
-    NodeT* subsequent_words_or_create() noexcept {
+    NodeT* subsequentWordsOrCreate() noexcept {
         if (_subsequent_words == nullptr) {
             _subsequent_words = std::make_unique<NodeT>();
         }
@@ -119,13 +123,13 @@ class basic_trie_node {
   private:
     std::unique_ptr<NodeT> _subsequent_words = nullptr;
 
-    constexpr bool is_ctrl_char(const fl::u8chstr& chstr) {
+    constexpr bool isCtrlChar(const fl::u8chstr& chstr) {
         return false;
         // auto uch = static_cast<fl::u8uchar>(ch);
         // return uch < 0x20;
     }
 
-    const NodeT* get_child(const fl::u8chstr& chstr) const noexcept {
+    const NodeT* getChild(const fl::u8chstr& chstr) const noexcept {
         if (auto res = children.find(chstr); res != children.end()) {
             return (*res).second.get();
         } else {
@@ -133,7 +137,7 @@ class basic_trie_node {
         }
     }
 
-    NodeT* get_child(const fl::u8chstr& chstr) noexcept {
+    NodeT* getChild(const fl::u8chstr& chstr) noexcept {
         if (auto res = children.find(chstr); res != children.end()) {
             return (*res).second.get();
         } else {
@@ -141,8 +145,8 @@ class basic_trie_node {
         }
     }
 
-    NodeT* get_child_or_create(const fl::u8chstr& chstr) noexcept {
-        auto ret_node = get_child(chstr);
+    NodeT* getChildOrCreate(const fl::u8chstr& chstr) noexcept {
+        auto ret_node = getChild(chstr);
         if (ret_node == nullptr) {
             auto node = std::make_unique<NodeT>();
             ret_node = node.get();
@@ -152,7 +156,7 @@ class basic_trie_node {
     }
 };
 
-using trie_node = basic_trie_node<ngram_properties>;
+using TrieNode = BasicTrieNode<NgramProperties>;
 
 } // namespace fl::nlp
 

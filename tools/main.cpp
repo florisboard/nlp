@@ -29,17 +29,17 @@ static const fl::u8str FLAG_INDICATOR = "-";
 static const fl::u8str FLAG_HELP = "--help";
 static const fl::u8str FLAG_VERSION = "--version";
 
-void print_version() noexcept {
+void printVersion() noexcept {
     std::cout << "FlorisNLP Tools v" << VERSION << "\n";
 }
 
-void print_version_with_additional_newline() noexcept {
-    print_version();
+void printVersionWithAdditionalNewline() noexcept {
+    printVersion();
     std::cout << "\n";
 }
 
-void print_usage(char* arg0) noexcept {
-    print_version();
+void printUsage(char* arg0) noexcept {
+    printVersion();
     std::cout << "\nUsage: " << arg0 << " <action> [<flags>]\n\n"
               << "Available actions:\n"
               << "    " << ACTION_CORE_UI << "\n"
@@ -48,7 +48,7 @@ void print_usage(char* arg0) noexcept {
               << "    " << FLAG_VERSION << "\n";
 }
 
-auto collect_flags(int argc, char** argv) noexcept {
+auto collectFlags(int argc, char** argv) noexcept {
     std::vector<fl::u8str> flags;
     for (int i = 2; i < argc; i++) {
         flags.push_back(fl::u8str(argv[i]));
@@ -56,7 +56,7 @@ auto collect_flags(int argc, char** argv) noexcept {
     return flags;
 }
 
-bool has_flag(const fl::u8str& flag_to_search, const std::vector<fl::u8str>& flags) noexcept {
+bool hasFlag(const fl::u8str& flag_to_search, const std::vector<fl::u8str>& flags) noexcept {
     for (auto& flag : flags) {
         if (flag == flag_to_search) return true;
     }
@@ -66,29 +66,29 @@ bool has_flag(const fl::u8str& flag_to_search, const std::vector<fl::u8str>& fla
 int main(int argc, char** argv) {
     if (argc < 1) return 1;
     if (argc == 1) {
-        print_usage(argv[0]);
+        printUsage(argv[0]);
         return 1;
     }
 
     auto action = fl::u8str(argv[1]);
-    auto flags = collect_flags(argc, argv);
+    auto flags = collectFlags(argc, argv);
     if (action == FLAG_HELP) {
-        print_usage(argv[0]);
+        printUsage(argv[0]);
     } else if (action == FLAG_VERSION) {
-        print_version();
+        printVersion();
     } else if (action == ACTION_CORE_UI) {
-        if (has_flag(FLAG_HELP, flags)) {
-            print_version_with_additional_newline();
-            return fl::nlp::tools::print_core_ui_usage(argv[0]);
+        if (hasFlag(FLAG_HELP, flags)) {
+            printVersionWithAdditionalNewline();
+            return fl::nlp::tools::printCoreUiAction(argv[0]);
         } else {
-            return fl::nlp::tools::handle_core_ui_action(flags);
+            return fl::nlp::tools::handleCoreUiAction(flags);
         }
     } else if (action == ACTION_PREP_WIKTEXTRACT) {
-        if (has_flag(FLAG_HELP, flags)) {
-            print_version_with_additional_newline();
-            return fl::nlp::tools::print_prep_wiktextract_usage(argv[0]);
+        if (hasFlag(FLAG_HELP, flags)) {
+            printVersionWithAdditionalNewline();
+            return fl::nlp::tools::printPrepWiktextractUsage(argv[0]);
         } else {
-            return fl::nlp::tools::handle_prep_wiktextract_action(flags);
+            return fl::nlp::tools::handlePrepWiktextractAction(flags);
         }
     } else {
         if (action.starts_with(FLAG_INDICATOR)) {

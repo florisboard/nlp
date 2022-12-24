@@ -29,7 +29,7 @@
 
 namespace fl::nlp {
 
-class dictionary_session {
+class DictionarySession {
   public:
     static const int MAX_COST = 6;
     static const int COST_IS_EQUAL = 0;
@@ -43,63 +43,63 @@ class dictionary_session {
     static const int PENALTY_START_OF_STR = 2;
 
     fl::u8str locale_tag = "en_us";
-    key_proximity_map key_proximity_mapping;
+    KeyProximityMap key_proximity_mapping;
 
-    dictionary_session() = default;
-    dictionary_session(const dictionary_session&) = delete;
-    dictionary_session(dictionary_session&&) = delete;
-    ~dictionary_session() = default;
+    DictionarySession() = default;
+    DictionarySession(const DictionarySession&) = delete;
+    DictionarySession(DictionarySession&&) = delete;
+    ~DictionarySession() = default;
 
-    void load_base_dictionary(const std::filesystem::path& dict_path);
+    void loadBaseDictionary(const std::filesystem::path& dict_path);
 
-    void load_user_dictionary(const std::filesystem::path& dict_path);
+    void loadUserDictionary(const std::filesystem::path& dict_path);
 
-    spelling_result spell(fl::u8str& word, const std::vector<fl::u8str>& prev_words,
-                          const std::vector<fl::u8str>& next_words, suggestion_request_flags& flags);
+    SpellingResult spell(fl::u8str& word, const std::vector<fl::u8str>& prev_words,
+                         const std::vector<fl::u8str>& next_words, SuggestionRequestFlags& flags);
 
-    void suggest(fl::u8str& word, const std::vector<fl::u8str>& prev_words, suggestion_request_flags& flags,
-                 std::vector<std::unique_ptr<suggestion_candidate>>& results);
+    void suggest(fl::u8str& word, const std::vector<fl::u8str>& prev_words, SuggestionRequestFlags& flags,
+                 std::vector<std::unique_ptr<SuggestionCandidate>>& results);
 
   private:
-    std::vector<std::unique_ptr<dictionary>> _base_dictionaries;
-    std::unique_ptr<mutable_dictionary> _user_dictionary = nullptr;
+    std::vector<std::unique_ptr<Dictionary>> _base_dictionaries;
+    std::unique_ptr<MutableDictionary> _user_dictionary = nullptr;
 
-    enum class fuzzy_search_type {
-        proximity,
-        proximity_without_self,
-        proximity_or_prefix,
+    enum class FuzzySearchType {
+        Proximity,
+        ProximityWithoutSelf,
+        ProximityOrPrefix,
     };
 
-    class fuzzy_search_state {
+    class FuzzySearchState {
       public:
-        const dictionary_session& session;
-        const fuzzy_search_type type;
+        const DictionarySession& session;
+        const FuzzySearchType type;
         const int max_distance;
-        const suggestion_request_flags flags;
+        const SuggestionRequestFlags flags;
         fl::u8chstr_vec word_chars;
         fl::u8chstr_vec word_chars_opposite_case;
         fl::u8chstr_vec prefix_chars;
         std::vector<std::vector<int>> distances;
-        std::function<void(fl::u8str&&, const trie_node*, int)> on_result;
+        std::function<void(fl::u8str&&, const TrieNode*, int)> on_result;
 
-        fuzzy_search_state(const dictionary_session& session, const fuzzy_search_type type, const int max_distance,
-                           const suggestion_request_flags& flags, const fl::u8str& word);
-        fuzzy_search_state(const fuzzy_search_state&) = delete;
-        fuzzy_search_state(fuzzy_search_state&&) = delete;
-        ~fuzzy_search_state() = default;
+        FuzzySearchState(const DictionarySession& session, const FuzzySearchType type, const int max_distance,
+                         const SuggestionRequestFlags& flags, const fl::u8str& word);
+        FuzzySearchState(const FuzzySearchState&) = delete;
+        FuzzySearchState(FuzzySearchState&&) = delete;
+        ~FuzzySearchState() = default;
 
-        void set_prefix_chstr_at(std::size_t prefix_index, const fl::u8chstr& chstr) noexcept;
+        void setPrefixChstrAt(std::size_t prefix_index, const fl::u8chstr& chstr) noexcept;
 
-        int edit_distance_at(std::size_t prefix_index) const noexcept;
+        int editDistanceAt(std::size_t prefix_index) const noexcept;
 
-        fl::u8str prefix_str_at(std::size_t prefix_index) const noexcept;
+        fl::u8str prefixStrAt(std::size_t prefix_index) const noexcept;
 
-        bool is_dead_end_at(std::size_t prefix_index) const noexcept;
+        bool isDeadEndAt(std::size_t prefix_index) const noexcept;
 
       private:
-        void init_word_chars(const fl::u8str& word) noexcept;
+        void initWordChars(const fl::u8str& word) noexcept;
 
-        void ensure_capacity_for(std::size_t prefix_index) noexcept;
+        void ensureCapacityFor(std::size_t prefix_index) noexcept;
     };
 
     /**
@@ -111,11 +111,11 @@ class dictionary_session {
      *
      * TODO: This algorithm is not fully UTF-8 aware yet. Has severe issues outside ASCII in the prefix and chstr area
      */
-    void fuzzy_search_recursive_dld(const trie_node* node, fuzzy_search_state& state, int prefix_index) const noexcept;
+    void fuzzySearchRecursiveDld(const TrieNode* node, FuzzySearchState& state, int prefix_index) const noexcept;
 
-    void fuzzy_search(const trie_node* root_node, fuzzy_search_type type, int max_distance,
-                      const suggestion_request_flags& flags, const fl::u8str& word,
-                      std::function<void(fl::u8str&&, const trie_node*, int)> on_result) const noexcept;
+    void fuzzySearch(const TrieNode* root_node, FuzzySearchType type, int max_distance,
+                     const SuggestionRequestFlags& flags, const fl::u8str& word,
+                     std::function<void(fl::u8str&&, const TrieNode*, int)> on_result) const noexcept;
 };
 
 } // namespace fl::nlp

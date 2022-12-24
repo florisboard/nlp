@@ -24,9 +24,9 @@
 
 namespace fl::nlp {
 
-// ----- dictionary_header ----- //
+// ----- DictionaryHeader ----- //
 
-size_t dictionary_header::read_from(std::basic_istream<fl::u8char>& istream) noexcept {
+size_t DictionaryHeader::readFrom(std::basic_istream<fl::u8char>& istream) noexcept {
     size_t line_count;
     fl::u8str line;
     fl::u8str key;
@@ -65,7 +65,7 @@ size_t dictionary_header::read_from(std::basic_istream<fl::u8char>& istream) noe
     return line_count;
 }
 
-size_t dictionary_header::write_to(std::basic_ostream<fl::u8char>& ostream) const noexcept {
+size_t DictionaryHeader::writeTo(std::basic_ostream<fl::u8char>& ostream) const noexcept {
     size_t line_count = 3;
     ostream << FLDIC_HEADER_SCHEMA << FLDIC_ASSIGNMENT << schema << FLDIC_NEWLINE;
     ostream << FLDIC_HEADER_NAME << FLDIC_ASSIGNMENT << name << FLDIC_NEWLINE;
@@ -88,20 +88,20 @@ size_t dictionary_header::write_to(std::basic_ostream<fl::u8char>& ostream) cons
     return line_count;
 }
 
-void dictionary_header::reset() noexcept {
+void DictionaryHeader::reset() noexcept {
     schema.assign(FLDIC_SCHEMA_V0_DRAFT1);
     name.clear();
     locales.clear();
     generated_by.clear();
 }
 
-// ----- dictionary ----- //
+// ----- Dictionary ----- //
 
-dictionary::dictionary() = default;
+Dictionary::Dictionary() = default;
 
-dictionary::dictionary(const std::filesystem::path& path) : dictionary(path, path) {};
+Dictionary::Dictionary(const std::filesystem::path& path) : Dictionary(path, path) {};
 
-dictionary::dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path)
+Dictionary::Dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path)
     : src_path(src_path), dst_path(dst_path), max_unigram_score(0), max_bigram_score(0), max_trigram_score(0) {
     std::ifstream dict_file;
     dict_file.open(src_path);
@@ -113,45 +113,45 @@ dictionary::dictionary(const std::filesystem::path& src_path, const std::filesys
     }
 }
 
-dictionary::~dictionary() = default;
+Dictionary::~Dictionary() = default;
 
-void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
-    size_t line_num = 1 + header.read_from(istream);
+void Dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
+    size_t line_num = 1 + header.readFrom(istream);
     fl::u8str line;
     std::vector<fl::u8str> line_split_results;
     fl::u8str word;
     fl::u8chstr_vec word_chars;
     uint8_t prev_ngram_level = 1;
-    std::array<trie_node*, 9> prev_parent_nodes {&root_node, nullptr};
+    std::array<TrieNode*, 9> prev_parent_nodes {&root_node, nullptr};
     while (std::getline(istream, line)) {
         line_num++;
         // TODO: Add proper section support
         if (line.starts_with('[')) continue;
 
         // Set up node
-        ngram_properties properties;
+        NgramProperties properties;
 
         // Get current ngram level
         auto word_begin = std::find_if_not(line.begin(), line.end(), [](auto ch) { return ch == FLDIC_SEPARATOR; });
         auto ngram_level = std::distance(line.begin(), word_begin) + 1;
         if (ngram_level > 8) {
-            throw_fatal_deseralization_error(line_num, "Cannot read/process ngram levels greater than 8!");
+            throwFatalDeseralizationError(line_num, "Cannot read/process ngram levels greater than 8!");
         } else if (ngram_level <= 0) {
-            throw_fatal_deseralization_error(line_num, "ngram level <= 0");
+            throwFatalDeseralizationError(line_num, "ngram level <= 0");
         }
         line.erase(line.begin(), word_begin);
 
         // Find which node is responsible for getting the new node attached to
         if (ngram_level - prev_ngram_level > 1) {
-            throw_fatal_deseralization_error(line_num, "Invalid definition of n-gram or bad formatting!");
+            throwFatalDeseralizationError(line_num, "Invalid definition of n-gram or bad formatting!");
         }
-        trie_node* parent_node = prev_parent_nodes[ngram_level - 1];
+        TrieNode* parent_node = prev_parent_nodes[ngram_level - 1];
         if (parent_node == nullptr) {
             if (ngram_level <= 1) {
-                throw_fatal_deseralization_error(line_num,
-                                                 "Encountered an ngram which does not have a corresponding parent!");
+                throwFatalDeseralizationError(line_num,
+                                              "Encountered an ngram which does not have a corresponding parent!");
             } else {
-                auto new_node = prev_parent_nodes[ngram_level - 2]->subsequent_words_or_create();
+                auto new_node = prev_parent_nodes[ngram_level - 2]->subsequentWordsOrCreate();
                 prev_parent_nodes[ngram_level - 1] = new_node;
                 parent_node = new_node;
             }
@@ -180,7 +180,7 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
         }
 
         // Insert node into trie
-        fl::chstr::str_to_vec(word, word_chars);
+        fl::chstr::strToVec(word, word_chars);
         auto node = parent_node->insert(word_chars);
         node->properties = properties;
         prev_ngram_level = ngram_level;
@@ -194,21 +194,21 @@ void dictionary::deserialize(std::basic_istream<fl::u8char>& istream) {
     }
 }
 
-void dictionary::serialize(std::basic_ostream<fl::u8char>& ostream) {
-    header.write_to(ostream);
+void Dictionary::serialize(std::basic_ostream<fl::u8char>& ostream) {
+    header.writeTo(ostream);
     ostream << FLDIC_SECTION_WORDS << FLDIC_NEWLINE;
-    trie_write_ngrams_to(ostream, &root_node, 1);
+    trieWriteNgramsTo(ostream, &root_node, 1);
 }
 
-void dictionary::trie_write_ngrams_to(std::basic_ostream<fl::u8char>& ostream, trie_node* base_node,
-                                      uint8_t ngram_level) const {
+void Dictionary::trieWriteNgramsTo(std::basic_ostream<fl::u8char>& ostream, TrieNode* base_node,
+                                   uint8_t ngram_level) const {
     fl::u8str word;
     if (base_node == nullptr) return;
-    base_node->for_each([&](const fl::u8chstr_vec& word_chars, trie_node* node) {
+    base_node->forEach([&](const fl::u8chstr_vec& word_chars, TrieNode* node) {
         for (size_t n = 1; n < ngram_level; n++) {
             ostream << FLDIC_SEPARATOR;
         }
-        fl::chstr::vec_to_str(word_chars, word);
+        fl::chstr::vecToStr(word_chars, word);
         ostream << word << FLDIC_SEPARATOR << node->properties.absolute_score;
         if (node->properties.is_possibly_offensive || node->properties.is_hidden_by_user) {
             ostream << FLDIC_SEPARATOR;
@@ -220,32 +220,32 @@ void dictionary::trie_write_ngrams_to(std::basic_ostream<fl::u8char>& ostream, t
             }
         }
         ostream << FLDIC_NEWLINE;
-        trie_write_ngrams_to(ostream, node->subsequent_words(), ngram_level + 1);
+        trieWriteNgramsTo(ostream, node->subsequentWords(), ngram_level + 1);
     });
 }
 
-void dictionary::throw_fatal_deseralization_error(size_t line_num, const char* msg) const {
-    throw dictionary_serialization_error(src_path, line_num, msg);
+void Dictionary::throwFatalDeseralizationError(size_t line_num, const char* msg) const {
+    throw DictionarySerializationError(src_path, line_num, msg);
 }
 
-bool dictionary::contains(const fl::u8str& word) const noexcept {
+bool Dictionary::contains(const fl::u8str& word) const noexcept {
     fl::u8chstr_vec word_chars;
-    fl::chstr::str_to_vec(word, word_chars);
-    return root_node.resolve_key(word_chars) != nullptr;
+    fl::chstr::strToVec(word, word_chars);
+    return root_node.resolveKey(word_chars) != nullptr;
 }
 
-// ----- mutable_dictionary ----- //
+// ----- MutableDictionary ----- //
 
-mutable_dictionary::mutable_dictionary() : dictionary() {};
+MutableDictionary::MutableDictionary() : Dictionary() {};
 
-mutable_dictionary::mutable_dictionary(const std::filesystem::path& path) : dictionary(path) {}
+MutableDictionary::MutableDictionary(const std::filesystem::path& path) : Dictionary(path) {}
 
-mutable_dictionary::mutable_dictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path)
-    : dictionary(src_path, dst_path) {}
+MutableDictionary::MutableDictionary(const std::filesystem::path& src_path, const std::filesystem::path& dst_path)
+    : Dictionary(src_path, dst_path) {}
 
-mutable_dictionary::~mutable_dictionary() = default;
+MutableDictionary::~MutableDictionary() = default;
 
-bool mutable_dictionary::adjust_scores_if_necessary() noexcept {
+bool MutableDictionary::adjustScoresIfNecessary() noexcept {
     /*bool adj_unigrams = max_unigram_score > SCORE_ADJUSTMENT_THRESHOLD;
     bool adj_bigrams = max_bigram_score > SCORE_ADJUSTMENT_THRESHOLD;
     bool adj_trigrams = max_trigram_score > SCORE_ADJUSTMENT_THRESHOLD;
@@ -282,35 +282,35 @@ bool mutable_dictionary::adjust_scores_if_necessary() noexcept {
     return true;
 }
 
-ngram_properties& mutable_dictionary::insert(const fl::u8str& word1) noexcept {
+NgramProperties& MutableDictionary::insert(const fl::u8str& word1) noexcept {
     fl::u8chstr_vec word1_chars;
-    fl::chstr::str_to_vec(word1, word1_chars);
+    fl::chstr::strToVec(word1, word1_chars);
     return root_node.insert(word1_chars)->properties;
 }
 
-void mutable_dictionary::insert(const fl::u8str& word1, const fl::u8str& word2) noexcept {
+void MutableDictionary::insert(const fl::u8str& word1, const fl::u8str& word2) noexcept {
     fl::u8chstr_vec word1_chars;
     fl::u8chstr_vec word2_chars;
-    fl::chstr::str_to_vec(word1, word1_chars);
-    fl::chstr::str_to_vec(word2, word2_chars);
-    root_node.insert(word1_chars)->subsequent_words_or_create()->insert(word2_chars);
+    fl::chstr::strToVec(word1, word1_chars);
+    fl::chstr::strToVec(word2, word2_chars);
+    root_node.insert(word1_chars)->subsequentWordsOrCreate()->insert(word2_chars);
 }
 
-void mutable_dictionary::insert(const fl::u8str& word1, const fl::u8str& word2, const fl::u8str& word3) noexcept {
+void MutableDictionary::insert(const fl::u8str& word1, const fl::u8str& word2, const fl::u8str& word3) noexcept {
     fl::u8chstr_vec word1_chars;
     fl::u8chstr_vec word2_chars;
     fl::u8chstr_vec word3_chars;
-    fl::chstr::str_to_vec(word1, word1_chars);
-    fl::chstr::str_to_vec(word2, word2_chars);
-    fl::chstr::str_to_vec(word3, word3_chars);
+    fl::chstr::strToVec(word1, word1_chars);
+    fl::chstr::strToVec(word2, word2_chars);
+    fl::chstr::strToVec(word3, word3_chars);
     root_node.insert(word1_chars)
-        ->subsequent_words_or_create()
+        ->subsequentWordsOrCreate()
         ->insert(word2_chars)
-        ->subsequent_words_or_create()
+        ->subsequentWordsOrCreate()
         ->insert(word3_chars);
 }
 
-void mutable_dictionary::persist() {
+void MutableDictionary::persist() {
     std::ofstream dict_file;
     dict_file.open(dst_path);
     if (dict_file.is_open()) {

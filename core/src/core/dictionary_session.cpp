@@ -26,13 +26,13 @@
 
 namespace fl::nlp {
 
-void dictionary_session::load_base_dictionary(const std::filesystem::path& dict_path) {
-    auto base_dict = std::make_unique<dictionary>(dict_path);
+void DictionarySession::loadBaseDictionary(const std::filesystem::path& dict_path) {
+    auto base_dict = std::make_unique<Dictionary>(dict_path);
     _base_dictionaries.push_back(std::move(base_dict));
 }
 
-void dictionary_session::load_user_dictionary(const std::filesystem::path& dict_path) {
-    _user_dictionary = std::make_unique<mutable_dictionary>(dict_path);
+void DictionarySession::loadUserDictionary(const std::filesystem::path& dict_path) {
+    _user_dictionary = std::make_unique<MutableDictionary>(dict_path);
 }
 
 bool strcmp(const fl::u8chstr_vec& word_chars, const fl::u8chstr_vec& prefix_chars, std::size_t prefix_index) {
@@ -43,124 +43,124 @@ bool strcmp(const fl::u8chstr_vec& word_chars, const fl::u8chstr_vec& prefix_cha
     return true;
 }
 
-void dictionary_session::fuzzy_search_recursive_dld(const trie_node* node, fuzzy_search_state& state,
-                                                    int prefix_index) const noexcept {
+void DictionarySession::fuzzySearchRecursiveDld(const TrieNode* node, FuzzySearchState& state,
+                                                int prefix_index) const noexcept {
     // Result check
-    if (state.edit_distance_at(prefix_index) <= state.max_distance && node->is_terminal) {
-        if (node->properties.is_possibly_offensive && !state.flags.allow_possibly_offensive() ||
+    if (state.editDistanceAt(prefix_index) <= state.max_distance && node->is_terminal) {
+        if (node->properties.is_possibly_offensive && !state.flags.allowPossiblyOffensive() ||
             node->properties.is_hidden_by_user) {
             // Ignore
         } else {
-            auto prefix = state.prefix_str_at(prefix_index);
+            auto prefix = state.prefixStrAt(prefix_index);
             if (!prefix.empty()) {
-                state.on_result(std::move(prefix), node, state.edit_distance_at(prefix_index));
+                state.on_result(std::move(prefix), node, state.editDistanceAt(prefix_index));
             }
         }
     }
 
     // Exit unnecessary recursive loop
-    if (state.is_dead_end_at(prefix_index)) {
+    if (state.isDeadEndAt(prefix_index)) {
         return;
     }
 
     for (auto& [chstr, child_node] : node->children) {
-        state.set_prefix_chstr_at(prefix_index + 1, chstr);
-        fuzzy_search_recursive_dld(child_node.get(), state, prefix_index + 1);
+        state.setPrefixChstrAt(prefix_index + 1, chstr);
+        fuzzySearchRecursiveDld(child_node.get(), state, prefix_index + 1);
     }
 }
 
-void dictionary_session::fuzzy_search(
-    const trie_node* root_node, fuzzy_search_type type, int max_distance, const suggestion_request_flags& flags,
-    const fl::u8str& word, std::function<void(fl::u8str&&, const trie_node*, int)> on_result) const noexcept {
+void DictionarySession::fuzzySearch(const TrieNode* root_node, FuzzySearchType type, int max_distance,
+                                    const SuggestionRequestFlags& flags, const fl::u8str& word,
+                                    std::function<void(fl::u8str&&, const TrieNode*, int)> on_result) const noexcept {
     if (word.empty()) return;
 
-    fuzzy_search_state state(*this, type, max_distance, flags, word);
+    FuzzySearchState state(*this, type, max_distance, flags, word);
     state.on_result = on_result;
-    fuzzy_search_recursive_dld(root_node, state, 0);
+    fuzzySearchRecursiveDld(root_node, state, 0);
 }
 
-bool suggestions_sorter(const std::unique_ptr<fl::nlp::suggestion_candidate>& a,
-                        const std::unique_ptr<fl::nlp::suggestion_candidate>& b) {
+bool suggestions_sorter(const std::unique_ptr<fl::nlp::SuggestionCandidate>& a,
+                        const std::unique_ptr<fl::nlp::SuggestionCandidate>& b) {
     if (a->edit_distance == b->edit_distance) {
         return a->confidence > b->confidence;
     }
     return a->edit_distance < b->edit_distance && a->confidence * 100.0 > b->confidence;
 }
 
-spelling_result dictionary_session::spell(fl::u8str& word, const std::vector<fl::u8str>& prev_words,
-                                          const std::vector<fl::u8str>& next_words, suggestion_request_flags& flags) {
+SpellingResult DictionarySession::spell(fl::u8str& word, const std::vector<fl::u8str>& prev_words,
+                                        const std::vector<fl::u8str>& next_words, SuggestionRequestFlags& flags) {
     if (word.empty()) {
-        return spelling_result::unspecified();
+        return SpellingResult::unspecified();
     }
     fl::u8chstr_vec word_chars;
-    fl::chstr::str_to_vec(word, word_chars);
-    auto word_node = _base_dictionaries[0]->root_node.resolve_key(word_chars);
+    fl::chstr::strToVec(word, word_chars);
+    auto word_node = _base_dictionaries[0]->root_node.resolveKey(word_chars);
     if (word_node != nullptr && word_node->is_terminal) {
-        return spelling_result::valid_word();
+        return SpellingResult::validWord();
     }
 
-    std::vector<std::unique_ptr<suggestion_candidate>> results;
-    fuzzy_search(&_base_dictionaries[0]->root_node, fuzzy_search_type::proximity_without_self, MAX_COST, flags, word,
-                 [&](fl::u8str&& suggested_word, const fl::nlp::trie_node* node, int cost) {
-                     double confidence = 1.0;
-                     //    (static_cast<double>(node->properties.absolute_score) /
-                     //    _base_dictionaries[0]->max_unigram_score);
+    std::vector<std::unique_ptr<SuggestionCandidate>> results;
+    fuzzySearch(&_base_dictionaries[0]->root_node, FuzzySearchType::ProximityWithoutSelf, MAX_COST, flags, word,
+                [&](fl::u8str&& suggested_word, const fl::nlp::TrieNode* node, int cost) {
+                    double confidence = 1.0;
+                    //    (static_cast<double>(node->properties.absolute_score) /
+                    //    _base_dictionaries[0]->max_unigram_score);
 
-                     auto candidate = std::make_unique<suggestion_candidate>(
-                         suggestion_candidate {std::move(suggested_word), "", cost, confidence});
-                     results.push_back(std::move(candidate));
-                     std::sort(results.begin(), results.end(), suggestions_sorter);
+                    auto candidate = std::make_unique<SuggestionCandidate>(
+                        SuggestionCandidate {std::move(suggested_word), "", cost, confidence});
+                    results.push_back(std::move(candidate));
+                    std::sort(results.begin(), results.end(), suggestions_sorter);
 
-                     if (results.size() > flags.max_suggestion_count()) {
-                         results.erase(results.end() - 1);
-                     }
-                 });
+                    if (results.size() > flags.maxSuggestionCount()) {
+                        results.erase(results.end() - 1);
+                    }
+                });
 
     std::vector<fl::u8str> suggested_corrections;
     for (auto& candidate : results) {
         suggested_corrections.push_back(std::move(candidate->text));
     }
 
-    return spelling_result::typo(suggested_corrections);
+    return SpellingResult::typo(suggested_corrections);
 }
 
-void dictionary_session::suggest(fl::u8str& word, const std::vector<fl::u8str>& prev_words,
-                                 suggestion_request_flags& flags,
-                                 std::vector<std::unique_ptr<suggestion_candidate>>& results) {
+void DictionarySession::suggest(fl::u8str& word, const std::vector<fl::u8str>& prev_words,
+                                SuggestionRequestFlags& flags,
+                                std::vector<std::unique_ptr<SuggestionCandidate>>& results) {
     results.clear();
     if (word.empty()) return;
 
     auto& dict = _base_dictionaries[0];
 
-    fuzzy_search(&dict->root_node, fuzzy_search_type::proximity_or_prefix, MAX_COST, flags, word,
-                 [&](fl::u8str&& suggested_word, const fl::nlp::trie_node* node, int cost) {
-                     double confidence =
-                         1.0; //(static_cast<double>(node->properties.absolute_score) / dict->max_unigram_score);
+    fuzzySearch(&dict->root_node, FuzzySearchType::ProximityOrPrefix, MAX_COST, flags, word,
+                [&](fl::u8str&& suggested_word, const fl::nlp::TrieNode* node, int cost) {
+                    double confidence =
+                        1.0; //(static_cast<double>(node->properties.absolute_score) / dict->max_unigram_score);
 
-                     auto candidate = std::make_unique<suggestion_candidate>(
-                         suggestion_candidate {suggested_word, "", cost, confidence});
-                     results.push_back(std::move(candidate));
-                     std::sort(results.begin(), results.end(), suggestions_sorter);
+                    auto candidate = std::make_unique<SuggestionCandidate>(
+                        SuggestionCandidate {suggested_word, "", cost, confidence});
+                    results.push_back(std::move(candidate));
+                    std::sort(results.begin(), results.end(), suggestions_sorter);
 
-                     if (results.size() > flags.max_suggestion_count()) {
-                         results.erase(results.end() - 1);
-                     }
-                 });
+                    if (results.size() > flags.maxSuggestionCount()) {
+                        results.erase(results.end() - 1);
+                    }
+                });
 }
 
-// ----- # fuzzy_search_state # -----
+// ----- # FuzzySearchState # -----
 
-dictionary_session::fuzzy_search_state::fuzzy_search_state(const dictionary_session& session,
-                                                           const fuzzy_search_type type, const int max_distance,
-                                                           const suggestion_request_flags& flags, const fl::u8str& word)
+DictionarySession::FuzzySearchState::FuzzySearchState(const DictionarySession& session, const FuzzySearchType type,
+                                                      const int max_distance, const SuggestionRequestFlags& flags,
+                                                      const fl::u8str& word)
     : session(session), type(type), max_distance(max_distance), flags(flags) {
-    init_word_chars(word);
-    set_prefix_chstr_at(0, "");
+    initWordChars(word);
+    setPrefixChstrAt(0, "");
 }
 
-void dictionary_session::fuzzy_search_state::set_prefix_chstr_at(std::size_t prefix_index,
-                                                                 const fl::u8chstr& chstr) noexcept {
-    ensure_capacity_for(prefix_index + 1);
+void DictionarySession::FuzzySearchState::setPrefixChstrAt(std::size_t prefix_index,
+                                                           const fl::u8chstr& chstr) noexcept {
+    ensureCapacityFor(prefix_index + 1);
     prefix_chars[prefix_index] = chstr;
     distances[prefix_index][0] = prefix_index * COST_INSERT;
 
@@ -186,7 +186,7 @@ void dictionary_session::fuzzy_search_state::set_prefix_chstr_at(std::size_t pre
                        chstr == word_chars[i - 1]) {
                 // TODO: investigate if transpose calculation could be incorrect for certain edge cases
                 substitution_cost = COST_TRANSPOSE - 1 + penalty;
-                //} else if (false && session.key_proximity_mapping.is_in_proximity(chstr, word_chars[i])) {
+                //} else if (false && session.key_proximity_mapping.isInProximity(chstr, word_chars[i])) {
                 //    substitution_cost = COST_SUBSTITUTE_IN_PROXIMITY + penalty;
             } else {
                 substitution_cost = COST_SUBSTITUTE_DEFAULT + penalty;
@@ -204,11 +204,11 @@ void dictionary_session::fuzzy_search_state::set_prefix_chstr_at(std::size_t pre
     }
 }
 
-int dictionary_session::fuzzy_search_state::edit_distance_at(std::size_t prefix_index) const noexcept {
+int DictionarySession::FuzzySearchState::editDistanceAt(std::size_t prefix_index) const noexcept {
     return distances[prefix_index][word_chars.size() - 1];
 }
 
-fl::u8str dictionary_session::fuzzy_search_state::prefix_str_at(std::size_t prefix_index) const noexcept {
+fl::u8str DictionarySession::FuzzySearchState::prefixStrAt(std::size_t prefix_index) const noexcept {
     fl::u8str suggested_word;
     for (std::size_t i = 1; i <= prefix_index; i++) {
         suggested_word.append(prefix_chars[i]);
@@ -216,15 +216,15 @@ fl::u8str dictionary_session::fuzzy_search_state::prefix_str_at(std::size_t pref
     return suggested_word;
 }
 
-bool dictionary_session::fuzzy_search_state::is_dead_end_at(std::size_t prefix_index) const noexcept {
+bool DictionarySession::FuzzySearchState::isDeadEndAt(std::size_t prefix_index) const noexcept {
     if (prefix_index < word_chars.size() - 1) {
         return distances[prefix_index][prefix_index] >= max_distance;
     } else {
-        return edit_distance_at(prefix_index) >= max_distance;
+        return editDistanceAt(prefix_index) >= max_distance;
     }
 }
 
-void dictionary_session::fuzzy_search_state::init_word_chars(const fl::u8str& word) noexcept {
+void DictionarySession::FuzzySearchState::initWordChars(const fl::u8str& word) noexcept {
     word_chars.push_back("");               // Empty top-left cell
     word_chars_opposite_case.push_back(""); // Empty top-left cell
     if (word.empty()) return;
@@ -257,7 +257,7 @@ void dictionary_session::fuzzy_search_state::init_word_chars(const fl::u8str& wo
     utext_close(ut);
 }
 
-void dictionary_session::fuzzy_search_state::ensure_capacity_for(std::size_t prefix_index) noexcept {
+void DictionarySession::FuzzySearchState::ensureCapacityFor(std::size_t prefix_index) noexcept {
     while (prefix_chars.size() <= prefix_index) {
         prefix_chars.push_back("");
     }

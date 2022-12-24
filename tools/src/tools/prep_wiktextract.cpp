@@ -44,7 +44,7 @@ static const fl::u8str FLAG_STATS_PATH = "--stats";
 static const uint8_t MERGING_MAX_DEPTH = 0;
 static const uint8_t MERGING_MAX_DEPTH_WITH_FO = 2;
 
-struct filter_rule {
+struct FilterRule {
     std::vector<std::regex> words;
     std::vector<fl::u8str> tags;
     std::vector<fl::u8str> categories;
@@ -68,19 +68,19 @@ struct filter_rule {
     }
 };
 
-struct filter {
+struct Filter {
     fl::u8str name;
-    filter_rule excluded;
-    filter_rule offensive;
+    FilterRule excluded;
+    FilterRule offensive;
 };
 
-static const filter FALLBACK_FILTER = {"fallback"};
+static const Filter FALLBACK_FILTER = {"fallback"};
 
-struct wiktextract_config {
+struct WiktextractConfig {
     std::vector<fl::u8str> project_specific_words;
-    std::vector<filter> filters;
+    std::vector<Filter> filters;
 
-    const filter& get_filter(const fl::u8str& filter_name) const noexcept {
+    const Filter& getFilter(const fl::u8str& filter_name) const noexcept {
         for (auto& filter : filters) {
             if (filter.name == filter_name) {
                 return filter;
@@ -95,7 +95,7 @@ struct wiktextract_config {
     }
 };
 
-struct word_evaluator {
+struct WordEvaluator {
     std::vector<fl::u8str> form_ofs;
     short exclusion_count = 0;
     short offensive_count = 0;
@@ -116,16 +116,16 @@ struct word_evaluator {
     }
 };
 
-class wiktextract_preprocessor {
+class WiktextractPreprocessor {
   public:
-    wiktextract_config config;
-    fl::nlp::mutable_dictionary dict;
+    WiktextractConfig config;
+    fl::nlp::MutableDictionary dict;
 
-    wiktextract_preprocessor() = default;
-    ~wiktextract_preprocessor() = default;
+    WiktextractPreprocessor() = default;
+    ~WiktextractPreprocessor() = default;
 
   private:
-    std::map<fl::u8str, std::map<fl::u8str, word_evaluator>> parsed_data;
+    std::map<fl::u8str, std::map<fl::u8str, WordEvaluator>> parsed_data;
 
     // Statistics
     using stats_counter_map = std::map<fl::u8str, uint64_t>;
@@ -139,14 +139,14 @@ class wiktextract_preprocessor {
     stats_counter_map category_stats;
     std::chrono::seconds parse_duration_s;
 
-    void insert_project_specific_words() noexcept {
+    void insertProjectSpecificWords() noexcept {
         for (auto& word : config.project_specific_words) {
             auto& properties = dict.insert(word);
             properties.absolute_score++;
         }
     }
 
-    bool validate_word(UText* ut) {
+    bool validateWord(UText* ut) {
         UChar32 cp;
         while ((cp = utext_next32(ut)) != U_SENTINEL) {
             if (!u_isalpha(cp) && cp != '\'' && cp != '-') return false;
@@ -154,8 +154,8 @@ class wiktextract_preprocessor {
         return true;
     }
 
-    void merge_evaluator_counts(word_evaluator& target_evaluator, const word_evaluator& pos_evaluator,
-                                const fl::u8str& pos, uint8_t max_depth, uint8_t depth = 0) const noexcept {
+    void mergeEvaluatorCounts(WordEvaluator& target_evaluator, const WordEvaluator& pos_evaluator, const fl::u8str& pos,
+                              uint8_t max_depth, uint8_t depth = 0) const noexcept {
         target_evaluator.exclusion_count += (depth + 1) * pos_evaluator.exclusion_count;
         target_evaluator.offensive_count += (depth + 1) * pos_evaluator.offensive_count;
         target_evaluator.normal_count += (depth + 1) * pos_evaluator.normal_count;
@@ -164,20 +164,20 @@ class wiktextract_preprocessor {
             if (parsed_data.contains(form_of)) {
                 auto& pos_map = parsed_data.at(form_of);
                 if (pos_map.contains(pos)) {
-                    merge_evaluator_counts(target_evaluator, pos_map.at(pos), pos, max_depth, depth + 1);
+                    mergeEvaluatorCounts(target_evaluator, pos_map.at(pos), pos, max_depth, depth + 1);
                 }
             }
         }
     }
 
   public:
-    void load_config(const fl::u8str& config_path) {
+    void loadConfig(const fl::u8str& config_path) {
         std::ifstream config_file(config_path);
         nlohmann::json config_json = nlohmann::json::parse(config_file);
         config_json["projectSpecificWords"].get_to(config.project_specific_words);
         auto filter_json_list = config_json["filters"];
         for (auto& filter_json : filter_json_list) {
-            filter filter;
+            Filter filter;
             filter_json["name"].get_to(filter.name);
             filter_json["excluded"]["words"].get_to(filter.excluded.words);
             filter_json["excluded"]["tags"].get_to(filter.excluded.tags);
@@ -189,8 +189,8 @@ class wiktextract_preprocessor {
         }
     }
 
-    void read_wiktextract_data_into_dictionary(const std::filesystem::path& wiktextract_json_path,
-                                               const fl::u8str& filter_name) {
+    void readWiktextractDataIntoDictionary(const std::filesystem::path& wiktextract_json_path,
+                                           const fl::u8str& filter_name) {
         UText* ut = nullptr;
         UErrorCode status;
 
@@ -204,7 +204,7 @@ class wiktextract_preprocessor {
         std::vector<fl::u8str> category_names;
         fl::u8str form_of;
         nlohmann::json json_data;
-        filter filter = config.get_filter(filter_name);
+        Filter filter = config.getFilter(filter_name);
 
         auto parse_start_time = std::chrono::high_resolution_clock::now();
 
@@ -260,16 +260,16 @@ class wiktextract_preprocessor {
         }
 
         // Insertion into dictionary
-        word_evaluator evaluator;
-        word_evaluator evaluator_with_fo;
+        WordEvaluator evaluator;
+        WordEvaluator evaluator_with_fo;
         for (auto it = parsed_data.cbegin(); it != parsed_data.cend(); it++) {
             auto& [word, pos_map] = *it;
             evaluator.reset();
             evaluator_with_fo.reset();
 
             for (auto& [pos2, pos_evaluator] : pos_map) {
-                merge_evaluator_counts(evaluator, pos_evaluator, pos2, MERGING_MAX_DEPTH);
-                merge_evaluator_counts(evaluator_with_fo, pos_evaluator, pos2, MERGING_MAX_DEPTH_WITH_FO);
+                mergeEvaluatorCounts(evaluator, pos_evaluator, pos2, MERGING_MAX_DEPTH);
+                mergeEvaluatorCounts(evaluator_with_fo, pos_evaluator, pos2, MERGING_MAX_DEPTH_WITH_FO);
             }
 
             if (evaluator.is_word_excluded() || evaluator_with_fo.is_word_excluded()) {
@@ -278,7 +278,7 @@ class wiktextract_preprocessor {
             } else {
                 status = U_ZERO_ERROR;
                 ut = utext_openUTF8(ut, word.c_str(), word.size(), &status);
-                if (U_FAILURE(status) || !validate_word(ut)) {
+                if (U_FAILURE(status) || !validateWord(ut)) {
                     total_words_excluded++;
                     continue;
                 } else if (evaluator_with_fo.is_word_offensive()) {
@@ -293,7 +293,7 @@ class wiktextract_preprocessor {
                 }
             }
         }
-        insert_project_specific_words();
+        insertProjectSpecificWords();
 
         utext_close(ut);
 
@@ -301,12 +301,12 @@ class wiktextract_preprocessor {
         parse_duration_s = std::chrono::duration_cast<std::chrono::seconds>(parse_end_time - parse_start_time);
     }
 
-    void persist_dictionary(const fl::u8str& dst_path) {
+    void persistDictionary(const fl::u8str& dst_path) {
         dict.dst_path = dst_path;
         dict.persist();
     }
 
-    void persist_stats(const fl::u8str& stats_path) const {
+    void persistStats(const fl::u8str& stats_path) const {
         if (stats_path.empty()) return;
         std::ofstream out(stats_path);
         nlohmann::json json_stats;
@@ -323,8 +323,8 @@ class wiktextract_preprocessor {
     }
 };
 
-bool parse_flag_to(fl::u8str& path, const std::vector<fl::u8str>& flags, std::size_t& i,
-                   const fl::u8str& err_display_name) noexcept {
+bool parseFlagTo(fl::u8str& path, const std::vector<fl::u8str>& flags, std::size_t& i,
+                 const fl::u8str& err_display_name) noexcept {
     if (i + 1 < flags.size() && !flags[i + 1].starts_with(FLAG_INDICATOR)) {
         path = flags[i + 1];
         i += 2;
@@ -335,7 +335,7 @@ bool parse_flag_to(fl::u8str& path, const std::vector<fl::u8str>& flags, std::si
     }
 }
 
-int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept {
+int handlePrepWiktextractAction(const std::vector<fl::u8str>& flags) noexcept {
     fl::u8str src_path;
     fl::u8str dst_path;
     fl::u8str config_path = FLAG_CONFIG_PATH_DEFAULT_VALUE;
@@ -345,15 +345,15 @@ int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept
     for (std::size_t i = 0; i < flags.size();) {
         auto& flag = flags[i];
         if (flag == FLAG_SRC_PATH) {
-            if (!parse_flag_to(src_path, flags, i, "source path")) return 1;
+            if (!parseFlagTo(src_path, flags, i, "source path")) return 1;
         } else if (flag == FLAG_DST_PATH) {
-            if (!parse_flag_to(dst_path, flags, i, "destination path")) return 1;
+            if (!parseFlagTo(dst_path, flags, i, "destination path")) return 1;
         } else if (flag == FLAG_CONFIG_PATH) {
-            if (!parse_flag_to(config_path, flags, i, "config path")) return 1;
+            if (!parseFlagTo(config_path, flags, i, "config path")) return 1;
         } else if (flag == FLAG_FILTER_NAME) {
-            if (!parse_flag_to(filter_name, flags, i, "filter name")) return 1;
+            if (!parseFlagTo(filter_name, flags, i, "filter name")) return 1;
         } else if (flag == FLAG_STATS_PATH) {
-            if (!parse_flag_to(stats_path, flags, i, "statistics path")) return 1;
+            if (!parseFlagTo(stats_path, flags, i, "statistics path")) return 1;
         } else {
             std::cerr << "Warning: Unknown flag '" << flag << "'. Ignoring.\n";
             i++;
@@ -388,16 +388,16 @@ int handle_prep_wiktextract_action(const std::vector<fl::u8str>& flags) noexcept
         return 1;
     }
 
-    wiktextract_preprocessor preprocessor;
-    preprocessor.load_config(config_path);
-    preprocessor.read_wiktextract_data_into_dictionary(src_path, filter_name);
-    preprocessor.persist_dictionary(dst_path);
-    preprocessor.persist_stats(stats_path);
+    WiktextractPreprocessor preprocessor;
+    preprocessor.loadConfig(config_path);
+    preprocessor.readWiktextractDataIntoDictionary(src_path, filter_name);
+    preprocessor.persistDictionary(dst_path);
+    preprocessor.persistStats(stats_path);
 
     return 0;
 }
 
-int print_prep_wiktextract_usage(char* arg0) noexcept {
+int printPrepWiktextractUsage(char* arg0) noexcept {
     std::cout
         << "Usage: " << arg0
         << " prep-wiktextract --src <src-path> --dst <dst-path> [--config <config-path>] [--filter "

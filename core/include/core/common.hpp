@@ -36,9 +36,9 @@ using freq_t = double;
 static const freq_t FREQ_MIN = 0.0;
 static const freq_t FREQ_MAX = 1.0;
 
-// ----- suggestion_request_flags ----- //
+// ----- SuggestionRequestFlags ----- //
 
-class suggestion_request_flags {
+class SuggestionRequestFlags {
   public:
     static const int32_t M_MAX_SUGGESTION_COUNT = 0x00FF;
     static const int32_t F_ALLOW_POSSIBLY_OFFENSIVE = 0x0100;
@@ -48,24 +48,32 @@ class suggestion_request_flags {
     int32_t __flags;
 
   public:
-    suggestion_request_flags(int32_t flags) : __flags(flags) {};
-    ~suggestion_request_flags() = default;
+    SuggestionRequestFlags(int32_t flags) : __flags(flags) {};
+    ~SuggestionRequestFlags() = default;
 
-    int32_t max_suggestion_count() const noexcept { return (__flags & M_MAX_SUGGESTION_COUNT); }
-    bool allow_possibly_offensive() const noexcept { return (__flags & F_ALLOW_POSSIBLY_OFFENSIVE) != 0; }
-    bool is_private_session() const noexcept { return (__flags & F_IS_PRIVATE_SESSION) != 0; }
+    int32_t maxSuggestionCount() const noexcept {
+        return (__flags & M_MAX_SUGGESTION_COUNT);
+    }
+    bool allowPossiblyOffensive() const noexcept {
+        return (__flags & F_ALLOW_POSSIBLY_OFFENSIVE) != 0;
+    }
+    bool isPrivateSession() const noexcept {
+        return (__flags & F_IS_PRIVATE_SESSION) != 0;
+    }
 
-    operator int32_t() const noexcept { return __flags; }
+    operator int32_t() const noexcept {
+        return __flags;
+    }
 };
 
-// ----- suggestion_candidate ----- //
+// ----- SuggestionCandidate ----- //
 
 static const double SUGGESTION_CANDIDATE_MIN_CONFIDENCE = 0.0;
 // Everything above 0.9 to 1.0 is reserved for special suggestions such as contacts, clipboard, etc., which is not
 // handled in the native implementation
 static const double SUGGESTION_CANDIDATE_MAX_CONFIDENCE = 0.9;
 
-struct suggestion_candidate {
+struct SuggestionCandidate {
     const fl::u8str text = "";
     const fl::u8str secondary_text = "";
     const int edit_distance;
@@ -74,7 +82,7 @@ struct suggestion_candidate {
     const bool is_eligible_for_user_removal = true;
 };
 
-// ----- spelling_result ----- //
+// ----- SpellingResult ----- //
 
 static const int32_t RESULT_UNSPECIFIED = 0x0000;
 static const int32_t RESULT_ATTR_IN_THE_DICTIONARY = 0x0001;
@@ -83,34 +91,38 @@ static const int32_t RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS = 0x0004;
 static const int32_t RESULT_ATTR_LOOKS_LIKE_GRAMMAR_ERROR = 0x0008;
 static const int32_t RESULT_ATTR_DONT_SHOW_UI_FOR_SUGGESTIONS = 0x0010;
 
-class spelling_result {
+class SpellingResult {
   public:
     int32_t suggestion_attributes;
     std::vector<fl::u8str> suggestions;
 
   public:
-    spelling_result() : suggestion_attributes(RESULT_UNSPECIFIED) {}
-    spelling_result(const int32_t suggestion_attributes) : suggestion_attributes(suggestion_attributes) {}
-    spelling_result(const int32_t suggestion_attributes, const std::vector<fl::u8str>& suggestions)
+    SpellingResult() : suggestion_attributes(RESULT_UNSPECIFIED) {}
+    SpellingResult(const int32_t suggestion_attributes) : suggestion_attributes(suggestion_attributes) {}
+    SpellingResult(const int32_t suggestion_attributes, const std::vector<fl::u8str>& suggestions)
         : suggestion_attributes(suggestion_attributes), suggestions(suggestions) {}
-    ~spelling_result() = default;
+    ~SpellingResult() = default;
 
-    static spelling_result unspecified() noexcept { return spelling_result(RESULT_UNSPECIFIED); }
-
-    static spelling_result valid_word() noexcept { return spelling_result(RESULT_ATTR_IN_THE_DICTIONARY); }
-
-    static spelling_result typo(const std::vector<fl::u8str>& suggestions,
-                                bool is_high_confidence_result = false) noexcept {
-        auto attributes =
-            RESULT_ATTR_LOOKS_LIKE_TYPO | (is_high_confidence_result ? RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS : 0);
-        return spelling_result(attributes, suggestions);
+    static SpellingResult unspecified() noexcept {
+        return SpellingResult(RESULT_UNSPECIFIED);
     }
 
-    static spelling_result grammar_error(const std::vector<fl::u8str>& suggestions,
-                                         bool is_high_confidence_result = false) noexcept {
+    static SpellingResult validWord() noexcept {
+        return SpellingResult(RESULT_ATTR_IN_THE_DICTIONARY);
+    }
+
+    static SpellingResult typo(const std::vector<fl::u8str>& suggestions,
+                               bool is_high_confidence_result = false) noexcept {
+        auto attributes =
+            RESULT_ATTR_LOOKS_LIKE_TYPO | (is_high_confidence_result ? RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS : 0);
+        return SpellingResult(attributes, suggestions);
+    }
+
+    static SpellingResult grammarError(const std::vector<fl::u8str>& suggestions,
+                                       bool is_high_confidence_result = false) noexcept {
         auto attributes = RESULT_ATTR_LOOKS_LIKE_GRAMMAR_ERROR |
                           (is_high_confidence_result ? RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS : 0);
-        return spelling_result(attributes, suggestions);
+        return SpellingResult(attributes, suggestions);
     }
 };
 
