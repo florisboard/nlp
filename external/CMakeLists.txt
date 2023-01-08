@@ -1,3 +1,6 @@
+# External library: "google/googletest"
+add_subdirectory(googletest)
+
 # External library: "nlohmann/json"
 add_subdirectory(nlohmann-json)
 
@@ -8,9 +11,9 @@ set(TERMBOX_INTERMEDIATE_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/termbox2/${TERMBOX
 set(TERMBOX_INTERMEDIATE_OBJ_PATH ${CMAKE_CURRENT_SOURCE_DIR}/termbox2/termbox.o)
 set(TERMBOX_LIB_PATH ${FLORIS_LIBRARY_OUTPUT_DIRECTORY}/${TERMBOX_LIB_FILE})
 add_custom_target(build_termbox ALL
-    COMMAND make ${TERMBOX_LIB_FILE} && ${CMAKE_COMMAND} -E copy_if_different ${TERMBOX_INTERMEDIATE_LIB_PATH} ${TERMBOX_LIB_PATH}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/termbox2
-    BYPRODUCTS ${TERMBOX_INTERMEDIATE_LIB_PATH} ${TERMBOX_INTERMEDIATE_OBJ_PATH} ${TERMBOX_LIB_PATH})
+        COMMAND make ${TERMBOX_LIB_FILE} && ${CMAKE_COMMAND} -E copy_if_different ${TERMBOX_INTERMEDIATE_LIB_PATH} ${TERMBOX_LIB_PATH}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/termbox2
+        BYPRODUCTS ${TERMBOX_INTERMEDIATE_LIB_PATH} ${TERMBOX_INTERMEDIATE_OBJ_PATH} ${TERMBOX_LIB_PATH})
 add_library(termbox ${FLORIS_LIBRARY_TYPE} IMPORTED GLOBAL)
 add_library(termbox::termbox ALIAS termbox)
 add_dependencies(termbox build_termbox)

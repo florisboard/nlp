@@ -10,3 +10,6 @@
 [submodule "external/nlohmann-json"]
 	path = external/nlohmann-json
 	url = https://github.com/nlohmann/json
+[submodule "external/googletest"]
+	path = external/googletest
+	url = https://github.com/google/googletest/
