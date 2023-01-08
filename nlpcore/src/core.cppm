@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Patrick Goldinger
+ * Copyright 2023 Patrick Goldinger
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,4 @@
  * limitations under the License.
  */
 
-#ifndef __FLORISNLP_TOOLS_PREP_WIKTEXTRACT_H__
-#define __FLORISNLP_TOOLS_PREP_WIKTEXTRACT_H__
-
-#include "core/string.hpp"
-
-#include <vector>
-
-namespace fl::nlp::tools {
-
-int handlePrepWiktextractAction(const std::vector<fl::u8str>& flags) noexcept;
-
-int printPrepWiktextractUsage(char* arg0) noexcept;
-
-} // namespace fl::nlp::tools
-
-#endif
+export module fl.nlp.core;

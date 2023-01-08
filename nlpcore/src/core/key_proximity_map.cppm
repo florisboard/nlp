@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Patrick Goldinger
+ * Copyright 2023 Patrick Goldinger
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,32 +14,32 @@
  * limitations under the License.
  */
 
-#ifndef __FLORISNLP_CORE_KEY_PROXIMITY_MAP_H__
-#define __FLORISNLP_CORE_KEY_PROXIMITY_MAP_H__
-
-#include "core/string.hpp"
+module;
 
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
-#include <map>
-#include <stdexcept>
+#include <unordered_map>
 #include <vector>
+
+export module fl.nlp.core.key_proximity_map;
+
+import fl.nlp.string;
 
 namespace fl::nlp {
 
-class KeyProximityMap {
-    using KeyDataMapT = std::unordered_map<fl::u8str, std::vector<fl::u8str>>;
+export class KeyProximityMap {
+    using KeyDataMapT = std::unordered_map<fl::str::UniChar, std::vector<fl::str::UniChar>>;
 
   public:
     KeyProximityMap() = default;
     ~KeyProximityMap() = default;
 
-    bool isInProximity(const fl::u8str& assumed, const fl::u8str& actual) const noexcept {
-        if (!_data.contains(assumed)) return false;
-        auto keys = _data.at(assumed);
+    bool isInProximity(const fl::str::UniChar& assumed, const fl::str::UniChar& actual) const noexcept {
+        if (!data_.contains(assumed)) return false;
+        auto keys = data_.at(assumed);
         return std::find(keys.begin(), keys.end(), actual) != keys.end();
     }
 
@@ -47,7 +47,7 @@ class KeyProximityMap {
         //_data.clear();
     }
 
-    void loadFromFile(std::filesystem::path path, bool clear_existing = true) {
+    void loadFromFile(const std::filesystem::path& path, bool clear_existing = true) {
         using namespace std::string_literals;
 
         std::ifstream json_mapping_file(path);
@@ -60,13 +60,11 @@ class KeyProximityMap {
         if (clear_existing) {
             clear();
         }
-        json_mapping_data.get_to(_data);
+        json_mapping_data.get_to(data_);
     }
 
   private:
-    KeyDataMapT _data;
+    KeyDataMapT data_;
 };
 
 } // namespace fl::nlp
-
-#endif

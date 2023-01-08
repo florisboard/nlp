@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Patrick Goldinger
+ * Copyright 2023 Patrick Goldinger
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-#include "core/string.hpp"
-#include "tools/core_ui.hpp"
-#include "tools/prep_wiktextract.hpp"
-
 #include <iostream>
+#include <string>
 #include <vector>
 
-static const fl::u8str VERSION = "0.1.0";
+import fl.nlp.tools.core_ui;
 
-static const fl::u8str ACTION_CORE_UI = "core-ui";
-static const fl::u8str ACTION_PREP_WIKTEXTRACT = "prep-wiktextract";
-static const fl::u8str FLAG_INDICATOR = "-";
-static const fl::u8str FLAG_HELP = "--help";
-static const fl::u8str FLAG_VERSION = "--version";
+static const std::string VERSION = "0.1.0";
+
+static const std::string ACTION_CORE_UI = "core-ui";
+static const std::string ACTION_PREP_WIKTEXTRACT = "prep-wiktextract";
+static const std::string FLAG_INDICATOR = "-";
+static const std::string FLAG_HELP = "--help";
+static const std::string FLAG_VERSION = "--version";
 
 void printVersion() noexcept {
     std::cout << "FlorisNLP Tools v" << VERSION << "\n";
@@ -49,14 +48,14 @@ void printUsage(char* arg0) noexcept {
 }
 
 auto collectFlags(int argc, char** argv) noexcept {
-    std::vector<fl::u8str> flags;
+    std::vector<std::string> flags;
     for (int i = 2; i < argc; i++) {
-        flags.push_back(fl::u8str(argv[i]));
+        flags.push_back(std::string(argv[i]));
     }
     return flags;
 }
 
-bool hasFlag(const fl::u8str& flag_to_search, const std::vector<fl::u8str>& flags) noexcept {
+bool hasFlag(const std::string& flag_to_search, const std::vector<std::string>& flags) noexcept {
     for (auto& flag : flags) {
         if (flag == flag_to_search) return true;
     }
@@ -70,7 +69,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    auto action = fl::u8str(argv[1]);
+    auto action = std::string(argv[1]);
     auto flags = collectFlags(argc, argv);
     if (action == FLAG_HELP) {
         printUsage(argv[0]);
@@ -79,17 +78,17 @@ int main(int argc, char** argv) {
     } else if (action == ACTION_CORE_UI) {
         if (hasFlag(FLAG_HELP, flags)) {
             printVersionWithAdditionalNewline();
-            return fl::nlp::tools::printCoreUiAction(argv[0]);
+            return fl::nlp::tools::core_ui::printUsage(argv[0]);
         } else {
-            return fl::nlp::tools::handleCoreUiAction(flags);
+            return fl::nlp::tools::core_ui::handleAction(flags);
         }
     } else if (action == ACTION_PREP_WIKTEXTRACT) {
-        if (hasFlag(FLAG_HELP, flags)) {
-            printVersionWithAdditionalNewline();
-            return fl::nlp::tools::printPrepWiktextractUsage(argv[0]);
-        } else {
-            return fl::nlp::tools::handlePrepWiktextractAction(flags);
-        }
+        // if (hasFlag(FLAG_HELP, flags)) {
+        //     printVersionWithAdditionalNewline();
+        //     return fl::nlp::tools::printPrepWiktextractUsage(argv[0]);
+        // } else {
+        //     return fl::nlp::tools::handlePrepWiktextractAction(flags);
+        // }
     } else {
         if (action.starts_with(FLAG_INDICATOR)) {
             std::cerr << "Fatal: Unknown flag'" << action << "'. See '" << argv[0] << " --help'.\n";

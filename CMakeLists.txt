@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 
 project(FlorisNLP VERSION 0.1.0)
 
+include(CxxModuleSupport)
+
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -12,23 +14,25 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(PREBUILT_MODULE_PATH ${CMAKE_BINARY_DIR}/modules)
+
 # Set up static/shared library vars
-if(BUILD_SHARED_LIBS)
+if (BUILD_SHARED_LIBS)
     set(FLORIS_LIBRARY_TYPE SHARED)
     set(FLORIS_LIBRARY_PREFIX ${CMAKE_SHARED_LIBRARY_PREFIX})
     set(FLORIS_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(FLORIS_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-else()
+else ()
     set(FLORIS_LIBRARY_TYPE STATIC)
     set(FLORIS_LIBRARY_PREFIX ${CMAKE_STATIC_LIBRARY_PREFIX})
     set(FLORIS_LIBRARY_SUFFIX ${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(FLORIS_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
-endif()
+endif ()
 
 # External libraries
 add_subdirectory(external)
 add_subdirectory(icu4c)
 
 # Internal libraries
-add_subdirectory(core)
-add_subdirectory(tools)
+add_subdirectory(nlpcore)
+add_subdirectory(nlptools)

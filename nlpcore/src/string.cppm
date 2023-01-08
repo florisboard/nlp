@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Patrick Goldinger
+ * Copyright 2023 Patrick Goldinger
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "core/string.hpp"
+module;
 
 #include <unicode/ubrk.h>
 #include <unicode/ucasemap.h>
@@ -23,10 +23,19 @@
 #include <unicode/utypes.h>
 
 #include <functional>
+#include <string>
+#include <vector>
 
-void applyCasemap(
-    fl::u8str& str,
-    std::function<int32_t(UCaseMap*, char*, int32_t, const char*, int32_t, UErrorCode*)> casemapper) noexcept {
+export module fl.nlp.string;
+
+namespace fl::str {
+
+export using UniChar = std::basic_string<char>;
+export using UniString = std::vector<UniChar>;
+
+export void applyCasemap(
+    std::string& str,
+    const std::function<int32_t(UCaseMap*, char*, int32_t, const char*, int32_t, UErrorCode*)>& casemapper) noexcept {
     if (str.empty()) return;
 
     // Set up case mapper
@@ -50,69 +59,64 @@ void applyCasemap(
     delete[] dst_buffer;
 }
 
-void fl::str::lowercase(u8str& str) noexcept {
+export void lowercase(std::string& str) noexcept {
     applyCasemap(str, ucasemap_utf8ToLower);
 }
 
-void fl::str::titlecase(u8str& str) noexcept {
+export void titlecase(std::string& str) noexcept {
     applyCasemap(str, ucasemap_utf8ToTitle);
 }
 
-void fl::str::uppercase(u8str& str) noexcept {
+export void uppercase(std::string& str) noexcept {
     applyCasemap(str, ucasemap_utf8ToUpper);
 }
 
-bool is_whitespace(fl::u8char c) noexcept { return u_isWhitespace(c); }
+export bool is_whitespace(char c) noexcept {
+    return u_isWhitespace(c);
+}
 
-void fl::str::trim(fl::u8str& src) noexcept {
+export void trim(std::string& src) noexcept {
     src.erase(std::find_if_not(src.rbegin(), src.rend(), is_whitespace).base(), src.end());
     src.erase(src.begin(), std::find_if_not(src.begin(), src.end(), is_whitespace));
 }
 
-void fl::str::split(const fl::u8str& src, const fl::u8str& delim, std::vector<fl::u8str>& dst) noexcept {
+export void split(const std::string& src, const std::string& delim, std::vector<std::string>& dst) noexcept {
     dst.clear();
     size_t last = 0;
-    size_t next = 0;
-    while ((next = src.find(delim, last)) != fl::u8str::npos) {
+    size_t next;
+    while ((next = src.find(delim, last)) != std::string::npos) {
         dst.push_back(src.substr(last, next - last));
         last = next + 1;
     }
     dst.push_back(src.substr(last));
 }
 
-void fl::str::split(const fl::u8str& src, fl::u8char delim, std::vector<fl::u8str>& dst) noexcept {
+export void split(const std::string& src, char delim, std::vector<std::string>& dst) noexcept {
     dst.clear();
     size_t last = 0;
-    size_t next = 0;
-    while ((next = src.find(delim, last)) != fl::u8str::npos) {
+    size_t next;
+    while ((next = src.find(delim, last)) != std::string::npos) {
         dst.push_back(src.substr(last, next - last));
         last = next + 1;
     }
     dst.push_back(src.substr(last));
 }
 
-void fl::chstr::vecToStr(const fl::u8chstr_vec& vec, fl::u8str& str) noexcept {
-    str.clear();
-    for (auto& chstr : vec) {
-        str.append(chstr);
-    }
-}
-
-void fl::chstr::strToVec(const u8str& str, u8chstr_vec& vec, const fl::u8str& locale_tag) noexcept {
-    vec.clear();
+export void toUniString(const std::string& str, UniString& uni_str, const std::string& locale_tag = "") noexcept {
+    uni_str.clear();
 
     auto status = U_ZERO_ERROR;
-    auto ut = utext_openUTF8(nullptr, str.c_str(), str.size(), &status);
+    auto ut = utext_openUTF8(nullptr, str.c_str(), static_cast<int64_t>(str.size()), &status);
     auto ub = ubrk_open(UBRK_CHARACTER, locale_tag.c_str(), nullptr, 0, &status);
     ubrk_setUText(ub, ut, &status);
 
     if (U_SUCCESS(status)) {
         int32_t prev_n = 0;
-        int32_t curr_n = 0;
+        int32_t curr_n;
 
         while ((curr_n = ubrk_next(ub)) != UBRK_DONE) {
-            auto chstr = str.substr(prev_n, curr_n - prev_n);
-            vec.push_back(std::move(chstr));
+            auto uni_char = str.substr(prev_n, curr_n - prev_n);
+            uni_str.push_back(std::move(uni_char));
             prev_n = curr_n;
         }
     }
@@ -121,10 +125,19 @@ void fl::chstr::strToVec(const u8str& str, u8chstr_vec& vec, const fl::u8str& lo
     utext_close(ut);
 }
 
-bool fl::chstr::compare(const u8chstr_vec& a, const u8chstr_vec& b) noexcept {
+export void toStdString(const UniString& uni_str, std::string& str) noexcept {
+    str.clear();
+    for (auto& uni_char : uni_str) {
+        str.append(uni_char);
+    }
+}
+
+export bool compare(const UniString& a, const UniString& b) noexcept {
     if (a.size() != b.size()) return false;
-    for (int i = 0; i < a.size(); i++) {
+    for (size_t i = 0; i < a.size(); i++) {
         if (a[i] != b[i]) return false;
     }
     return true;
 }
+
+} // namespace fl::str

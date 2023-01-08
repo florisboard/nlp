@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Patrick Goldinger
+ * Copyright 2023 Patrick Goldinger
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-#include "tools/core_ui.hpp"
-
-#include "core/common.hpp"
-#include "core/dictionary.hpp"
-#include "core/dictionary_session.hpp"
-#include "core/string.hpp"
-#include "core/udata.hpp"
+module;
 
 #include <unicode/unistr.h>
 
@@ -30,13 +24,25 @@
 #include <filesystem>
 #include <iostream>
 #include <map>
+#include <string>
 #include <vector>
 
-namespace fl::nlp::tools {
+export module fl.nlp.tools.core_ui;
 
-// TODO: get this path dynamically and remove the hardcoded path
-static const fl::u8str ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
-static const fl::u8str KEY_MAPPING_FILE = "data/qwerty_proximity_map.json";
+import fl.nlp.icuext;
+import fl.nlp.string;
+import fl.nlp.core.common;
+import fl.nlp.core.dictionary;
+import fl.nlp.core.nlp_session;
+
+namespace fl::nlp::tools::core_ui {
+
+static const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
+static const std::string KEY_MAPPING_FILE = "data/qwerty_proximity_map.json";
+
+export int handleAction(const std::vector<std::string>& flags) noexcept;
+
+export int printUsage(const char* arg0) noexcept;
 
 const char* attrStatusSymbol(int32_t suggestion_attribute) noexcept {
     if (suggestion_attribute == fl::nlp::RESULT_ATTR_IN_THE_DICTIONARY) {
@@ -49,19 +55,19 @@ const char* attrStatusSymbol(int32_t suggestion_attribute) noexcept {
 }
 
 // TODO: clean up code and restructure UI
-int mainCoreUi(const fl::u8str& fldic_path) noexcept {
-    if (U_FAILURE(fl::icuext::loadAndSetCommonData(ICU_DATA_FILE_PATH))) {
+int mainCoreUi(const std::string& fldic_path) noexcept {
+    if (U_FAILURE(fl::nlp::icuext::loadAndSetCommonData(ICU_DATA_FILE_PATH))) {
         std::cerr << "Fatal: Failed to load ICU data file! Aborting.\n";
         return 1;
     }
 
     fl::nlp::SuggestionRequestFlags flags(0);
     std::vector<std::unique_ptr<fl::nlp::SuggestionCandidate>> suggestion_results;
-    std::vector<fl::u8str> prev_words;
-    fl::nlp::DictionarySession dict_session;
-    dict_session.key_proximity_mapping.loadFromFile(KEY_MAPPING_FILE);
+    std::vector<std::string> prev_words;
+    fl::nlp::NlpSession nlp_session;
+    nlp_session.key_proximity_map.loadFromFile(KEY_MAPPING_FILE);
     try {
-        dict_session.loadBaseDictionary(fldic_path);
+        nlp_session.loadBaseDictionary(fldic_path);
     } catch (const std::runtime_error& e) {
         std::cerr << "Fatal: " << e.what() << " Aborting.\n";
         return 1;
@@ -71,8 +77,8 @@ int mainCoreUi(const fl::u8str& fldic_path) noexcept {
     int width = 0;
     int height = 0;
     icu::UnicodeString raw_input_buffer;
-    fl::u8str input_buffer;
-    std::vector<fl::u8str> input_words;
+    std::string input_buffer;
+    std::vector<std::string> input_words;
     tb_event ev;
     bool is_alive = true;
     bool is_suggestion_mode = true;
@@ -105,7 +111,7 @@ int mainCoreUi(const fl::u8str& fldic_path) noexcept {
         }
         if (is_suggestion_mode) {
             auto start = std::chrono::high_resolution_clock::now();
-            dict_session.suggest(input_words[input_words.size() - 1], prev_words, flags, suggestion_results);
+            nlp_session.suggest(input_words[input_words.size() - 1], prev_words, flags, suggestion_results);
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
             tb_printf(0, y++, 0, 0, "Suggested words (%d, %dms):", suggestion_results.size(), duration.count());
@@ -116,7 +122,7 @@ int mainCoreUi(const fl::u8str& fldic_path) noexcept {
         } else {
             tb_printf(0, y++, 0, 0, "Spelling results:");
             for (auto& input_word : input_words) {
-                auto result = dict_session.spell(input_word, prev_words, prev_words, flags);
+                auto result = nlp_session.spell(input_word, prev_words, prev_words, flags);
                 std::stringstream ss;
                 ss << "  " << input_word << " " << attrStatusSymbol(result.suggestion_attributes) << "  ->  ";
                 if (!result.suggestions.empty()) {
@@ -162,8 +168,8 @@ int mainCoreUi(const fl::u8str& fldic_path) noexcept {
     return 0;
 }
 
-int handleCoreUiAction(const std::vector<fl::u8str>& flags) noexcept {
-    fl::u8str fldic_path;
+int handleAction(const std::vector<std::string>& flags) noexcept {
+    std::string fldic_path;
     if (!flags.empty()) {
         fldic_path = flags[0];
     }
@@ -180,9 +186,9 @@ int handleCoreUiAction(const std::vector<fl::u8str>& flags) noexcept {
     return mainCoreUi(fldic_path);
 }
 
-int printCoreUiAction(char* arg0) noexcept {
+int printUsage(const char* arg0) noexcept {
     std::cout << "TODO!!!\n";
     return 0;
 }
 
-} // namespace fl::nlp::tools
+} // namespace fl::nlp::tools::core_ui

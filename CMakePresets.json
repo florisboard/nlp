@@ -19,7 +19,8 @@
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
-        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin"
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
+        "CMAKE_MODULE_PATH": "${sourceDir}/CMakeModules"
       }
     },
     {
@@ -35,7 +36,8 @@
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
-        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin"
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
+        "CMAKE_MODULE_PATH": "${sourceDir}/CMakeModules"
       }
     }
   ],

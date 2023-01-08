@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Patrick Goldinger
+ * Copyright 2023 Patrick Goldinger
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-#include "core/udata.hpp"
+module;
 
 #include <unicode/udata.h>
+#include <unicode/utypes.h>
 
 #include <fstream>
 
-UErrorCode fl::icuext::loadAndSetCommonData(std::string path) {
+export module fl.nlp.icuext;
+
+export namespace fl::nlp::icuext {
+
+UErrorCode loadAndSetCommonData(const std::string& path) {
     std::ifstream in_file(path, std::ios::in | std::ios::binary);
     if (!in_file) {
         return U_FILE_ACCESS_ERROR;
@@ -32,7 +37,7 @@ UErrorCode fl::icuext::loadAndSetCommonData(std::string path) {
     }
     in_file.seekg(0, std::ios::beg);
     char* icu_data = new char[size + 1];
-    in_file.read(icu_data, size);
+    in_file.read(icu_data, static_cast<std::streamsize>(size));
     if (!in_file) {
         delete[] icu_data;
         in_file.close();
@@ -44,3 +49,5 @@ UErrorCode fl::icuext::loadAndSetCommonData(std::string path) {
     udata_setCommonData(reinterpret_cast<void*>(icu_data), &status);
     return status;
 }
+
+} // namespace fl::nlp::icuext
