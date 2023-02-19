@@ -21,7 +21,9 @@ module;
 #include <unicode/utext.h>
 
 #include <filesystem>
+#include <functional>
 #include <utility>
+#include <vector>
 
 export module fl.nlp.core.nlp_session;
 
