@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.26)
 
 project(FlorisNLP VERSION 0.1.0)
 
-include(ClangModules)
+include(CxxModules)
 
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -13,9 +13,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API ${CMake_TEST_CXXModules_UUID})
 
 # Force clang to use libc++ instead of libstdc++
 add_compile_options(-stdlib=libc++)

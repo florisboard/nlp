@@ -21,6 +21,9 @@
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
         "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
         "CMAKE_MODULE_PATH": "${sourceDir}/CMakeModules"
+      },
+      "warnings": {
+        "dev": false
       }
     },
     {
@@ -38,6 +41,9 @@
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/release/bin",
         "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/release/bin",
         "CMAKE_MODULE_PATH": "${sourceDir}/CMakeModules"
+      },
+      "warnings": {
+        "dev": false
       }
     }
   ],

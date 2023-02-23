@@ -1,9 +1,5 @@
 # Source: https://gitlab.kitware.com/cmake/cmake/-/blob/f1034acb02/.gitlab/ci/cxx_modules_rules_clang.cmake
 
-# UUID from here (adjust version tag in URL if you use another version of CMake):
-# https://github.com/Kitware/CMake/blob/v3.26.0-rc3/Help/dev/experimental.rst
-set(CMake_TEST_CXXModules_UUID "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
-
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
 string(CONCAT CMAKE_EXPERIMENTAL_CXX_SCANDEP_SOURCE
         "${CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS}"
