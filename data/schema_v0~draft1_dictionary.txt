@@ -1,0 +1,66 @@
+# Schema for a `fldic` (FlorisBoard dictionary) file
+
+`fldic` is the unified file format for FlorisBoard v0.4+ to store words, ngrams and shortcuts as dictionaries for all
+NLP-related text-based functionality, such as predictive input and spell checking.
+
+The file format is based on the Toml file format, however it is important to note that `fldic` files are in no way
+compatible with regular Toml files and vice-versa!
+
+This file describes the schema of a fldic (FlorisBoard dictionary) file in a human-readable way. In the current state
+of the project there is no machine-readable version of this schema available, however this may change in the future.
+
+## General info
+
+The only supported and allowed character encoding of `fldic` files is UTF-8. Other encodings are either misinterpreted
+or rejected, depending on if the encoding specifier was provided or not.
+
+Lines starting with a hashtag symbol (`#`) are interpreted as line comments and are completely ignored, except
+if it resembles a global specifier (see below).
+
+## Structure/syntax
+
+This subsection describes the general structure of a `fldic` file. The order of the sections is required to be the same
+as stated in this schema, else the deserialization process will not work properly.
+
+### 0. Global specifiers
+
+Each `fldic` file MUST start with a special schema specifier line comment which has the link to the published schema,
+else the file cannot be read properly. Additionally, the second line can optionally indicate the encoding of the file,
+however this has no effect as of v0~draft1 as only UTF-8 is supported.
+
+Example:
+
+```
+#~schema: https://florisboard.org/schemas/fldic/v0~draft1/dictionary.txt
+#~encoding: utf-8
+```
+
+### 1. Metadata
+
+The first section after the global section must be the `[meta]` section, which provides the necessary metadata for the
+dictionary reader. It is written in a Toml-like syntax, however only strings and single-line arrays are supported as of
+v0~draft1. See the example for all supported properties and their type:
+
+Example:
+
+```
+[meta]
+name = "example"
+display_name = "Example"
+locales = ["en-US"]
+generated_by = ["manual_example"]
+authors = ["John Doe <john@doe.com>"]
+license = "Apache-2.0"
+```
+
+### 2. List of words
+
+TODO
+
+### 3. List of ngrams
+
+TODO
+
+### 4. List of shortcuts
+
+TODO

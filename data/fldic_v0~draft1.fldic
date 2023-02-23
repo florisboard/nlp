@@ -1,0 +1,27 @@
+#~schema: https://florisboard.org/schemas/fldic/v0~draft1/dictionary.txt
+#~encoding: utf-8
+
+[meta]
+name = "test"
+display_name = "Test"
+locales = ["en-US"]
+generated_by = ["manual_example"]
+authors = ["Patrick <patrick@patrickgold.dev>"]
+license = "Apache-2.0"
+
+[words]
+hello	2564
+good	1244
+morning	3445
+I	12333
+am	8755
+was	1234
+lol	1233	p
+test	123	h
+
+[ngrams]
+S,2	344
+2,3	344
+
+[shortcuts]
+atm	"at the moment"

@@ -3,3 +3,4 @@
 
 # For now exclude dictionary files too
 *.fldic
+!fldic_v0~draft1.fldic
