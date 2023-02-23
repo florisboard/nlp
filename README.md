@@ -15,29 +15,37 @@ This repository is currently in alpha and will move along with the 0.4.0 FlorisB
 
 ### Requirements
 
-- Host system: UNIX-like (native Windows is NOT supported, WSL should work but is untested)
+- Host system: UNIX-like
 - CMake 3.26+
 - Ninja 1.11+
 - GNU make 3.80+
     - MUST be GNU make and not some other variation of make or the ICU build will fail!!
 - Clang ~~15.x+~~ (atm custom compiled, see below)
-- Package `libc++-dev` (version 14.x+)
+- Package `libc++-dev` (version 15.x+)
 - Git (only to clone and to initialize the submodules)
+
+Note for Windows 10/11 users: Native Windows compilation is not supported and probably will never be, however you can
+fully compile this project using WSL2 (Windows Subsystem for Linux 2). It has been tested with an Ubuntu 22.10 instance
+and everything compiled fine. See the [official docs](https://learn.microsoft.com/en-us/windows/wsl/) for more info.
 
 ### (Temporary) Compile custom version of clang
 
 To properly support C++ modules we need a custom version of clang as of February 2023, which has been provided by a dev
-of Kitware
-here: https://github.com/mathstuf/llvm-project/releases/tag/p1689r5-cmake-ci-20221215
+of Kitware here: https://github.com/mathstuf/llvm-project/releases/tag/p1689r5-cmake-ci-20221215
 
-Download the source code, unpack it, cd into it, then issue the following commands:
+To compile the custom version of clang, issue the following commands:
 
 ```shell
+# Get the source code
+git clone https://github.com/mathstuf/llvm-project.git
+cd llvm-project
+git checkout p1689r5-cmake-ci-20221215
+
 # Set up build directory
 mkdir build
 cd build
 
-# Build clang (may take a while, like 30-60 mins)
+# Build clang (may take a while, depending on the CPU anything from 15-60 mins)
 cmake -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_BUILD_TYPE=Release -G Ninja ../llvm
 ninja
 ```
@@ -59,7 +67,7 @@ cmake --build --preset=debug
 ```
 
 NOTE: atm we need to change the compiler path to the custom compiled one, else the build will fail. To change it, open
-[CMakePresets.json](CMakePresets.json) in a text editor and chang C/CXX compiler vars like so:
+[CMakePresets.json](CMakePresets.json) in a text editor and change the C/CXX compiler vars like so:
 
 ```
     ...

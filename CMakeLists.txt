@@ -17,6 +17,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API ${CMake_TEST_CXXModules_UUID})
 
+# Force clang to use libc++ instead of libstdc++
+add_compile_options(-stdlib=libc++)
+link_libraries(c++)
+
 # Set up static/shared library vars
 if (BUILD_SHARED_LIBS)
     set(FLORIS_LIBRARY_TYPE SHARED)
