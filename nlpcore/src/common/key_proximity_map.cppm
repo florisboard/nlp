@@ -16,7 +16,7 @@
 
 module;
 
-#include <nlohmann/json.hpp>
+#include "nlohmann/json.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -24,7 +24,7 @@ module;
 #include <unordered_map>
 #include <vector>
 
-export module fl.nlp.core.key_proximity_map;
+export module fl.nlp.core.common.key_proximity_map;
 
 import fl.nlp.string;
 

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-export module fl.nlp.core;
+export module fl.nlp.core.latin;
 
-export import fl.nlp.core.common;
-export import fl.nlp.core.latin;
+export import fl.nlp.core.latin.dictionary;
+export import fl.nlp.core.latin.nlp_session;
+export import fl.nlp.core.latin.prediction_weights;

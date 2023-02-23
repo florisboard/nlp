@@ -25,30 +25,14 @@ module;
 #include <utility>
 #include <vector>
 
-export module fl.nlp.core.nlp_session;
+export module fl.nlp.core.latin.nlp_session;
 
 import fl.nlp.core.common;
-import fl.nlp.core.dictionary;
-import fl.nlp.core.key_proximity_map;
+import fl.nlp.core.latin.dictionary;
+import fl.nlp.core.latin.prediction_weights;
 import fl.nlp.string;
-import fl.nlp.core.trie_map;
 
 namespace fl::nlp {
-
-static const int MAX_COST = 6;
-static const int COST_IS_EQUAL = 0;
-static const int COST_IS_OPPOSITE_CASE = 1;
-static const int COST_INSERT = 2;
-static const int COST_DELETE = 2;
-static const int COST_SUBSTITUTE_DEFAULT = 2;
-static const int COST_SUBSTITUTE_IN_PROXIMITY = 1;
-static const int COST_TRANSPOSE = 1;
-static const int PENALTY_DEFAULT = 0;
-static const int PENALTY_START_OF_STR = 2;
-
-export struct PredictionWeights {
-    //
-};
 
 enum class FuzzySearchType {
     Proximity,
@@ -56,15 +40,15 @@ enum class FuzzySearchType {
     ProximityOrPrefix,
 };
 
-using WordTrieNode = TrieNode<fl::str::UniChar, NgramProperties>;
+using WordTrieNode = TrieNode<fl::str::UniChar, WordProperties>;
 
-export class NlpSession {
+export class LatinNlpSession {
   public:
     icu::Locale primary_locale;
     std::vector<icu::Locale> secondary_locales;
     std::vector<std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
+    LatinPredictionWeights weights;
     KeyProximityMap key_proximity_map;
-    PredictionWeights prediction_weights;
 
     void loadBaseDictionary(const std::filesystem::path& dict_path) {
         auto base_dict = std::make_unique<LatinDictionary>();
@@ -86,7 +70,8 @@ export class NlpSession {
         }
 
         std::vector<std::unique_ptr<SuggestionCandidate>> results;
-        fuzzySearch(dictionaries[0]->words.rootNode(), FuzzySearchType::ProximityWithoutSelf, MAX_COST, flags, word,
+        fuzzySearch(dictionaries[0]->words.rootNode(), FuzzySearchType::ProximityWithoutSelf,
+                    weights.words.lookup.max_cost, flags, word,
                     [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
                         double confidence = 1.0;
                         //    (static_cast<double>(node->properties.absolute_score) /
@@ -118,7 +103,7 @@ export class NlpSession {
 
         auto& dict = dictionaries[0];
 
-        fuzzySearch(dict->words.rootNode(), FuzzySearchType::ProximityOrPrefix, MAX_COST, flags, word,
+        fuzzySearch(dict->words.rootNode(), FuzzySearchType::ProximityOrPrefix, weights.words.lookup.max_cost, flags, word,
                     [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
                         double confidence =
                             1.0; //(static_cast<double>(node->properties.absolute_score) / dict->max_unigram_score);
@@ -137,7 +122,7 @@ export class NlpSession {
   private:
     class FuzzySearchState {
       public:
-        const NlpSession& session;
+        const LatinNlpSession& session;
         const FuzzySearchType type;
         const int max_distance;
         const SuggestionRequestFlags flags;
@@ -147,7 +132,7 @@ export class NlpSession {
         std::vector<std::vector<int>> distances;
         std::function<void(std::string&&, const WordTrieNode*, int)> on_result;
 
-        FuzzySearchState(const NlpSession& session, const FuzzySearchType type, const int max_distance,
+        FuzzySearchState(const LatinNlpSession& session, const FuzzySearchType type, const int max_distance,
                          const SuggestionRequestFlags& flags, const std::string& word)
             : session(session), type(type), max_distance(max_distance), flags(flags) {
             initUniWord(word);
@@ -160,7 +145,7 @@ export class NlpSession {
         void setPrefixUniCharAt(std::size_t prefix_index, const fl::str::UniChar& uni_char) noexcept {
             ensureCapacityFor(prefix_index + 1);
             prefix_chars[prefix_index] = uni_char;
-            distances[prefix_index][0] = prefix_index * COST_INSERT;
+            distances[prefix_index][0] = prefix_index * session.weights.words.lookup.cost_insert;
 
             if (prefix_index > 0) {
                 int penalty;
@@ -170,35 +155,36 @@ export class NlpSession {
                 for (std::size_t i = 1; i < uni_word.size(); i++) {
                     // Calculate penalty
                     if (prefix_index == 1 && i == 1) {
-                        penalty = PENALTY_START_OF_STR;
+                        penalty = session.weights.words.lookup.penalty_start_of_str;
                     } else {
-                        penalty = PENALTY_DEFAULT;
+                        penalty = session.weights.words.lookup.penalty_default;
                     }
 
                     // Calculate SUBSTITUTION / IS EQUAL
                     if (uni_word[i] == uni_char) {
-                        substitution_cost = COST_IS_EQUAL;
+                        substitution_cost = session.weights.words.lookup.cost_is_equal;
                     } else if (uni_word_opposite_case[i] == uni_char) {
-                        substitution_cost = COST_IS_OPPOSITE_CASE; // No penalty even on start of word
+                        // No penalty even on start of word
+                        substitution_cost = session.weights.words.lookup.cost_is_opposite_case;
                     } else if (prefix_index > 1 && i > 1 && prefix_chars[prefix_index - 1] == uni_word[i] &&
                                uni_char == uni_word[i - 1]) {
                         // TODO: investigate if transpose calculation could be incorrect for certain edge cases
-                        substitution_cost = COST_TRANSPOSE - 1 + penalty;
-                        //} else if (false && session.key_proximity_mapping.isInProximity(uni_char, uni_word[i])) {
-                        //    substitution_cost = COST_SUBSTITUTE_IN_PROXIMITY + penalty;
+                        substitution_cost = session.weights.words.lookup.cost_transpose - 1 + penalty;
+                    } else if (false && session.key_proximity_map.isInProximity(uni_char, uni_word[i])) {
+                        substitution_cost = session.weights.words.lookup.cost_substitute_in_proximity + penalty;
                     } else {
-                        substitution_cost = COST_SUBSTITUTE_DEFAULT + penalty;
+                        substitution_cost = session.weights.words.lookup.cost_substitute + penalty;
                     }
 
                     distances[prefix_index][i] =
-                        std::min(std::min(distances[prefix_index - 1][i] + COST_INSERT, // DELETION
-                                          distances[prefix_index][i - 1] + COST_DELETE  // INSERTION
+                        std::min(std::min(distances[prefix_index - 1][i] + session.weights.words.lookup.cost_insert, // DELETION
+                                          distances[prefix_index][i - 1] + session.weights.words.lookup.cost_delete  // INSERTION
                                           ),
                                  distances[prefix_index - 1][i - 1] + substitution_cost);
                 }
             } else {
                 for (std::size_t i = 0; i < uni_word.size(); i++) {
-                    distances[0][i] = i * COST_INSERT;
+                    distances[0][i] = i * session.weights.words.lookup.cost_insert;
                 }
             }
         }

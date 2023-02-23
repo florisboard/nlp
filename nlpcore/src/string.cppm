@@ -80,24 +80,34 @@ export void trim(std::string& src) noexcept {
     src.erase(src.begin(), std::find_if_not(src.begin(), src.end(), is_whitespace));
 }
 
-export void split(const std::string& src, const std::string& delim, std::vector<std::string>& dst) noexcept {
+export void split(const std::string& src, const std::string& delim, std::vector<std::string>& dst, std::size_t max_split_ops = 0) noexcept {
     dst.clear();
     size_t last = 0;
     size_t next;
+    size_t split_ops = 0;
     while ((next = src.find(delim, last)) != std::string::npos) {
         dst.push_back(src.substr(last, next - last));
         last = next + 1;
+        split_ops++;
+        if (max_split_ops > 0 && split_ops >= max_split_ops) {
+            break;
+        }
     }
     dst.push_back(src.substr(last));
 }
 
-export void split(const std::string& src, char delim, std::vector<std::string>& dst) noexcept {
+export void split(const std::string& src, char delim, std::vector<std::string>& dst, std::size_t max_split_ops = 0) noexcept {
     dst.clear();
     size_t last = 0;
     size_t next;
+    size_t split_ops = 0;
     while ((next = src.find(delim, last)) != std::string::npos) {
         dst.push_back(src.substr(last, next - last));
         last = next + 1;
+        split_ops++;
+        if (max_split_ops > 0 && split_ops >= max_split_ops) {
+            break;
+        }
     }
     dst.push_back(src.substr(last));
 }

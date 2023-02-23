@@ -32,8 +32,7 @@ export module fl.nlp.tools.core_ui;
 import fl.nlp.icuext;
 import fl.nlp.string;
 import fl.nlp.core.common;
-import fl.nlp.core.dictionary;
-import fl.nlp.core.nlp_session;
+import fl.nlp.core.latin;
 
 namespace fl::nlp::tools::core_ui {
 
@@ -64,7 +63,7 @@ int mainCoreUi(const std::string& fldic_path) noexcept {
     fl::nlp::SuggestionRequestFlags flags(0);
     std::vector<std::unique_ptr<fl::nlp::SuggestionCandidate>> suggestion_results;
     std::vector<std::string> prev_words;
-    fl::nlp::NlpSession nlp_session;
+    fl::nlp::LatinNlpSession nlp_session;
     nlp_session.key_proximity_map.loadFromFile(KEY_MAPPING_FILE);
     try {
         nlp_session.loadBaseDictionary(fldic_path);
