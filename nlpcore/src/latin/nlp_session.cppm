@@ -16,6 +16,8 @@
 
 module;
 
+#include <nlohmann/json.hpp>
+
 #include <unicode/locid.h>
 #include <unicode/ubrk.h>
 #include <unicode/utext.h>
@@ -30,9 +32,35 @@ export module fl.nlp.core.latin.nlp_session;
 import fl.nlp.core.common;
 import fl.nlp.core.latin.dictionary;
 import fl.nlp.core.latin.prediction_weights;
+import fl.nlp.icuext;
 import fl.nlp.string;
 
 namespace fl::nlp {
+
+using json = nlohmann::json;
+
+export struct LatinNlpSessionConfig {
+    icu::Locale primary_locale;
+    std::vector<icu::Locale> secondary_locales;
+    LatinPredictionWeights weights;
+    KeyProximityMap key_proximity_map;
+};
+
+export void to_json(json& j, const LatinNlpSessionConfig& config) {
+    j = json{
+        {"primaryLocale", config.primary_locale},
+        {"secondaryLocales", config.secondary_locales},
+        {"predictionWeights", config.weights},
+        {"keyProximityMap", config.key_proximity_map}
+    };
+}
+
+export void from_json(const json& j, LatinNlpSessionConfig& config) {
+    j.at("primaryLocale").get_to(config.primary_locale);
+    j.at("secondaryLocales").get_to(config.secondary_locales);
+    j.at("predictionWeights").get_to(config.weights);
+    j.at("keyProximityMap").get_to(config.key_proximity_map);
+};
 
 enum class FuzzySearchType {
     Proximity,
@@ -44,11 +72,19 @@ using WordTrieNode = TrieNode<fl::str::UniChar, WordProperties>;
 
 export class LatinNlpSession {
   public:
-    icu::Locale primary_locale;
-    std::vector<icu::Locale> secondary_locales;
+    LatinNlpSessionConfig config;
     std::vector<std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
-    LatinPredictionWeights weights;
-    KeyProximityMap key_proximity_map;
+
+    void loadConfigFromFile(const std::filesystem::path& config_path) {
+        using namespace std::string_literals;
+        std::ifstream config_file(config_path);
+        if (!config_file.is_open()) {
+            throw std::runtime_error("Cannot open config file at '"s + config_path.string() + "'!"s);
+        }
+        auto json_config = nlohmann::json::parse(config_file);
+        config_file.close();
+        json_config.get_to(config);
+    }
 
     void loadBaseDictionary(const std::filesystem::path& dict_path) {
         auto base_dict = std::make_unique<LatinDictionary>();
@@ -71,7 +107,7 @@ export class LatinNlpSession {
 
         std::vector<std::unique_ptr<SuggestionCandidate>> results;
         fuzzySearch(dictionaries[0]->words.rootNode(), FuzzySearchType::ProximityWithoutSelf,
-                    weights.words.lookup.max_cost, flags, word,
+                    config.weights.words.lookup.max_cost, flags, word,
                     [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
                         double confidence = 1.0;
                         //    (static_cast<double>(node->properties.absolute_score) /
@@ -103,7 +139,7 @@ export class LatinNlpSession {
 
         auto& dict = dictionaries[0];
 
-        fuzzySearch(dict->words.rootNode(), FuzzySearchType::ProximityOrPrefix, weights.words.lookup.max_cost, flags, word,
+        fuzzySearch(dict->words.rootNode(), FuzzySearchType::ProximityOrPrefix, config.weights.words.lookup.max_cost, flags, word,
                     [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
                         double confidence =
                             1.0; //(static_cast<double>(node->properties.absolute_score) / dict->max_unigram_score);
@@ -145,7 +181,7 @@ export class LatinNlpSession {
         void setPrefixUniCharAt(std::size_t prefix_index, const fl::str::UniChar& uni_char) noexcept {
             ensureCapacityFor(prefix_index + 1);
             prefix_chars[prefix_index] = uni_char;
-            distances[prefix_index][0] = prefix_index * session.weights.words.lookup.cost_insert;
+            distances[prefix_index][0] = prefix_index * session.config.weights.words.lookup.cost_insert;
 
             if (prefix_index > 0) {
                 int penalty;
@@ -155,36 +191,36 @@ export class LatinNlpSession {
                 for (std::size_t i = 1; i < uni_word.size(); i++) {
                     // Calculate penalty
                     if (prefix_index == 1 && i == 1) {
-                        penalty = session.weights.words.lookup.penalty_start_of_str;
+                        penalty = session.config.weights.words.lookup.penalty_start_of_str;
                     } else {
-                        penalty = session.weights.words.lookup.penalty_default;
+                        penalty = session.config.weights.words.lookup.penalty_default;
                     }
 
                     // Calculate SUBSTITUTION / IS EQUAL
                     if (uni_word[i] == uni_char) {
-                        substitution_cost = session.weights.words.lookup.cost_is_equal;
+                        substitution_cost = session.config.weights.words.lookup.cost_is_equal;
                     } else if (uni_word_opposite_case[i] == uni_char) {
                         // No penalty even on start of word
-                        substitution_cost = session.weights.words.lookup.cost_is_opposite_case;
+                        substitution_cost = session.config.weights.words.lookup.cost_is_opposite_case;
                     } else if (prefix_index > 1 && i > 1 && prefix_chars[prefix_index - 1] == uni_word[i] &&
                                uni_char == uni_word[i - 1]) {
                         // TODO: investigate if transpose calculation could be incorrect for certain edge cases
-                        substitution_cost = session.weights.words.lookup.cost_transpose - 1 + penalty;
-                    } else if (false && session.key_proximity_map.isInProximity(uni_char, uni_word[i])) {
-                        substitution_cost = session.weights.words.lookup.cost_substitute_in_proximity + penalty;
+                        substitution_cost = session.config.weights.words.lookup.cost_transpose - 1 + penalty;
+                    } else if (false && session.config.key_proximity_map.isInProximity(uni_char, uni_word[i])) {
+                        substitution_cost = session.config.weights.words.lookup.cost_substitute_in_proximity + penalty;
                     } else {
-                        substitution_cost = session.weights.words.lookup.cost_substitute + penalty;
+                        substitution_cost = session.config.weights.words.lookup.cost_substitute + penalty;
                     }
 
                     distances[prefix_index][i] =
-                        std::min(std::min(distances[prefix_index - 1][i] + session.weights.words.lookup.cost_insert, // DELETION
-                                          distances[prefix_index][i - 1] + session.weights.words.lookup.cost_delete  // INSERTION
+                        std::min(std::min(distances[prefix_index - 1][i] + session.config.weights.words.lookup.cost_insert, // DELETION
+                                          distances[prefix_index][i - 1] + session.config.weights.words.lookup.cost_delete  // INSERTION
                                           ),
                                  distances[prefix_index - 1][i - 1] + substitution_cost);
                 }
             } else {
                 for (std::size_t i = 0; i < uni_word.size(); i++) {
-                    distances[0][i] = i * session.weights.words.lookup.cost_insert;
+                    distances[0][i] = i * session.config.weights.words.lookup.cost_insert;
                 }
             }
         }
@@ -217,7 +253,7 @@ export class LatinNlpSession {
 
             UErrorCode status = U_ZERO_ERROR;
             auto ut = utext_openUTF8(nullptr, word.c_str(), -1, &status);
-            auto ub = ubrk_open(UBRK_CHARACTER, session.primary_locale.getLanguage(), nullptr, 0, &status);
+            auto ub = ubrk_open(UBRK_CHARACTER, session.config.primary_locale.getLanguage(), nullptr, 0, &status);
             ubrk_setUText(ub, ut, &status);
 
             if (U_SUCCESS(status)) {

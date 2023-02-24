@@ -19,8 +19,6 @@ module;
 #include "nlohmann/json.hpp"
 
 #include <algorithm>
-#include <filesystem>
-#include <fstream>
 #include <unordered_map>
 #include <vector>
 
@@ -30,41 +28,34 @@ import fl.nlp.string;
 
 namespace fl::nlp {
 
+using json = nlohmann::json;
+
 export class KeyProximityMap {
     using KeyDataMapT = std::unordered_map<fl::str::UniChar, std::vector<fl::str::UniChar>>;
 
   public:
+    KeyDataMapT data_;
+
     KeyProximityMap() = default;
     ~KeyProximityMap() = default;
 
-    bool isInProximity(const fl::str::UniChar& assumed, const fl::str::UniChar& actual) const noexcept {
+    [[nodiscard]] bool isInProximity(const fl::str::UniChar& assumed, const fl::str::UniChar& actual) const noexcept {
         if (!data_.contains(assumed)) return false;
         auto keys = data_.at(assumed);
         return std::find(keys.begin(), keys.end(), actual) != keys.end();
     }
 
     void clear() noexcept {
-        //_data.clear();
+        data_.clear();
     }
+};
 
-    void loadFromFile(const std::filesystem::path& path, bool clear_existing = true) {
-        using namespace std::string_literals;
+export void to_json(json& j, const KeyProximityMap& config) {
+    j = json(config.data_);
+}
 
-        std::ifstream json_mapping_file(path);
-        if (!json_mapping_file.is_open()) {
-            throw std::runtime_error("Could not load from file '"s + path.string() + "'"s);
-        }
-        auto json_mapping_data = nlohmann::json::parse(json_mapping_file);
-        json_mapping_file.close();
-
-        if (clear_existing) {
-            clear();
-        }
-        json_mapping_data.get_to(data_);
-    }
-
-  private:
-    KeyDataMapT data_;
+export void from_json(const json& j, KeyProximityMap& config) {
+    j.get_to(config.data_);
 };
 
 } // namespace fl::nlp

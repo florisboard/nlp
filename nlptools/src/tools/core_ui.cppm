@@ -37,7 +37,7 @@ import fl.nlp.core.latin;
 namespace fl::nlp::tools::core_ui {
 
 static const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
-static const std::string KEY_MAPPING_FILE = "data/qwerty_proximity_map.json";
+static const std::string NLP_SESSION_CONFIG = "data/nlp_session_config.json";
 
 export int handleAction(const std::vector<std::string>& flags) noexcept;
 
@@ -64,7 +64,7 @@ int mainCoreUi(const std::string& fldic_path) noexcept {
     std::vector<std::unique_ptr<fl::nlp::SuggestionCandidate>> suggestion_results;
     std::vector<std::string> prev_words;
     fl::nlp::LatinNlpSession nlp_session;
-    nlp_session.key_proximity_map.loadFromFile(KEY_MAPPING_FILE);
+    nlp_session.loadConfigFromFile(NLP_SESSION_CONFIG);
     try {
         nlp_session.loadBaseDictionary(fldic_path);
     } catch (const std::runtime_error& e) {

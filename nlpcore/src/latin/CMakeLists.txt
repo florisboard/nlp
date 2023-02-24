@@ -6,5 +6,5 @@ target_module_sources(fl_nlp_core_latin PUBLIC
         nlp_session.cppm
         prediction_weights.cppm
         )
-target_link_libraries(fl_nlp_core_latin PUBLIC fl::nlp::core::common fl::nlp::string)
+target_link_libraries(fl_nlp_core_latin PUBLIC fl::nlp::core::common fl::nlp::icuext fl::nlp::string)
 target_link_icu4c_libraries(fl_nlp_core_latin PUBLIC FlorisICU::uc FlorisICU::data)
