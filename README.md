@@ -61,7 +61,7 @@ git clone https://github.com/florisboard/nlp.git
 cd nlp
 git submodule update --init --recursive
 
-# Building the project
+# Building the project (See steps below before first build!!)
 cmake --preset=debug .
 cmake --build --preset=debug
 ```
@@ -76,6 +76,12 @@ NOTE: atm we need to change the compiler path to the custom compiled one, else t
     ...
 ```
 
+Additionally, you might need to adjust the `CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API` UUID right below the compiler path
+fields, depending on the CMake version you use (UUID committed in this branch is for CMake 3.26.x). See
+https://github.com/Kitware/CMake/blob/v3.26.0-rc4/Help/dev/experimental.rst (adjust the version tag in the URL) for the
+correct UUID. This step is also temporary and once C++ module support is stable in CMake this will not be needed to be
+adjusted anymore.
+
 ### Running the NLP tools binary
 
 The NLP tools binary is intended to run on a desktop PC for debugging the core library and for preprocessing various
@@ -84,6 +90,8 @@ data sources into dictionary files.
 ```shell
 ./build/debug/bin/nlptools
 ```
+
+TODO: documentation
 
 ## External libraries used
 

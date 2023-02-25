@@ -7,19 +7,18 @@
   },
   "configurePresets": [
     {
-      "name": "debug",
-      "displayName": "Debug config",
-      "description": "Debug build using Ninja generator",
+      "name": "baseConfig",
+      "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "BUILD_SHARED_LIBS": true,
-        "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
-        "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
-        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/debug/bin",
+        "CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API": "2182bf5c-ef0d-489a-91da-49dbc3090d2a",
+        "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/bin",
+        "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/bin",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/bin",
         "CMAKE_MODULE_PATH": "${sourceDir}/CMakeModules"
       },
       "warnings": {
@@ -27,23 +26,21 @@
       }
     },
     {
+      "name": "debug",
+      "inherits": "baseConfig",
+      "displayName": "Debug config",
+      "description": "Debug build using Ninja generator",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
       "name": "release",
+      "inherits": "baseConfig",
       "displayName": "Release config",
       "description": "Release build using Ninja generator",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
-        "BUILD_SHARED_LIBS": true,
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/build/release/bin",
-        "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/release/bin",
-        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/release/bin",
-        "CMAKE_MODULE_PATH": "${sourceDir}/CMakeModules"
-      },
-      "warnings": {
-        "dev": false
+        "CMAKE_BUILD_TYPE": "Release"
       }
     }
   ],
