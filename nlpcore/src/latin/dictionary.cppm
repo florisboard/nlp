@@ -20,6 +20,7 @@ module;
 
 #include <filesystem>
 #include <fstream>
+#include <span>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -124,7 +125,22 @@ export class LatinDictionary : public Dictionary {
     }
 
     void serializeContent(std::ostream& ostream) override {
-        // TODO: Implement serialize content
+        std::string word;
+        ostream << FLDIC_SECTION_WORDS << FLDIC_NEWLINE;
+        words.forEach([&](const std::span<fl::str::UniChar>& uni_word, const WordProperties& properties) {
+            fl::str::toStdString(uni_word, word);
+            ostream << word << FLDIC_SEPARATOR << properties.absolute_score;
+            if (properties.is_possibly_offensive || properties.is_hidden_by_user) {
+                ostream << FLDIC_SEPARATOR;
+                if (properties.is_possibly_offensive) {
+                    ostream << FLDIC_FLAG_IS_POSSIBLY_OFFENSIVE;
+                }
+                if (properties.is_hidden_by_user) {
+                    ostream << FLDIC_FLAG_IS_HIDDEN_BY_USER;
+                }
+            }
+            ostream << FLDIC_NEWLINE;
+        });
     }
 };
 

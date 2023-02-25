@@ -16,6 +16,7 @@
 
 module;
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <span>
@@ -182,8 +183,27 @@ class TrieMap {
         return &root_node_;
     }
 
+    void forEach(const std::function<void(const KeySpanT&, const ValueT&)>& action) const noexcept {
+        std::vector<KeyT> word_cache;
+        forEachInternal(word_cache, 0, rootNode(), action);
+    }
+
   private:
     NodeT root_node_;
+
+    void forEachInternal(std::vector<KeyT>& word_cache, size_t insert_index, const NodeT* current_node,
+                 const std::function<void(const KeySpanT&, const ValueT&)>& action) const noexcept {
+        for (auto it = current_node->children.begin(); it != current_node->children.end(); it++) {
+            word_cache.resize(insert_index + 1);
+            auto& key = it->first;
+            auto* child_node = it->second.get();
+            word_cache[insert_index] = key;
+            if (child_node->is_end_node) {
+                action(word_cache, child_node->value);
+            }
+            forEachInternal(word_cache, insert_index + 1, child_node, action);
+        }
+    }
 };
 
 } // namespace fl::nlp

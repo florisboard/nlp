@@ -157,8 +157,7 @@ export class DictionaryMeta {
         ostream << FLDIC_META_NAME << FLDIC_ASSIGNMENT << encodeString(name) << FLDIC_NEWLINE;
         ostream << FLDIC_META_DISPLAY_NAME << FLDIC_ASSIGNMENT << encodeString(display_name) << FLDIC_NEWLINE;
         ostream << FLDIC_META_LOCALES << FLDIC_ASSIGNMENT << encodeList(locale_tags) << FLDIC_NEWLINE;
-        ostream << FLDIC_META_GENERATED_BY << FLDIC_ASSIGNMENT << encodeString(generated_by) << FLDIC_NEWLINE
-                << FLDIC_NEWLINE;
+        ostream << FLDIC_META_GENERATED_BY << FLDIC_ASSIGNMENT << encodeString(generated_by) << FLDIC_NEWLINE;
         ostream << FLDIC_META_AUTHORS << FLDIC_ASSIGNMENT << encodeList(authors) << FLDIC_NEWLINE;
         ostream << FLDIC_META_LICENSE << FLDIC_ASSIGNMENT << encodeString(license) << FLDIC_NEWLINE;
     }

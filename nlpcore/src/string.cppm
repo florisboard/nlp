@@ -23,6 +23,7 @@ module;
 #include <unicode/utypes.h>
 
 #include <functional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -135,14 +136,14 @@ export void toUniString(const std::string& str, UniString& uni_str, const std::s
     utext_close(ut);
 }
 
-export void toStdString(const UniString& uni_str, std::string& str) noexcept {
+export void toStdString(const std::span<UniChar>& uni_str, std::string& str) noexcept {
     str.clear();
     for (auto& uni_char : uni_str) {
         str.append(uni_char);
     }
 }
 
-export bool compare(const UniString& a, const UniString& b) noexcept {
+export bool compare(const std::span<UniChar>& a, const std::span<UniChar>& b) noexcept {
     if (a.size() != b.size()) return false;
     for (size_t i = 0; i < a.size(); i++) {
         if (a[i] != b[i]) return false;
