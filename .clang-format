@@ -9,6 +9,7 @@ Standard: c++20
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AlwaysBreakTemplateDeclarations: Yes
+BreakAfterAttributes: Always
 PointerAlignment: Left
 SpaceAfterTemplateKeyword: false
 SpaceBeforeCpp11BracedList: true
