@@ -24,41 +24,12 @@ export module fl.nlp.core.common;
 
 export import fl.nlp.core.common.dictionary;
 export import fl.nlp.core.common.key_proximity_checker;
+export import fl.nlp.core.common.suggestion_request_flags;
 export import fl.nlp.core.common.trie_map;
 
 import fl.nlp.string;
 
 namespace fl::nlp {
-
-// ----- SuggestionRequestFlags ----- //
-
-export class SuggestionRequestFlags {
- public:
-   static const int32_t M_MAX_SUGGESTION_COUNT = 0x00FF;
-   static const int32_t F_ALLOW_POSSIBLY_OFFENSIVE = 0x0100;
-   static const int32_t F_IS_PRIVATE_SESSION = 0x0200;
-
- private:
-   int32_t flags_;
-
- public:
-   SuggestionRequestFlags(int32_t flags) : flags_(flags) {};
-   ~SuggestionRequestFlags() = default;
-
-   int32_t maxSuggestionCount() const noexcept {
-       return (flags_ & M_MAX_SUGGESTION_COUNT);
-   }
-   bool allowPossiblyOffensive() const noexcept {
-       return (flags_ & F_ALLOW_POSSIBLY_OFFENSIVE) != 0;
-   }
-   bool isPrivateSession() const noexcept {
-       return (flags_ & F_IS_PRIVATE_SESSION) != 0;
-   }
-
-   operator int32_t() const noexcept {
-       return flags_;
-   }
-};
 
 // ----- SuggestionCandidate ----- //
 
