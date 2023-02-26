@@ -258,12 +258,11 @@ export class Dictionary {
     }
 
     void serialize(std::ostream& ostream) {
-        ostream << FLDIC_GLOBAL_SCHEMA << " " << schema << "\n"
-                << FLDIC_GLOBAL_ENCODING << " " << encoding << "\n"
-                << "\n"
-                << FLDIC_SECTION_META << "\n";
+        ostream << FLDIC_GLOBAL_SCHEMA << " " << schema << FLDIC_NEWLINE
+                << FLDIC_GLOBAL_ENCODING << " " << encoding << FLDIC_NEWLINE
+                << FLDIC_NEWLINE
+                << FLDIC_SECTION_META << FLDIC_NEWLINE;
         meta.writeAllTo(ostream);
-        ostream << "\n";
         serializeContent(ostream);
     }
 };

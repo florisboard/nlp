@@ -39,8 +39,10 @@ export const std::string FLDIC_SECTION_SHORTCUTS = "[shortcuts]";
 export const char FLDIC_FLAG_IS_POSSIBLY_OFFENSIVE = 'p';
 export const char FLDIC_FLAG_IS_HIDDEN_BY_USER = 'h';
 
+using WordIdT = uint32_t;
+
 export struct WordProperties {
-    uint32_t internal_id = 0;
+    WordIdT internal_id = 0;
     int32_t absolute_score = 0;
     bool is_possibly_offensive = false;
     bool is_hidden_by_user = false;
@@ -48,6 +50,7 @@ export struct WordProperties {
 
 export struct NgramProperties {
     int32_t absolute_score = 0;
+    std::unique_ptr<TrieMap<fl::str::UniChar, NgramProperties>> sub_ngrams = nullptr;
 };
 
 export struct ShortcutProperties {
@@ -126,9 +129,16 @@ export class LatinDictionary : public Dictionary {
     }
 
     void serializeContent(std::ostream& ostream) override {
+        serializeWords(ostream);
+        serializeNgrams(ostream);
+        serializeShortcuts(ostream);
+    }
+
+    void serializeWords(std::ostream& ostream) noexcept {
+        ostream << FLDIC_NEWLINE << FLDIC_SECTION_WORDS << FLDIC_NEWLINE;
+        WordIdT current_word_id = 1;
         std::string word;
-        ostream << FLDIC_SECTION_WORDS << FLDIC_NEWLINE;
-        words.forEach([&](const std::span<fl::str::UniChar>& uni_word, const WordProperties& properties) {
+        words.forEach([&](const std::span<fl::str::UniChar>& uni_word, WordProperties& properties) {
             fl::str::toStdString(uni_word, word);
             ostream << word << FLDIC_SEPARATOR << properties.absolute_score;
             if (properties.is_possibly_offensive || properties.is_hidden_by_user) {
@@ -141,7 +151,16 @@ export class LatinDictionary : public Dictionary {
                 }
             }
             ostream << FLDIC_NEWLINE;
+            properties.internal_id = current_word_id++;
         });
+    }
+
+    void serializeNgrams(std::ostream& ostream) noexcept {
+        ostream << FLDIC_NEWLINE << FLDIC_SECTION_NGRAMS << FLDIC_NEWLINE;
+    }
+
+    void serializeShortcuts(std::ostream& ostream) noexcept {
+        ostream << FLDIC_NEWLINE << FLDIC_SECTION_SHORTCUTS << FLDIC_NEWLINE;
     }
 };
 

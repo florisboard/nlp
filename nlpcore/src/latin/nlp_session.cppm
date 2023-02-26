@@ -76,10 +76,9 @@ export class LatinNlpSession {
     std::vector<std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
 
     void loadConfigFromFile(const std::filesystem::path& config_path) {
-        using namespace std::string_literals;
         std::ifstream config_file(config_path);
         if (!config_file.is_open()) {
-            throw std::runtime_error("Cannot open config file at '"s + config_path.string() + "'!"s);
+            throw std::runtime_error("Cannot open config file at '" + config_path.string() + "'!");
         }
         auto json_config = nlohmann::json::parse(config_file);
         config_file.close();

@@ -188,11 +188,16 @@ class TrieMap {
         forEachInternal(word_cache, 0, rootNode(), action);
     }
 
+    void forEach(const std::function<void(const KeySpanT&, ValueT&)>& action) noexcept {
+        std::vector<KeyT> word_cache;
+        forEachInternal(word_cache, 0, rootNode(), action);
+    }
+
   private:
     NodeT root_node_;
 
     void forEachInternal(std::vector<KeyT>& word_cache, size_t insert_index, const NodeT* current_node,
-                 const std::function<void(const KeySpanT&, const ValueT&)>& action) const noexcept {
+                 const std::function<void(const KeySpanT&, ValueT&)>& action) noexcept {
         for (auto it = current_node->children.begin(); it != current_node->children.end(); it++) {
             word_cache.resize(insert_index + 1);
             auto& key = it->first;
