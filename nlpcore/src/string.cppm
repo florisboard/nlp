@@ -22,7 +22,6 @@ module;
 #include <unicode/utext.h>
 #include <unicode/utypes.h>
 
-#include <functional>
 #include <span>
 #include <string>
 #include <vector>

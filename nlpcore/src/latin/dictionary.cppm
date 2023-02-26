@@ -70,6 +70,9 @@ export class LatinDictionary : public Dictionary {
     TrieMap<fl::str::UniChar, NgramProperties> ngrams;
     TrieMap<fl::str::UniChar, ShortcutProperties> shortcuts;
 
+    LatinDictionary() = default;
+    ~LatinDictionary() = default;
+
   private:
     void deserializeContent(std::istream& istream) override {
         auto section = LatinDictionarySection::UNSPECIFIED;
@@ -118,7 +121,7 @@ export class LatinDictionary : public Dictionary {
                 }
             } else if (section == LatinDictionarySection::NGRAMS) {
                 // throw std::runtime_error("TODO: implement ngrams");
-            } else {
+            } else if (section == LatinDictionarySection::SHORTCUTS) {
                 // throw std::runtime_error("TODO: implement shortcuts");
             }
         }

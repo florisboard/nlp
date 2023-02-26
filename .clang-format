@@ -12,7 +12,7 @@ AlwaysBreakTemplateDeclarations: Yes
 PointerAlignment: Left
 SpaceAfterTemplateKeyword: false
 SpaceBeforeCpp11BracedList: true
-SortIncludes: true
+SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 IncludeCategories:
   # Headers in ""

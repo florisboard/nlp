@@ -52,6 +52,7 @@ struct FilterRule {
     std::vector<std::string> tags;
     std::vector<std::string> categories;
 
+    [[nodiscard]]
     bool matches(const std::string& _word, const std::vector<std::string>& _tags,
                  const std::vector<std::string>& _categories) const noexcept {
         for (auto& word : words) {
@@ -83,6 +84,7 @@ struct WiktextractConfig {
     std::vector<std::string> project_specific_words;
     std::vector<Filter> filters;
 
+    [[nodiscard]]
     const Filter& getFilter(const std::string& filter_name) const noexcept {
         for (auto& filter : filters) {
             if (filter.name == filter_name) {
@@ -110,10 +112,12 @@ struct WordEvaluator {
         normal_count = 0;
     }
 
+    [[nodiscard]]
     bool isWordExcluded() const noexcept {
         return exclusion_count >= offensive_count && exclusion_count >= normal_count;
     }
 
+    [[nodiscard]]
     bool isWordOffensive() const noexcept {
         return offensive_count >= normal_count;
     }
@@ -125,7 +129,12 @@ class WiktextractPreprocessor {
     fl::nlp::LatinDictionary dict;
 
     WiktextractPreprocessor() = default;
+    WiktextractPreprocessor(const WiktextractPreprocessor&) = delete;
+    WiktextractPreprocessor(WiktextractPreprocessor&&) = delete;
     ~WiktextractPreprocessor() = default;
+
+    WiktextractPreprocessor& operator=(const WiktextractPreprocessor&) = delete;
+    WiktextractPreprocessor& operator=(WiktextractPreprocessor&&) = delete;
 
   private:
     std::map<std::string, std::map<std::string, WordEvaluator>> parsed_data;
@@ -160,7 +169,7 @@ class WiktextractPreprocessor {
     }
 
     void mergeEvaluatorCounts(WordEvaluator& target_evaluator, const WordEvaluator& pos_evaluator,
-                                const std::string& pos, uint8_t max_depth, uint8_t depth = 0) const noexcept {
+                                const std::string& pos, short max_depth, short depth = 0) const noexcept {
         target_evaluator.exclusion_count += (depth + 1) * pos_evaluator.exclusion_count;
         target_evaluator.offensive_count += (depth + 1) * pos_evaluator.offensive_count;
         target_evaluator.normal_count += (depth + 1) * pos_evaluator.normal_count;
@@ -175,30 +184,7 @@ class WiktextractPreprocessor {
         }
     }
 
-  public:
-    void loadConfig(const std::string& config_path) {
-        std::ifstream config_file(config_path);
-        nlohmann::json config_json = nlohmann::json::parse(config_file);
-        config_json["projectSpecificWords"].get_to(config.project_specific_words);
-        auto filter_json_list = config_json["filters"];
-        for (auto& filter_json : filter_json_list) {
-            Filter filter;
-            filter_json["name"].get_to(filter.name);
-            filter_json["excluded"]["words"].get_to(filter.excluded.words);
-            filter_json["excluded"]["tags"].get_to(filter.excluded.tags);
-            filter_json["excluded"]["categories"].get_to(filter.excluded.categories);
-            filter_json["offensive"]["words"].get_to(filter.offensive.words);
-            filter_json["offensive"]["tags"].get_to(filter.offensive.tags);
-            filter_json["offensive"]["categories"].get_to(filter.offensive.categories);
-            config.filters.push_back(std::move(filter));
-        }
-    }
-
-    void readWiktextractDataIntoDictionary(const std::filesystem::path& wiktextract_json_path,
-                                               const std::string& filter_name) {
-        UText* ut = nullptr;
-        UErrorCode status;
-
+    void readWiktextractJsonFile(const std::filesystem::path& wiktextract_json_path, const std::string& filter_name) {
         std::ifstream wiktextract_json_file(wiktextract_json_path, std::ios::in);
         std::string line;
         std::string word;
@@ -210,8 +196,6 @@ class WiktextractPreprocessor {
         std::string form_of;
         nlohmann::json json_data;
         Filter filter = config.getFilter(filter_name);
-
-        auto parse_start_time = std::chrono::high_resolution_clock::now();
 
         while (std::getline(wiktextract_json_file, line)) {
             json_data = nlohmann::json::parse(line);
@@ -263,18 +247,46 @@ class WiktextractPreprocessor {
                 }
             }
         }
+    }
+
+  public:
+    void loadConfig(const std::string& config_path) {
+        std::ifstream config_file(config_path);
+        nlohmann::json config_json = nlohmann::json::parse(config_file);
+        config_json["projectSpecificWords"].get_to(config.project_specific_words);
+        auto filter_json_list = config_json["filters"];
+        for (auto& filter_json : filter_json_list) {
+            Filter filter;
+            filter_json["name"].get_to(filter.name);
+            filter_json["excluded"]["words"].get_to(filter.excluded.words);
+            filter_json["excluded"]["tags"].get_to(filter.excluded.tags);
+            filter_json["excluded"]["categories"].get_to(filter.excluded.categories);
+            filter_json["offensive"]["words"].get_to(filter.offensive.words);
+            filter_json["offensive"]["tags"].get_to(filter.offensive.tags);
+            filter_json["offensive"]["categories"].get_to(filter.offensive.categories);
+            config.filters.push_back(std::move(filter));
+        }
+    }
+
+    void readWiktextractDataIntoDictionary(const std::filesystem::path& wiktextract_json_path,
+                                               const std::string& filter_name) {
+        auto parse_start_time = std::chrono::high_resolution_clock::now();
+
+        readWiktextractJsonFile(wiktextract_json_path, filter_name);
+
+        UText* ut = nullptr;
+        UErrorCode status;
 
         // Insertion into dictionary
         WordEvaluator evaluator;
         WordEvaluator evaluator_with_fo;
-        for (auto it = parsed_data.cbegin(); it != parsed_data.cend(); it++) {
-            auto& [word, pos_map] = *it;
+        for (auto& [word, pos_map] : parsed_data) {
             evaluator.reset();
             evaluator_with_fo.reset();
 
-            for (auto& [pos2, pos_evaluator] : pos_map) {
-                mergeEvaluatorCounts(evaluator, pos_evaluator, pos2, MERGING_MAX_DEPTH);
-                mergeEvaluatorCounts(evaluator_with_fo, pos_evaluator, pos2, MERGING_MAX_DEPTH_WITH_FO);
+            for (auto& [pos, pos_evaluator] : pos_map) {
+                mergeEvaluatorCounts(evaluator, pos_evaluator, pos, MERGING_MAX_DEPTH);
+                mergeEvaluatorCounts(evaluator_with_fo, pos_evaluator, pos, MERGING_MAX_DEPTH_WITH_FO);
             }
 
             if (evaluator.isWordExcluded() || evaluator_with_fo.isWordExcluded()) {
