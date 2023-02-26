@@ -126,7 +126,7 @@ class TrieMap {
     NodeT* getOrNull(KeySpanT key_span) noexcept {
         auto* current_node = &root_node_;
         for (auto& key : key_span) {
-            current_node = current_node->getChild(key);
+            current_node = current_node->getChildOrNull(key);
             if (current_node == nullptr) {
                 return nullptr;
             }
@@ -140,7 +140,7 @@ class TrieMap {
     const NodeT* getOrNull(KeySpanT key_span) const noexcept {
         auto* current_node = &root_node_;
         for (auto& key : key_span) {
-            current_node = current_node->getChild(key);
+            current_node = current_node->getChildOrNull(key);
             if (current_node == nullptr) {
                 return nullptr;
             }
