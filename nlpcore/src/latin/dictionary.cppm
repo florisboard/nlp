@@ -100,18 +100,16 @@ export class LatinDictionary : public Dictionary {
 
             if (section == LatinDictionarySection::WORDS) {
                 fl::str::split(line, FLDIC_SEPARATOR, line_components);
-                if (line_components.size() < 3) {
+                if (line_components.size() < 2) {
                     throw std::runtime_error("Invalid line!");
                 }
-                fl::str::toUniString(line_components[1], word);
+                fl::str::toUniString(line_components[0], word);
                 auto node = words.getOrCreate(word);
-                // Parse ID
-                node->value.internal_id = std::stoi(line_components[0]);
-                // Parse scores
-                node->value.absolute_score = std::stoi(line_components[2]);
+                // Parse score
+                node->value.absolute_score = std::stoi(line_components[1]);
                 // Parse flags
-                if (line_components.size() > 3) {
-                    for (const auto& flag : line_components[3]) {
+                if (line_components.size() > 2) {
+                    for (const auto& flag : line_components[2]) {
                         if (flag == FLDIC_FLAG_IS_POSSIBLY_OFFENSIVE) {
                             node->value.is_possibly_offensive = true;
                         } else if (flag == FLDIC_FLAG_IS_HIDDEN_BY_USER) {

@@ -23,7 +23,7 @@ module;
 export module fl.nlp.core.common;
 
 export import fl.nlp.core.common.dictionary;
-export import fl.nlp.core.common.key_proximity_map;
+export import fl.nlp.core.common.key_proximity_checker;
 export import fl.nlp.core.common.trie_map;
 
 import fl.nlp.string;

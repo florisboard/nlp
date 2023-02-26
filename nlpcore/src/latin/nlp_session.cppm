@@ -43,7 +43,7 @@ export struct LatinNlpSessionConfig {
     icu::Locale primary_locale;
     std::vector<icu::Locale> secondary_locales;
     LatinPredictionWeights weights;
-    KeyProximityMap key_proximity_map;
+    KeyProximityChecker key_proximity_checker;
 };
 
 export void to_json(json& j, const LatinNlpSessionConfig& config) {
@@ -51,7 +51,7 @@ export void to_json(json& j, const LatinNlpSessionConfig& config) {
         {"primaryLocale", config.primary_locale},
         {"secondaryLocales", config.secondary_locales},
         {"predictionWeights", config.weights},
-        {"keyProximityMap", config.key_proximity_map}
+        {"keyProximityChecker", config.key_proximity_checker}
     };
 }
 
@@ -59,7 +59,7 @@ export void from_json(const json& j, LatinNlpSessionConfig& config) {
     j.at("primaryLocale").get_to(config.primary_locale);
     j.at("secondaryLocales").get_to(config.secondary_locales);
     j.at("predictionWeights").get_to(config.weights);
-    j.at("keyProximityMap").get_to(config.key_proximity_map);
+    j.at("keyProximityChecker").get_to(config.key_proximity_checker);
 };
 
 enum class FuzzySearchType {
@@ -206,7 +206,7 @@ export class LatinNlpSession {
                                uni_char == uni_word[i - 1]) {
                         // TODO: investigate if transpose calculation could be incorrect for certain edge cases
                         substitution_cost = session.config.weights.words.lookup.cost_transpose - 1 + penalty;
-                    } else if (false && session.config.key_proximity_map.isInProximity(uni_char, uni_word[i])) {
+                    } else if (session.config.key_proximity_checker.isInProximity(uni_char, uni_word[i])) {
                         substitution_cost = session.config.weights.words.lookup.cost_substitute_in_proximity + penalty;
                     } else {
                         substitution_cost = session.config.weights.words.lookup.cost_substitute + penalty;
@@ -258,7 +258,7 @@ export class LatinNlpSession {
 
             if (U_SUCCESS(status)) {
                 int32_t prev_n = 0;
-                int32_t curr_n = 0;
+                int32_t curr_n;
 
                 while ((curr_n = ubrk_next(ub)) != UBRK_DONE) {
                     auto uni_char = word.substr(prev_n, curr_n - prev_n);

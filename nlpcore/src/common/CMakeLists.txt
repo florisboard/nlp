@@ -3,7 +3,7 @@ add_library(fl::nlp::core::common ALIAS fl_nlp_core_common)
 target_module_sources(fl_nlp_core_common PUBLIC
         common.cppm
         dictionary.cppm
-        key_proximity_map.cppm
+        key_proximity_checker.cppm
         trie_map.cppm
         )
 target_link_libraries(fl_nlp_core_common PUBLIC fl::nlp::string)
