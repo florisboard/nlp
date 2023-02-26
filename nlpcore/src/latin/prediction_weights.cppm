@@ -53,16 +53,16 @@ void to_json(json& j, const LookupWeights& lw) {
 }
 
 void from_json(const json& j, LookupWeights& lw) {
-    j.at("maxCost").get_to(lw.max_cost);
-    j.at("costIsEqual").get_to(lw.cost_is_equal);
-    j.at("costIsOppositeCase").get_to(lw.cost_is_opposite_case);
-    j.at("costInsert").get_to(lw.cost_insert);
-    j.at("costDelete").get_to(lw.cost_delete);
-    j.at("costSubstitute").get_to(lw.cost_substitute);
-    j.at("costSubstituteInProximity").get_to(lw.cost_substitute_in_proximity);
-    j.at("costTranspose").get_to(lw.cost_transpose);
-    j.at("penaltyDefault").get_to(lw.penalty_default);
-    j.at("penaltyStartOfStr").get_to(lw.penalty_start_of_str);
+    lw.max_cost = j.value("maxCost", 0);
+    lw.cost_is_equal = j.value("costIsEqual", 0);
+    lw.cost_is_opposite_case = j.value("costIsOppositeCase", 0);
+    lw.cost_insert = j.value("costInsert", 0);
+    lw.cost_delete = j.value("costDelete", 0);
+    lw.cost_substitute = j.value("costSubstitute", 0);
+    lw.cost_substitute_in_proximity = j.value("costSubstituteInProximity", 0);
+    lw.cost_transpose = j.value("costTranspose", 0);
+    lw.penalty_default = j.value("penaltyDefault", 0);
+    lw.penalty_start_of_str = j.value("penaltyStartOfStr", 0);
 }
 
 struct TrainingWeights {
@@ -78,8 +78,8 @@ void to_json(json& j, const TrainingWeights& tw) {
 }
 
 void from_json(const json& j, TrainingWeights& tw) {
-    j.at("usageBonus").get_to(tw.usage_bonus);
-    j.at("usageReductionOthers").get_to(tw.usage_reduction_others);
+    tw.usage_bonus = j.value("usageBonus", 0);
+    tw.usage_reduction_others = j.value("usageReductionOthers", 0);
 }
 
 struct PredictionWeights {
