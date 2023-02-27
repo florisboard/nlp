@@ -31,7 +31,7 @@
     }
   },
   "keyProximityChecker": {
-    "enabled": true,
+    "enabled": false,
     "mapping": {
       "q": [ "w", "a" ],
       "w": [ "q", "e", "a", "s" ],

@@ -33,7 +33,7 @@ export module fl.nlp.tools.prep_wiktextract;
 import fl.nlp.core.latin;
 import fl.nlp.string;
 
-namespace fl::nlp::tools {
+namespace fl::nlp::tools::prep_wiktextract {
 
 const std::string FLAG_INDICATOR = "-";
 const std::string FLAG_SRC_PATH = "--src";
@@ -46,6 +46,9 @@ const std::string FLAG_STATS_PATH = "--stats";
 
 const uint8_t MERGING_MAX_DEPTH = 0;
 const uint8_t MERGING_MAX_DEPTH_WITH_FO = 2;
+
+export int handleAction(const std::vector<std::string>& flags) noexcept;
+export int printUsage(const char* arg0) noexcept;
 
 struct FilterRule {
     std::vector<std::regex> words;
@@ -356,7 +359,7 @@ bool parseFlagTo(std::string& path, const std::vector<std::string>& flags, std::
     }
 }
 
-export int handlePrepWiktextractAction(const std::vector<std::string>& flags) noexcept {
+export int handleAction(const std::vector<std::string>& flags) noexcept {
     std::string src_path;
     std::string dst_path;
     std::string config_path = FLAG_CONFIG_PATH_DEFAULT_VALUE;
@@ -418,7 +421,7 @@ export int handlePrepWiktextractAction(const std::vector<std::string>& flags) no
     return 0;
 }
 
-export int printPrepWiktextractUsage(char* arg0) noexcept {
+export int printUsage(char* arg0) noexcept {
     std::cout
         << "Usage: " << arg0
         << " prep-wiktextract --src <src-path> --dst <dst-path> [--config <config-path>] [--Filter "

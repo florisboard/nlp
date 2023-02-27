@@ -27,7 +27,7 @@ namespace fl::nlp {
  * @see
  * https://github.com/florisboard/florisboard/blob/master/app/src/main/kotlin/dev/patrickgold/florisboard/ime/input/InputShiftState.kt
  */
-enum class InputShiftState {
+export enum class InputShiftState {
     UNSHIFTED = 0,
     SHIFTED_MANUAL = 1,
     SHIFTED_AUTOMATIC = 2,

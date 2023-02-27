@@ -23,6 +23,7 @@ module;
 #include <unicode/utypes.h>
 
 #include <span>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -80,7 +81,8 @@ export void trim(std::string& src) noexcept {
     src.erase(src.begin(), std::find_if_not(src.begin(), src.end(), is_whitespace));
 }
 
-export void split(const std::string& src, const std::string& delim, std::vector<std::string>& dst, std::size_t max_split_ops = 0) noexcept {
+export void split(const std::string& src, const std::string& delim, std::vector<std::string>& dst,
+                  std::size_t max_split_ops = 0) noexcept {
     dst.clear();
     size_t last = 0;
     size_t next;
@@ -96,7 +98,8 @@ export void split(const std::string& src, const std::string& delim, std::vector<
     dst.push_back(src.substr(last));
 }
 
-export void split(const std::string& src, char delim, std::vector<std::string>& dst, std::size_t max_split_ops = 0) noexcept {
+export void split(const std::string& src, char delim, std::vector<std::string>& dst,
+                  std::size_t max_split_ops = 0) noexcept {
     dst.clear();
     size_t last = 0;
     size_t next;
@@ -110,6 +113,14 @@ export void split(const std::string& src, char delim, std::vector<std::string>& 
         }
     }
     dst.push_back(src.substr(last));
+}
+
+export std::string repeat(const std::string& str, size_t n) {
+    std::stringstream ss;
+    for (size_t i = 0; i < n; i++) {
+        ss << str;
+    }
+    return ss.str();
 }
 
 export void toUniString(const std::string& str, UniString& uni_str, const std::string& locale_tag = "") noexcept {

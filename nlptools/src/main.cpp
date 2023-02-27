@@ -86,9 +86,9 @@ int main(int argc, char** argv) {
     } else if (action == ACTION_PREP_WIKTEXTRACT) {
         if (hasFlag(FLAG_HELP, flags)) {
             printVersionWithAdditionalNewline();
-            return fl::nlp::tools::printPrepWiktextractUsage(argv[0]);
+            return fl::nlp::tools::prep_wiktextract::printUsage(argv[0]);
         } else {
-            return fl::nlp::tools::handlePrepWiktextractAction(flags);
+            return fl::nlp::tools::prep_wiktextract::handleAction(flags);
         }
     } else {
         if (action.starts_with(FLAG_INDICATOR)) {
