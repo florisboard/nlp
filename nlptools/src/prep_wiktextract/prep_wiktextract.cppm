@@ -1,21 +1,22 @@
 /*
-* Copyright 2023 Patrick Goldinger
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2023 Patrick Goldinger
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 module;
 
+#include <argparse/argparse.hpp>
 #include <nlohmann/json.hpp>
 #include <unicode/uchar.h>
 #include <unicode/utext.h>
@@ -32,23 +33,20 @@ export module fl.nlp.tools.prep_wiktextract;
 
 import fl.nlp.core.latin;
 import fl.nlp.string;
+import fl.nlp.tools.common;
 
-namespace fl::nlp::tools::prep_wiktextract {
+namespace fl::nlp::tools {
 
-const std::string FLAG_INDICATOR = "-";
-const std::string FLAG_SRC_PATH = "--src";
-const std::string FLAG_DST_PATH = "--dst";
-const std::string FLAG_CONFIG_PATH = "--config";
-const std::string FLAG_CONFIG_PATH_DEFAULT_VALUE = "";
-const std::string FLAG_FILTER_NAME = "--filter";
-const std::string FLAG_FILTER_NAME_DEFAULT_VALUE = "root";
-const std::string FLAG_STATS_PATH = "--stats";
+const std::string ARG_SRC_PATH = "--src";
+const std::string ARG_DST_PATH = "--dst";
+const std::string ARG_CONFIG_PATH = "--config";
+const std::string ARG_FILTER_NAME = "--filter";
+const std::string ARG_FILTER_NAME_DEFAULT_VALUE = "root";
+const std::string ARG_STATS_PATH = "--stats";
+const std::string ARG_STATS_PATH_DEFAULT_VALUE = "";
 
 const uint8_t MERGING_MAX_DEPTH = 0;
 const uint8_t MERGING_MAX_DEPTH_WITH_FO = 2;
-
-export int handleAction(const std::vector<std::string>& flags) noexcept;
-export int printUsage(const char* arg0) noexcept;
 
 struct FilterRule {
     std::vector<std::regex> words;
@@ -95,7 +93,7 @@ struct WiktextractConfig {
             }
         }
         for (auto& filter : filters) {
-            if (filter.name == FLAG_FILTER_NAME_DEFAULT_VALUE) {
+            if (filter.name == ARG_FILTER_NAME_DEFAULT_VALUE) {
                 return filter;
             }
         }
@@ -172,7 +170,7 @@ class WiktextractPreprocessor {
     }
 
     void mergeEvaluatorCounts(WordEvaluator& target_evaluator, const WordEvaluator& pos_evaluator,
-                                const std::string& pos, short max_depth, short depth = 0) const noexcept {
+                              const std::string& pos, short max_depth, short depth = 0) const noexcept {
         target_evaluator.exclusion_count += (depth + 1) * pos_evaluator.exclusion_count;
         target_evaluator.offensive_count += (depth + 1) * pos_evaluator.offensive_count;
         target_evaluator.normal_count += (depth + 1) * pos_evaluator.normal_count;
@@ -272,7 +270,7 @@ class WiktextractPreprocessor {
     }
 
     void readWiktextractDataIntoDictionary(const std::filesystem::path& wiktextract_json_path,
-                                               const std::string& filter_name) {
+                                           const std::string& filter_name) {
         auto parse_start_time = std::chrono::high_resolution_clock::now();
 
         readWiktextractJsonFile(wiktextract_json_path, filter_name);
@@ -347,48 +345,19 @@ class WiktextractPreprocessor {
     }
 };
 
-bool parseFlagTo(std::string& path, const std::vector<std::string>& flags, std::size_t& i,
-                  const std::string& err_display_name) noexcept {
-    if (i + 1 < flags.size() && !flags[i + 1].starts_with(FLAG_INDICATOR)) {
-        path = flags[i + 1];
-        i += 2;
-        return true;
-    } else {
-        std::cerr << "Fatal: Using " << err_display_name << " flag without corresponsing value! Aborting.\n";
-        return false;
-    }
-}
-
-export int handleAction(const std::vector<std::string>& flags) noexcept {
-    std::string src_path;
-    std::string dst_path;
-    std::string config_path = FLAG_CONFIG_PATH_DEFAULT_VALUE;
-    std::string filter_name = FLAG_FILTER_NAME_DEFAULT_VALUE;
-    std::string stats_path;
-
-    for (std::size_t i = 0; i < flags.size();) {
-        auto& flag = flags[i];
-        if (flag == FLAG_SRC_PATH) {
-            if (!parseFlagTo(src_path, flags, i, "source path")) return 1;
-        } else if (flag == FLAG_DST_PATH) {
-            if (!parseFlagTo(dst_path, flags, i, "destination path")) return 1;
-        } else if (flag == FLAG_CONFIG_PATH) {
-            if (!parseFlagTo(config_path, flags, i, "config path")) return 1;
-        } else if (flag == FLAG_FILTER_NAME) {
-            if (!parseFlagTo(filter_name, flags, i, "Filter name")) return 1;
-        } else if (flag == FLAG_STATS_PATH) {
-            if (!parseFlagTo(stats_path, flags, i, "statistics path")) return 1;
-        } else {
-            std::cerr << "Warning: Unknown flag '" << flag << "'. Ignoring.\n";
-            i++;
-        }
-    }
+int handlePrepWiktextractAction(argparse::ArgumentParser& arg_parser) noexcept {
+    std::string src_path = arg_parser.get(ARG_SRC_PATH);
+    std::string dst_path = arg_parser.get(ARG_DST_PATH);
+    std::string config_path = arg_parser.get(ARG_CONFIG_PATH);
+    std::string filter_name = arg_parser.get(ARG_FILTER_NAME);
+    std::string stats_path = arg_parser.get(ARG_STATS_PATH);
 
     fl::str::trim(src_path);
     fl::str::trim(dst_path);
     fl::str::trim(config_path);
     fl::str::trim(filter_name);
     fl::str::trim(stats_path);
+
     if (src_path.empty()) {
         std::cerr << "Fatal: No source path specified! Aborting.\n";
         return 1;
@@ -421,30 +390,40 @@ export int handleAction(const std::vector<std::string>& flags) noexcept {
     return 0;
 }
 
-export int printUsage(char* arg0) noexcept {
-    std::cout
-        << "Usage: " << arg0
-        << " prep-wiktextract --src <src-path> --dst <dst-path> [--config <config-path>] [--Filter "
-           "<filter_name>] [--stats <stats-path>]\n\n"
-        << "Description\n"
-        << "  Preprocessing tool which assists in creating FlorisBoard dictionaries (fldic files) using wiktextract\n"
-        << "  json archives from https://kaikki.org/.\n\n"
-        << "Options\n"
-        << "  " << FLAG_SRC_PATH << " <src-path>\n"
-        << "    The source path pointing to a wiktextract json file. Must not be empty.\n"
-        << "  " << FLAG_DST_PATH << " <dst-path>\n"
-        << "    The path where the resulting fldic file should be written. The path must be writable and must not "
-           "point to a directory. If a file with this name already exists, it will be overwritten. Must not be empty.\n"
-        << "  " << FLAG_CONFIG_PATH << " <config-path>\n"
-        << "    Specify a config file to use. If provided, must not be empty. Defaults to '"
-        << FLAG_CONFIG_PATH_DEFAULT_VALUE << "'.\n"
-        << "  " << FLAG_FILTER_NAME << " <Filter-name>\n"
-        << "    Specify a specific Filter to use from the given config. If provided, must not be empty. Defaults to '"
-        << FLAG_FILTER_NAME_DEFAULT_VALUE << "'\n"
-        << "  " << FLAG_STATS_PATH << " <stats-path>\n"
-        << "    The path where the resulting statistics from parsing will be written. May be empty, in which case no "
-           "statistics file will be written.\n";
-    return 0;
-}
+export class PrepWiktextractActionConfig : public ActionConfig {
+  public:
+    PrepWiktextractActionConfig() : ActionConfig("prep-wiktextract") {};
+
+    void initArgumentConfig(argparse::ArgumentParser& arg_parser) override {
+        arg_parser.add_description("Preprocessing tool which assists in creating FlorisBoard dictionaries "
+                                   "(fldic files) using wiktextract json archives from https://kaikki.org/");
+        arg_parser.add_argument(ARG_SRC_PATH)
+            .required()
+            .metavar("PATH")
+            .help("The source path pointing to a wiktextract json file");
+        arg_parser.add_argument(ARG_DST_PATH)
+            .required()
+            .metavar("PATH")
+            .help("Path of the resulting fldic file; must be writable and must not point to a directory. If a file "
+                  "with this name already exists, it will be overwritten");
+        arg_parser.add_argument(ARG_CONFIG_PATH)
+            .required()
+            .metavar("PATH")
+            .help("Path of the config file to use for parsing words");
+        arg_parser.add_argument(ARG_FILTER_NAME)
+            .default_value(ARG_FILTER_NAME_DEFAULT_VALUE)
+            .metavar("NAME")
+            .help("Specify a specific filter to use from the given config");
+        arg_parser.add_argument(ARG_STATS_PATH)
+            .default_value(ARG_STATS_PATH_DEFAULT_VALUE)
+            .metavar("PATH")
+            .help("Path where the resulting statistics from parsing will be written. If empty, no statistics file will "
+                  "be written.");
+    }
+
+    int runAction(argparse::ArgumentParser& arg_parser) override {
+        return handlePrepWiktextractAction(arg_parser);
+    }
+};
 
 } // namespace fl::nlp::tools

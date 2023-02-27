@@ -1,5 +1,5 @@
-.wortschatz_corpora
-.wiktextract
+# Ignore all folders that start with a period
+.*/
 
 # For now exclude dictionary files too
 *.fldic

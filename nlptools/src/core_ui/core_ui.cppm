@@ -16,6 +16,7 @@
 
 module;
 
+#include <argparse/argparse.hpp>
 #include <unicode/unistr.h>
 
 #include <termbox.h>
@@ -33,18 +34,18 @@ import fl.nlp.icuext;
 import fl.nlp.string;
 import fl.nlp.core.common;
 import fl.nlp.core.latin;
+import fl.nlp.tools.common;
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cppcoreguidelines-avoid-magic-numbers"
 #pragma ide diagnostic ignored "UnusedValue"
 
-namespace fl::nlp::tools::core_ui {
+namespace fl::nlp::tools {
+
+const std::string ARG_BASE_DICT_PATH = "--base-dict";
 
 const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
 const std::string NLP_SESSION_CONFIG = "data/nlp_session_config.json";
-
-export int handleAction(const std::vector<std::string>& flags) noexcept;
-export int printUsage(const char* arg0) noexcept;
 
 const char* attrStatusSymbol(int32_t suggestion_attribute) noexcept {
     if (suggestion_attribute == fl::nlp::RESULT_ATTR_IN_THE_DICTIONARY) {
@@ -325,29 +326,38 @@ void drawSuggestionInputBox(CoreUiState& state) noexcept {
     tb_present();
 }
 
-int handleAction(const std::vector<std::string>& flags) noexcept {
-    std::string fldic_path;
-    if (!flags.empty()) {
-        fldic_path = flags[0];
-    }
-
+int handleCoreUiAction(argparse::ArgumentParser& arg_parser) noexcept {
+    std::string fldic_path = arg_parser.get(ARG_BASE_DICT_PATH);
     fl::str::trim(fldic_path);
+
     if (fldic_path.empty()) {
-        std::cerr << "Fatal: No dictionary path specified! Aborting.\n";
+        std::cerr << "Fatal: No base dictionary path specified! Aborting.\n";
         return 1;
     } else if (!std::filesystem::exists(fldic_path)) {
-        std::cerr << "Fatal: Given dictionary path '" << fldic_path << "' does not exist! Aborting.\n";
+        std::cerr << "Fatal: Given base dictionary path '" << fldic_path << "' does not exist! Aborting.\n";
         return 1;
     }
 
     return mainCoreUi(fldic_path);
 }
 
-int printUsage(const char* arg0) noexcept {
-    std::cout << "TODO!!!\n";
-    return 0;
-}
+export class CoreUiActionConfig : public ActionConfig {
+  public:
+    CoreUiActionConfig() : ActionConfig("core-ui") {};
 
-} // namespace fl::nlp::tools::core_ui
+    void initArgumentConfig(argparse::ArgumentParser& arg_parser) override {
+        arg_parser.add_description("Debug frontend UI for the NLP core");
+        arg_parser.add_argument(ARG_BASE_DICT_PATH)
+            .required()
+            .metavar("PATH")
+            .help("Path of the base dictionary to load in");
+    }
+
+    int runAction(argparse::ArgumentParser& arg_parser) override {
+        return handleCoreUiAction(arg_parser);
+    }
+};
+
+} // namespace fl::nlp::tools
 
 #pragma clang diagnostic pop

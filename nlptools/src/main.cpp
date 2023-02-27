@@ -14,90 +14,80 @@
  * limitations under the License.
  */
 
+#include <argparse/argparse.hpp>
+
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
+import fl.nlp.tools.common;
 import fl.nlp.tools.core_ui;
 import fl.nlp.tools.prep_wiktextract;
 
-const std::string VERSION = "0.1.0";
-
-const std::string ACTION_CORE_UI = "core-ui";
-const std::string ACTION_PREP_WIKTEXTRACT = "prep-wiktextract";
-const std::string FLAG_INDICATOR = "-";
-const std::string FLAG_HELP = "--help";
-const std::string FLAG_VERSION = "--version";
-
 void printVersion() noexcept {
-    std::cout << "FlorisNLP Tools v" << VERSION << "\n";
+    std::cout << "FlorisNLP Tools v" << PROGRAM_VERSION << "\n";
 }
 
-void printVersionWithAdditionalNewline() noexcept {
-    printVersion();
-    std::cout << "\n";
-}
+// This method's code is based on this code:
+// https://github.com/p-ranav/argparse/blob/e51655673324264dec95dd3b5168baf8e54cde17/include/argparse/argparse.hpp#L1070
+//
+// It has been modified to suit this project's needs.
+void initDefaultArguments(argparse::ArgumentParser& arg_parser) {
+    arg_parser.add_argument("-h", "--help")
+        .action([&](const auto&) {
+            printVersion();
+            std::cout << "\n" << arg_parser.help().str();
+            std::exit(0);
+        })
+        .default_value(false)
+        .implicit_value(true)
+        .help("Shows this help message and exits")
+        .nargs(0);
 
-void printUsage(char* arg0) noexcept {
-    printVersion();
-    std::cout << "\nUsage: " << arg0 << " <action> [<flags>]\n\n"
-              << "Available actions:\n"
-              << "    " << ACTION_CORE_UI << "\n"
-              << "    " << ACTION_PREP_WIKTEXTRACT << "\n"
-              << "    " << FLAG_HELP << "\n"
-              << "    " << FLAG_VERSION << "\n";
-}
-
-auto collectFlags(int argc, char** argv) noexcept {
-    std::vector<std::string> flags;
-    for (int i = 2; i < argc; i++) {
-        flags.push_back(std::string(argv[i]));
-    }
-    return flags;
-}
-
-bool hasFlag(const std::string& flag_to_search, const std::vector<std::string>& flags) noexcept {
-    for (auto& flag : flags) {
-        if (flag == flag_to_search) return true;
-    }
-    return false;
+    arg_parser.add_argument("-v", "--version")
+        .action([&](const auto&) {
+            printVersion();
+            std::exit(0);
+        })
+        .default_value(false)
+        .implicit_value(true)
+        .help("Prints version information and exits")
+        .nargs(0);
 }
 
 int main(int argc, char** argv) {
-    if (argc < 1) return 1;
-    if (argc == 1) {
-        printUsage(argv[0]);
-        return 1;
+    std::vector<std::unique_ptr<fl::nlp::tools::ActionConfig>> actions;
+    actions.emplace_back(std::make_unique<fl::nlp::tools::CoreUiActionConfig>());
+    actions.emplace_back(std::make_unique<fl::nlp::tools::PrepWiktextractActionConfig>());
+
+    fl::nlp::tools::Program program(PROGRAM_NAME, PROGRAM_VERSION, argc, argv);
+    initDefaultArguments(program.arg_parser);
+    for (auto& action : actions) {
+        initDefaultArguments(action->arg_parser);
+        action->initArgumentConfig(action->arg_parser);
+        program.arg_parser.add_subparser(action->arg_parser);
     }
 
-    auto action = std::string(argv[1]);
-    auto flags = collectFlags(argc, argv);
-    if (action == FLAG_HELP) {
-        printUsage(argv[0]);
-    } else if (action == FLAG_VERSION) {
+    if (argc <= 1) {
         printVersion();
-    } else if (action == ACTION_CORE_UI) {
-        if (hasFlag(FLAG_HELP, flags)) {
-            printVersionWithAdditionalNewline();
-            return fl::nlp::tools::core_ui::printUsage(argv[0]);
-        } else {
-            return fl::nlp::tools::core_ui::handleAction(flags);
-        }
-    } else if (action == ACTION_PREP_WIKTEXTRACT) {
-        if (hasFlag(FLAG_HELP, flags)) {
-            printVersionWithAdditionalNewline();
-            return fl::nlp::tools::prep_wiktextract::printUsage(argv[0]);
-        } else {
-            return fl::nlp::tools::prep_wiktextract::handleAction(flags);
-        }
-    } else {
-        if (action.starts_with(FLAG_INDICATOR)) {
-            std::cerr << "Fatal: Unknown flag'" << action << "'. See '" << argv[0] << " --help'.\n";
-        } else {
-            std::cerr << "Fatal: Unknown action '" << action << "'. See '" << argv[0] << " --help'.\n";
-        }
+        std::cout << "\n" << program.arg_parser.help().str();
+        return 0;
+    }
+
+    try {
+        program.parse_args();
+    } catch (const std::runtime_error& err) {
+        std::cerr << err.what() << std::endl;
         return 1;
     }
 
-    return 0;
+    for (auto& action : actions) {
+        if (program.arg_parser.is_subcommand_used(action->name)) {
+            return action->runAction(action->arg_parser);
+        }
+    }
+
+    std::cerr << "Fatal: How Did We Get Here? Aborting.\n";
+    return 1;
 }
