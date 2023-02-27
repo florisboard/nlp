@@ -110,6 +110,9 @@ TODO: documentation
 - [google/googletest](https://github.com/google/googletest) (Testing only)
     - Author: [Google](https://github.com/google)
     - License: BSD-3-Clause
+- [p-ranav/argparse](https://github.com/p-ranav/argparse)
+    - Author: [Pranav](https://github.com/p-ranav)
+    - License: MIT
 
 ## License
 

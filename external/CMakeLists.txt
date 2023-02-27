@@ -1,3 +1,6 @@
+# External library: "p-ranav/argparse"
+add_subdirectory(argparse)
+
 # External library: "google/googletest"
 add_subdirectory(googletest)
 
