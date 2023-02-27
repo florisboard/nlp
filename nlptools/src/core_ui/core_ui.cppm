@@ -66,6 +66,20 @@ auto attrStatusColor(int32_t suggestion_attribute) noexcept {
     }
 }
 
+const char* inputShiftStateShorthand(fl::nlp::InputShiftState iss) noexcept {
+    if (iss == fl::nlp::InputShiftState::UNSHIFTED) {
+        return "US";
+    } else if (iss == fl::nlp::InputShiftState::SHIFTED_MANUAL) {
+        return "SM";
+    } else if (iss == fl::nlp::InputShiftState::SHIFTED_AUTOMATIC) {
+        return "SA";
+    } else if (iss == fl::nlp::InputShiftState::CAPS_LOCK) {
+        return "CL";
+    } else {
+        return "??";
+    }
+}
+
 struct SuggestionRequestFlagsInput {
     uint8_t max_suggestion_count = 8;
     bool allow_possibly_offensive = false;
@@ -182,6 +196,22 @@ void handleEvents(CoreUiState& state) noexcept {
             state.srf_input.override_hidden_flag = !state.srf_input.override_hidden_flag;
         } else if (ev.key == TB_KEY_F4) {
             state.srf_input.is_private_session = !state.srf_input.is_private_session;
+        } else if (ev.key == TB_KEY_F5) {
+            bool increment = (ev.mod & TB_MOD_SHIFT) == 0;
+            auto iss_val = static_cast<uint8_t>(state.srf_input.iss_start);
+            if (increment) {
+                state.srf_input.iss_start = static_cast<fl::nlp::InputShiftState>(iss_val > 2 ? 0 : iss_val + 1);
+            } else {
+                state.srf_input.iss_start = static_cast<fl::nlp::InputShiftState>(iss_val < 1 ? 3 : iss_val - 1);
+            }
+        } else if (ev.key == TB_KEY_F6) {
+            bool increment = (ev.mod & TB_MOD_SHIFT) == 0;
+            auto iss_val = static_cast<uint8_t>(state.srf_input.iss_current);
+            if (increment) {
+                state.srf_input.iss_current = static_cast<fl::nlp::InputShiftState>(iss_val > 2 ? 0 : iss_val + 1);
+            } else {
+                state.srf_input.iss_current = static_cast<fl::nlp::InputShiftState>(iss_val < 1 ? 3 : iss_val - 1);
+            }
         } else if (ev.key == TB_KEY_F12) {
             state.nlp_session.config.key_proximity_checker.enabled =
                 !state.nlp_session.config.key_proximity_checker.enabled;
@@ -216,9 +246,10 @@ void drawSuggestionRequestFlagsBox(const CoreUiState& state) noexcept {
               state.srf_input.allow_possibly_offensive ? 'Y' : 'N');
     tb_printf(x, y++, 0, 0, "║ F3   overrideHiddenFlag      = %c ║", state.srf_input.override_hidden_flag ? 'Y' : 'N');
     tb_printf(x, y++, 0, 0, "║ F4   isPrivateSession        = %c ║", state.srf_input.is_private_session ? 'Y' : 'N');
-    tb_printf(x, y++, 0, 0, "║ F5   inputShiftStateStart    = %1d ║", static_cast<uint32_t>(state.srf_input.iss_start));
-    tb_printf(x, y++, 0, 0, "║ F6   inputShiftStateCurrent  = %1d ║",
-              static_cast<uint32_t>(state.srf_input.iss_current));
+    tb_printf(x, y++, 0, 0, "║ F5   inputShiftStateStart   = %s ║",
+              inputShiftStateShorthand(state.srf_input.iss_start));
+    tb_printf(x, y++, 0, 0, "║ F6   inputShiftStateCurrent = %s ║",
+              inputShiftStateShorthand(state.srf_input.iss_current));
     tb_printf(x, y++, 0, 0, "╚══════════════════════════════════╝");
 }
 
@@ -228,7 +259,8 @@ void drawNlpSessionConfigBox(const CoreUiState& state) noexcept {
 
     tb_printf(x, y++, 0, 0, "╔╡NlpSessionConfig╞════════════════╗");
     tb_printf(x, y++, 0, 0, "║                                  ║");
-    tb_printf(x, y++, 0, 0, "║ F12  keyProximityChecker     = %c ║", state.nlp_session.config.key_proximity_checker.enabled ? 'Y' : 'N');
+    tb_printf(x, y++, 0, 0, "║ F12  keyProximityChecker     = %c ║",
+              state.nlp_session.config.key_proximity_checker.enabled ? 'Y' : 'N');
     tb_printf(x, y++, 0, 0, "╚══════════════════════════════════╝");
 }
 
