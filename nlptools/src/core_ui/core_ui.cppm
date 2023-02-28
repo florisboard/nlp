@@ -17,6 +17,7 @@
 module;
 
 #include <argparse/argparse.hpp>
+#include <fmt/core.h>
 #include <unicode/unistr.h>
 
 #include <termbox.h>
@@ -106,6 +107,47 @@ struct SuggestionRequestFlagsInput {
     }
 };
 
+class BoundedBox {
+  public:
+    int x_min;
+    int x_max;
+    int y_min;
+    int y_max;
+    int width;
+    int height;
+
+    BoundedBox(int x, int y, int width, int height)
+        : x_min(x), x_max(x + width - 1), y_min(y), y_max(y + height - 1), width(width), height(height) {}
+
+    void drawOutline(const std::string& title) const noexcept {
+        if (width < 4 || height < 4) return;
+        auto adj_title = title.substr(0, std::min((int)title.length(), width - 4));
+        int y = y_min;
+
+        tb_printf(x_min, y++, 0, 0, "╔╡%s╞%s╗", adj_title.c_str(),
+                  fl::str::repeat("═", width - 4 - adj_title.length()).c_str());
+        for (; y < y_max; y++) {
+            tb_print(x_min, y, 0, 0, "║");
+            tb_print(x_max, y, 0, 0, "║");
+        }
+        tb_printf(x_min, y, 0, 0, "╚%s╝", fl::str::repeat("═", width - 2).c_str());
+    }
+
+    void drawTextStart(int line_num, const std::string& text) const noexcept {
+        if (width < 4 || height < 4) return;
+        if (line_num >= height - 3) return;
+        auto adj_text = text.substr(0, std::min((int)text.length(), width - 4));
+        tb_print(x_min + 2, y_min + 2 + line_num, 0, 0, adj_text.c_str());
+    }
+
+    void drawTextEnd(int line_num, const std::string& text) const noexcept {
+        if (width < 4 || height < 4) return;
+        if (line_num >= height - 3) return;
+        auto adj_text = text.substr(0, std::min((int)text.length(), width - 4));
+        tb_print(x_max - 1 - adj_text.length(), y_min + 2 + line_num, 0, 0, adj_text.c_str());
+    }
+};
+
 struct CoreUiState {
     bool is_alive = true;
     bool is_suggestion_mode = true;
@@ -122,12 +164,11 @@ struct CoreUiState {
 };
 
 void handleEvents(CoreUiState& state) noexcept;
-void drawHeaderBox(const CoreUiState& state) noexcept;
-void drawSuggestionRequestFlagsBox(const CoreUiState& state) noexcept;
-void drawNlpSessionConfigBox(const CoreUiState& state) noexcept;
-void drawSuggestionInputBox(CoreUiState& state) noexcept;
+void drawHeaderBox(const CoreUiState& state, const BoundedBox& bounds) noexcept;
+void drawSuggestionRequestFlagsBox(const CoreUiState& state, const BoundedBox& bounds) noexcept;
+void drawNlpSessionConfigBox(const CoreUiState& state, const BoundedBox& bounds) noexcept;
+void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexcept;
 
-// TODO: do further cleanup of CoreUI codebase
 int mainCoreUi(const std::string& fldic_path) {
     if (U_FAILURE(fl::nlp::icuext::loadAndSetCommonData(ICU_DATA_FILE_PATH))) {
         std::cerr << "Fatal: Failed to load ICU data file! Aborting.\n";
@@ -149,10 +190,26 @@ int mainCoreUi(const std::string& fldic_path) {
         for (std::size_t i = 0; i + 1 < state.input_words.size(); i++) {
             state.prev_words.push_back(state.input_words[i]);
         }
-        drawHeaderBox(state);
-        drawSuggestionRequestFlagsBox(state);
-        drawNlpSessionConfigBox(state);
-        drawSuggestionInputBox(state);
+
+        // TODO: clean up this hardcoded mess of coords
+        if (state.width > 120) {
+            drawHeaderBox(state, BoundedBox(0, 0, 44, 5));
+            drawSuggestionRequestFlagsBox(state, BoundedBox(state.width - 36, 0, 36, 9));
+            drawNlpSessionConfigBox(state, BoundedBox(state.width - 36, 9, 36, 4));
+            drawSuggestionInputBox(state, BoundedBox(45, 0, state.width - 45 - 37, state.height));
+        } else if (state.width > 80) {
+            drawHeaderBox(state, BoundedBox(0, 0, 44, 5));
+            drawSuggestionRequestFlagsBox(state, BoundedBox(state.width - 36, 0, 36, 9));
+            drawNlpSessionConfigBox(state, BoundedBox(state.width - 36, 9, 36, 4));
+            drawSuggestionInputBox(state, BoundedBox(0, 9 + 4, state.width, state.height - 9 - 4));
+        }  else {
+            drawHeaderBox(state, BoundedBox(0, 0, state.width, 5));
+            drawSuggestionRequestFlagsBox(state, BoundedBox(0, 5, state.width, 9));
+            drawNlpSessionConfigBox(state, BoundedBox(0, 5 + 9, state.width, 4));
+            drawSuggestionInputBox(state, BoundedBox(0, 5 + 9 + 4, state.width, state.height - 5 - 9 - 4));
+        }
+
+        tb_present();
         handleEvents(state);
         tb_clear();
     }
@@ -215,63 +272,45 @@ void handleEvents(CoreUiState& state) noexcept {
     }
 }
 
-void drawHeaderBox(const CoreUiState& state) noexcept {
-    int x = 0;
-    int y = 0;
-
-    tb_printf(x, y++, 0, 0, "╔╡FlorisNLP Core Debug Frontend╞%s╗", fl::str::repeat("═", state.width - x - 33).c_str());
-    tb_printf(x, y, 0, 0, "║");
-    tb_printf(state.width - 1, y++, 0, 0, "║");
-    tb_printf(x, y, 0, 0, "║ CTRL+C to quit | CTRL+D to toggle spell check/suggestion");
-    tb_printf(state.width - 1, y++, 0, 0, "║");
-    tb_printf(x, y++, 0, 0, "╚%s╝", fl::str::repeat("═", state.width - x - 2).c_str());
+void drawHeaderBox(const CoreUiState& state, const BoundedBox& bounds) noexcept {
+    int line = 0;
+    bounds.drawOutline("FlorisNLP Core Debug Frontend");
+    bounds.drawTextStart(line++, "CTRL+C  quit");
+    bounds.drawTextStart(line++, "CTRL+D  toggle spell check/suggestion");
 }
 
-void drawSuggestionRequestFlagsBox(const CoreUiState& state) noexcept {
-    int x = 0;
-    int y = 4;
-
-    tb_printf(x, y++, 0, 0, "╔╡SuggestionRequestFlags╞══════════╗");
-    tb_printf(x, y++, 0, 0, "║                                  ║");
-    int sug_count = state.srf_input.max_suggestion_count;
-    const char* spaces = sug_count >= 100 ? " " : (sug_count >= 10 ? "  " : "   ");
-    tb_printf(x, y++, 0, 0, "║ F1   maxSuggestionCount   %s= %d ║", spaces, state.srf_input.max_suggestion_count);
-    tb_printf(x, y++, 0, 0, "║ F2   allowPossiblyOffensive  = %c ║",
-              state.srf_input.allow_possibly_offensive ? 'Y' : 'N');
-    tb_printf(x, y++, 0, 0, "║ F3   overrideHiddenFlag      = %c ║", state.srf_input.override_hidden_flag ? 'Y' : 'N');
-    tb_printf(x, y++, 0, 0, "║ F4   isPrivateSession        = %c ║", state.srf_input.is_private_session ? 'Y' : 'N');
-    tb_printf(x, y++, 0, 0, "║ F5   inputShiftStateStart   = %s ║",
-              inputShiftStateShorthand(state.srf_input.iss_start));
-    tb_printf(x, y++, 0, 0, "║ F6   inputShiftStateCurrent = %s ║",
-              inputShiftStateShorthand(state.srf_input.iss_current));
-    tb_printf(x, y++, 0, 0, "╚══════════════════════════════════╝");
+void drawSuggestionRequestFlagsBox(const CoreUiState& state, const BoundedBox& bounds) noexcept {
+    int line = 0;
+    bounds.drawOutline("SuggestionRequestFlags");
+    bounds.drawTextStart(line, "F1   maxSuggestionCount");
+    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.max_suggestion_count));
+    bounds.drawTextStart(line, "F2   allowPossiblyOffensive");
+    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.allow_possibly_offensive ? 'Y' : 'N'));
+    bounds.drawTextStart(line, "F3   overrideHiddenFlag");
+    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.override_hidden_flag ? 'Y' : 'N'));
+    bounds.drawTextStart(line, "F4   isPrivateSession");
+    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.override_hidden_flag ? 'Y' : 'N'));
+    bounds.drawTextStart(line, "F5   inputShiftStateStart");
+    bounds.drawTextEnd(line++, fmt::format("= {}", inputShiftStateShorthand(state.srf_input.iss_start)));
+    bounds.drawTextStart(line, "F6   inputShiftStateCurrent");
+    bounds.drawTextEnd(line++, fmt::format("= {}", inputShiftStateShorthand(state.srf_input.iss_current)));
 }
 
-void drawNlpSessionConfigBox(const CoreUiState& state) noexcept {
-    int x = 0;
-    int y = 13;
-
-    tb_printf(x, y++, 0, 0, "╔╡NlpSessionConfig╞════════════════╗");
-    tb_printf(x, y++, 0, 0, "║                                  ║");
-    tb_printf(x, y++, 0, 0, "║ F12  keyProximityChecker     = %c ║",
-              state.nlp_session.config.key_proximity_checker.enabled ? 'Y' : 'N');
-    tb_printf(x, y++, 0, 0, "╚══════════════════════════════════╝");
+void drawNlpSessionConfigBox(const CoreUiState& state, const BoundedBox& bounds) noexcept {
+    int line = 0;
+    bounds.drawOutline("NlpSessionConfig");
+    bounds.drawTextStart(line, "F12  keyProximityChecker");
+    bounds.drawTextEnd(line++, fmt::format("= {}", state.nlp_session.config.key_proximity_checker.enabled ? 'Y' : 'N'));
 }
 
-void drawSuggestionInputBox(CoreUiState& state) noexcept {
-    int x = 37;
-    int y = 4;
-
+void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexcept {
+    int line = 0;
     int char_count = state.raw_input_buffer.countChar32();
-    tb_set_cursor(x + 9 + char_count, y + 2);
-    tb_printf(x, y++, 0, 0, "╔╡Suggestion Input╞%s╗", fl::str::repeat("═", state.width - x - 20).c_str());
-    tb_printf(x, y++, 0, 0, "║%*s║", state.width - x - 2, "");
-    tb_printf(x, y, 0, 0, "║ Input: %s", state.input_buffer.c_str());
-    tb_printf(state.width - 1, y++, 0, 0, "║");
-    tb_printf(x, y, 0, 0, "║ Characters: %d | Bytes: %d", char_count, state.input_buffer.length());
-    tb_printf(state.width - 1, y++, 0, 0, "║");
-    tb_printf(x, y, 0, 0, "║");
-    tb_printf(state.width - 1, y++, 0, 0, "║");
+    tb_set_cursor(bounds.x_min + 9 + char_count, bounds.y_min + 2);
+    bounds.drawOutline("Suggestion Input");
+    bounds.drawTextStart(line++, fmt::format("Input: {}", state.input_buffer.c_str()));
+    bounds.drawTextStart(line++, fmt::format("Characters: {} | Bytes: {}", char_count, state.input_buffer.length()));
+    line++;
 
     auto flags = state.srf_input.toFlags();
     if (state.is_suggestion_mode) {
@@ -280,21 +319,17 @@ void drawSuggestionInputBox(CoreUiState& state) noexcept {
                                   state.suggestion_results);
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        tb_printf(x, y, 0, 0, "║ Suggested words (%d, %dms):", state.suggestion_results.size(), duration.count());
-        tb_printf(state.width - 1, y++, 0, 0, "║");
+        bounds.drawTextStart(
+            line++, fmt::format("Suggested words ({}, {}ms):", state.suggestion_results.size(), duration.count()));
         for (auto& result : state.suggestion_results) {
-            tb_printf(x, y, 0, 0, "║ %s | e=%d | c=%.4f", result->text.c_str(), result->edit_distance,
-                      result->confidence);
-            tb_printf(state.width - 1, y++, 0, 0, "║");
+            bounds.drawTextStart(line++, fmt::format("{} | e={} | c={}", result->text.c_str(), result->edit_distance,
+                                                     result->confidence));
         }
     } else {
-        tb_printf(x, y, 0, 0, "║ Spelling results:");
-        tb_printf(state.width - 1, y++, 0, 0, "║");
+        bounds.drawTextStart(line++, "Spelling results:");
         for (auto& input_word : state.input_words) {
             auto result = state.nlp_session.spell(input_word, state.prev_words, state.prev_words, flags);
-            tb_printf(x, y, 0, 0, "║  ");
             auto color = attrStatusColor(result.suggestion_attributes);
-            tb_printf(x + 3, y, color, 0, "%s", attrStatusSymbol(result.suggestion_attributes));
             std::stringstream ss;
             ss << " " << input_word << "  ->  ";
             if (!result.suggestions.empty()) {
@@ -306,17 +341,10 @@ void drawSuggestionInputBox(CoreUiState& state) noexcept {
                     ss << suggestion;
                 }
             }
-            auto output = ss.str();
-            auto max_size = state.width - x - 4;
-            if (output.size() > max_size) {
-                output.resize(max_size);
-            }
-            tb_printf(x + 5, y, 0, 0, output.c_str());
-            tb_printf(state.width - 1, y++, 0, 0, "║");
+            bounds.drawTextStart(line++,
+                                 fmt::format("  {}{}", attrStatusSymbol(result.suggestion_attributes), ss.str()));
         }
     }
-    tb_printf(x, y++, 0, 0, "╚%s╝", fl::str::repeat("═", state.width - x - 2).c_str());
-    tb_present();
 }
 
 export class CoreUiActionConfig : public ActionConfig {
