@@ -18,6 +18,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_compile_options(-stdlib=libc++)
 link_libraries(c++)
 
+# Uncomment below line if Valgrind needs to be used
+#add_compile_options(-gdwarf-4)
+
 # Set up static/shared library vars
 if (BUILD_SHARED_LIBS)
     set(FLORIS_LIBRARY_TYPE SHARED)
