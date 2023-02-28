@@ -113,6 +113,9 @@ TODO: documentation
 - [p-ranav/argparse](https://github.com/p-ranav/argparse)
     - Author: [Pranav](https://github.com/p-ranav)
     - License: MIT
+- [fmtlib/fmt](https://github.com/fmtlib/fmt)
+    - Author: [fmtlib](https://github.com/fmtlib)
+    - License: MIT
 
 ## License
 

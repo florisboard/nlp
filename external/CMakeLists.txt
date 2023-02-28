@@ -1,6 +1,9 @@
 # External library: "p-ranav/argparse"
 add_subdirectory(argparse)
 
+# External library: "fmtlib/fmt"
+add_subdirectory(fmt)
+
 # External library: "google/googletest"
 add_subdirectory(googletest)
 
