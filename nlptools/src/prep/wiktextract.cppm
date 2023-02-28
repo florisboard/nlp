@@ -29,7 +29,7 @@ module;
 #include <regex>
 #include <vector>
 
-export module fl.nlp.tools.prep_wiktextract;
+export module fl.nlp.tools.prep:wiktextract;
 
 import fl.nlp.core.latin;
 import fl.nlp.string;

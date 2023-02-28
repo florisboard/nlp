@@ -1,7 +1,7 @@
 # fl::nlp::tools
 add_subdirectory(common)
 add_subdirectory(core_ui)
-add_subdirectory(prep_wiktextract)
+add_subdirectory(prep)
 
 add_executable(fl_nlp_tools)
 add_executable(fl::nlp::tools ALIAS fl_nlp_tools)

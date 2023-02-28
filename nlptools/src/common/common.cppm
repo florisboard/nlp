@@ -16,5 +16,5 @@
 
 export module fl.nlp.tools.common;
 
-export import fl.nlp.tools.common.action_config;
-export import fl.nlp.tools.common.program;
+export import :action_config;
+export import :program;

@@ -18,7 +18,7 @@ module;
 
 #include <argparse/argparse.hpp>
 
-export module fl.nlp.tools.common.program;
+export module fl.nlp.tools.common:program;
 
 namespace fl::nlp::tools {
 

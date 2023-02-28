@@ -14,25 +14,6 @@
  * limitations under the License.
  */
 
-module;
+export module fl.nlp.tools.prep;
 
-#include <argparse/argparse.hpp>
-
-export module fl.nlp.tools.common:action_config;
-
-namespace fl::nlp::tools {
-
-export class ActionConfig {
-  public:
-    std::string name;
-    argparse::ArgumentParser arg_parser;
-
-    ActionConfig() = delete;
-    ActionConfig(const std::string& name) : name(name), arg_parser(name, "", argparse::default_arguments::none) {};
-    virtual ~ActionConfig() = default;
-
-    virtual void initArgumentConfig(argparse::ArgumentParser& arg_parser) = 0;
-    virtual int runAction(argparse::ArgumentParser& arg_parser) = 0;
-};
-
-} // namespace fl::nlp::tools
+export import :wiktextract;

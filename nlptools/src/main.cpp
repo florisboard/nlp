@@ -23,7 +23,7 @@
 
 import fl.nlp.tools.common;
 import fl.nlp.tools.core_ui;
-import fl.nlp.tools.prep_wiktextract;
+import fl.nlp.tools.prep;
 
 void printVersion() noexcept {
     std::cout << "FlorisNLP Tools v" << PROGRAM_VERSION << "\n";
