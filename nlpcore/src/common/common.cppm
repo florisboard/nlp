@@ -22,10 +22,10 @@ module;
 
 export module fl.nlp.core.common;
 
-export import fl.nlp.core.common.dictionary;
-export import fl.nlp.core.common.key_proximity_checker;
-export import fl.nlp.core.common.suggestion_request_flags;
-export import fl.nlp.core.common.trie_map;
+export import :dictionary;
+export import :key_proximity_checker;
+export import :suggestion_request_flags;
+export import :trie_map;
 
 import fl.nlp.string;
 

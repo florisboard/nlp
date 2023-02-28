@@ -18,7 +18,7 @@ module;
 
 #include <nlohmann/json.hpp>
 
-export module fl.nlp.core.latin.prediction_weights;
+export module fl.nlp.core.latin:prediction_weights;
 
 namespace fl::nlp {
 

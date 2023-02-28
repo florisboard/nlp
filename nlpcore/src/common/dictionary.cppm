@@ -24,7 +24,7 @@ module;
 #include <string>
 #include <vector>
 
-export module fl.nlp.core.common.dictionary;
+export module fl.nlp.core.common:dictionary;
 
 import fl.nlp.string;
 

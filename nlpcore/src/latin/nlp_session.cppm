@@ -17,7 +17,6 @@
 module;
 
 #include <nlohmann/json.hpp>
-
 #include <unicode/locid.h>
 #include <unicode/ubrk.h>
 #include <unicode/utext.h>
@@ -27,11 +26,11 @@ module;
 #include <utility>
 #include <vector>
 
-export module fl.nlp.core.latin.nlp_session;
+export module fl.nlp.core.latin:nlp_session;
 
+import :dictionary;
+import :prediction_weights;
 import fl.nlp.core.common;
-import fl.nlp.core.latin.dictionary;
-import fl.nlp.core.latin.prediction_weights;
 import fl.nlp.icuext;
 import fl.nlp.string;
 
@@ -47,12 +46,10 @@ export struct LatinNlpSessionConfig {
 };
 
 export void to_json(json& j, const LatinNlpSessionConfig& config) {
-    j = json{
-        {"primaryLocale", config.primary_locale},
-        {"secondaryLocales", config.secondary_locales},
-        {"predictionWeights", config.weights},
-        {"keyProximityChecker", config.key_proximity_checker}
-    };
+    j = json {{"primaryLocale", config.primary_locale},
+              {"secondaryLocales", config.secondary_locales},
+              {"predictionWeights", config.weights},
+              {"keyProximityChecker", config.key_proximity_checker}};
 }
 
 export void from_json(const json& j, LatinNlpSessionConfig& config) {
@@ -138,8 +135,8 @@ export class LatinNlpSession {
 
         auto& dict = dictionaries[0];
 
-        fuzzySearch(dict->words.rootNode(), FuzzySearchType::ProximityOrPrefix, config.weights.words.lookup.max_cost, flags, word,
-                    [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
+        fuzzySearch(dict->words.rootNode(), FuzzySearchType::ProximityOrPrefix, config.weights.words.lookup.max_cost,
+                    flags, word, [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
                         double confidence =
                             1.0; //(static_cast<double>(node->properties.absolute_score) / dict->max_unigram_score);
 
@@ -212,8 +209,10 @@ export class LatinNlpSession {
                     }
 
                     distances[prefix_index][i] =
-                        std::min(std::min(distances[prefix_index - 1][i] + session.config.weights.words.lookup.cost_insert, // DELETION
-                                          distances[prefix_index][i - 1] + session.config.weights.words.lookup.cost_delete  // INSERTION
+                        std::min(std::min(distances[prefix_index - 1][i] +
+                                              session.config.weights.words.lookup.cost_insert, // DELETION
+                                          distances[prefix_index][i - 1] +
+                                              session.config.weights.words.lookup.cost_delete // INSERTION
                                           ),
                                  distances[prefix_index - 1][i - 1] + substitution_cost);
                 }

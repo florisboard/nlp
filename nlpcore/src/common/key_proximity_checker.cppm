@@ -22,7 +22,7 @@ module;
 #include <unordered_map>
 #include <vector>
 
-export module fl.nlp.core.common.key_proximity_checker;
+export module fl.nlp.core.common:key_proximity_checker;
 
 import fl.nlp.string;
 

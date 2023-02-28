@@ -19,7 +19,7 @@ module;
 #include <bit>
 #include <cstdint>
 
-export module fl.nlp.core.common.suggestion_request_flags;
+export module fl.nlp.core.common:suggestion_request_flags;
 
 namespace fl::nlp {
 

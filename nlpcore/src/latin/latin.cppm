@@ -16,6 +16,6 @@
 
 export module fl.nlp.core.latin;
 
-export import fl.nlp.core.latin.dictionary;
-export import fl.nlp.core.latin.nlp_session;
-export import fl.nlp.core.latin.prediction_weights;
+export import :dictionary;
+export import :nlp_session;
+export import :prediction_weights;

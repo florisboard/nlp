@@ -21,7 +21,7 @@ module;
 #include <memory>
 #include <span>
 
-export module fl.nlp.core.common.trie_map;
+export module fl.nlp.core.common:trie_map;
 
 namespace fl::nlp {
 
