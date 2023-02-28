@@ -32,10 +32,10 @@ namespace fl::nlp {
 
 // Atm the schema URL is only used as a long version string, however for the future it enables us to define and support
 // different schemas.
-export const std::string FLDIC_SCHEMA_V0_DRAFT1 = "https://florisboard.org/schemas/fldic/v0~draft1/dictionary.txt";
+export const auto FLDIC_SCHEMA_V0_DRAFT1 = "https://florisboard.org/schemas/fldic/v0~draft1/dictionary.txt";
 
 // The only allowed value for encoding
-export const std::string FLDIC_ENCODING_UTF_8 = "utf-8";
+export const auto FLDIC_ENCODING_UTF_8 = "utf-8";
 
 export const char FLDIC_ASSIGNMENT = '=';
 export const char FLDIC_ASSIGNMENT_BY_COLON = ':';
@@ -48,21 +48,21 @@ export const char FLDIC_LIST_START = '[';
 export const char FLDIC_LIST_END = ']';
 export const char FLDIC_LIST_SEPARATOR = ',';
 
-export const std::string FLDIC_GLOBAL_SCHEMA = "#~schema:";
-export const std::string FLDIC_GLOBAL_ENCODING = "#~encoding:";
+export const auto FLDIC_GLOBAL_SCHEMA = "#~schema:";
+export const auto FLDIC_GLOBAL_ENCODING = "#~encoding:";
 
-export const std::string FLDIC_META_NAME = "name";
-export const std::string FLDIC_META_DISPLAY_NAME = "display_name";
-export const std::string FLDIC_META_LOCALES = "locales";
-export const std::string FLDIC_META_GENERATED_BY = "generated_by";
-export const std::string FLDIC_META_AUTHORS = "authors";
-export const std::string FLDIC_META_LICENSE = "license";
+export const auto FLDIC_META_NAME = "name";
+export const auto FLDIC_META_DISPLAY_NAME = "display_name";
+export const auto FLDIC_META_LOCALES = "locales";
+export const auto FLDIC_META_GENERATED_BY = "generated_by";
+export const auto FLDIC_META_AUTHORS = "authors";
+export const auto FLDIC_META_LICENSE = "license";
 
-export const std::string FLDIC_SECTION_META = "[meta]";
+export const auto FLDIC_SECTION_META = "[meta]";
 
 namespace dictionary_serialization_helpers {
 
-export std::string decodeString(const std::string& raw_str) noexcept {
+export std::string decodeString(const auto& raw_str) noexcept {
     if (raw_str.starts_with(FLDIC_STRING_START) && raw_str.ends_with(FLDIC_STRING_END)) {
         return raw_str.substr(1, raw_str.length() - 2);
     } else {
@@ -70,7 +70,7 @@ export std::string decodeString(const std::string& raw_str) noexcept {
     }
 }
 
-export std::vector<std::string> decodeList(const std::string& raw_list) noexcept {
+export std::vector<std::string> decodeList(const auto& raw_list) noexcept {
     if (raw_list.starts_with(FLDIC_LIST_START) && raw_list.ends_with(FLDIC_LIST_END)) {
         std::vector<std::string> list;
         fl::str::split(raw_list.substr(1, raw_list.length() - 2), FLDIC_LIST_SEPARATOR, list);
@@ -83,7 +83,7 @@ export std::vector<std::string> decodeList(const std::string& raw_list) noexcept
     }
 }
 
-export std::string encodeString(const std::string& str) noexcept {
+export std::string encodeString(const auto& str) noexcept {
     return FLDIC_STRING_START + str + FLDIC_STRING_END;
 }
 
@@ -112,7 +112,7 @@ export class DictionaryMeta {
     std::vector<std::string> authors;
     std::string license;
 
-    void readLine(const std::string& line) noexcept {
+    void readLine(const auto& line) noexcept {
         using namespace dictionary_serialization_helpers;
 
         if (line.find(FLDIC_ASSIGNMENT) == std::string::npos) {

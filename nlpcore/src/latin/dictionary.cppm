@@ -32,9 +32,9 @@ import fl.nlp.core.common;
 
 namespace fl::nlp {
 
-export const std::string FLDIC_SECTION_WORDS = "[words]";
-export const std::string FLDIC_SECTION_NGRAMS = "[ngrams]";
-export const std::string FLDIC_SECTION_SHORTCUTS = "[shortcuts]";
+export const auto FLDIC_SECTION_WORDS = "[words]";
+export const auto FLDIC_SECTION_NGRAMS = "[ngrams]";
+export const auto FLDIC_SECTION_SHORTCUTS = "[shortcuts]";
 
 export const char FLDIC_FLAG_IS_POSSIBLY_OFFENSIVE = 'p';
 export const char FLDIC_FLAG_IS_HIDDEN_BY_USER = 'h';
