@@ -42,8 +42,6 @@ import fl.nlp.tools.common;
 
 namespace fl::nlp::tools {
 
-const std::string ARG_BASE_DICT_PATH = "--base-dict";
-
 const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
 const std::string NLP_SESSION_CONFIG = "data/nlp_session_config.json";
 
@@ -130,7 +128,7 @@ void drawNlpSessionConfigBox(const CoreUiState& state) noexcept;
 void drawSuggestionInputBox(CoreUiState& state) noexcept;
 
 // TODO: do further cleanup of CoreUI codebase
-int mainCoreUi(const std::string& fldic_path) noexcept {
+int mainCoreUi(const std::string& fldic_path) {
     if (U_FAILURE(fl::nlp::icuext::loadAndSetCommonData(ICU_DATA_FILE_PATH))) {
         std::cerr << "Fatal: Failed to load ICU data file! Aborting.\n";
         return 1;
@@ -138,12 +136,7 @@ int mainCoreUi(const std::string& fldic_path) noexcept {
 
     CoreUiState state;
     state.nlp_session.loadConfigFromFile(NLP_SESSION_CONFIG);
-    try {
-        state.nlp_session.loadBaseDictionary(fldic_path);
-    } catch (const std::runtime_error& e) {
-        std::cerr << "Fatal: " << e.what() << " Aborting.\n";
-        return 1;
-    }
+    state.nlp_session.loadBaseDictionary(fldic_path);
 
     tb_init();
     state.width = tb_width();
@@ -326,35 +319,18 @@ void drawSuggestionInputBox(CoreUiState& state) noexcept {
     tb_present();
 }
 
-int handleCoreUiAction(argparse::ArgumentParser& arg_parser) noexcept {
-    std::string fldic_path = arg_parser.get(ARG_BASE_DICT_PATH);
-    fl::str::trim(fldic_path);
-
-    if (fldic_path.empty()) {
-        std::cerr << "Fatal: No base dictionary path specified! Aborting.\n";
-        return 1;
-    } else if (!std::filesystem::exists(fldic_path)) {
-        std::cerr << "Fatal: Given base dictionary path '" << fldic_path << "' does not exist! Aborting.\n";
-        return 1;
-    }
-
-    return mainCoreUi(fldic_path);
-}
-
 export class CoreUiActionConfig : public ActionConfig {
   public:
     CoreUiActionConfig() : ActionConfig("core-ui") {};
 
     void initArgumentConfig(argparse::ArgumentParser& arg_parser) override {
         arg_parser.add_description("Debug frontend UI for the NLP core");
-        arg_parser.add_argument(ARG_BASE_DICT_PATH)
-            .required()
-            .metavar("PATH")
-            .help("Path of the base dictionary to load in");
+        DictionaryArgsUtils::initArgumentConfig(arg_parser, false);
     }
 
     int runAction(argparse::ArgumentParser& arg_parser) override {
-        return handleCoreUiAction(arg_parser);
+        auto [base_dict_path, user_dict_path] = DictionaryArgsUtils::readArgumentsAndCheckFiles(arg_parser, false);
+        return mainCoreUi(base_dict_path);
     }
 };
 

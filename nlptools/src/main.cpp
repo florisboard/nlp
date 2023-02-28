@@ -24,6 +24,7 @@
 import fl.nlp.tools.common;
 import fl.nlp.tools.core_ui;
 import fl.nlp.tools.prep;
+import fl.nlp.tools.train;
 
 void printVersion() noexcept {
     std::cout << "FlorisNLP Tools v" << PROGRAM_VERSION << "\n";
@@ -33,7 +34,7 @@ void printVersion() noexcept {
 // https://github.com/p-ranav/argparse/blob/e51655673324264dec95dd3b5168baf8e54cde17/include/argparse/argparse.hpp#L1070
 //
 // It has been modified to suit this project's needs.
-void initDefaultArguments(argparse::ArgumentParser& arg_parser) {
+void initDefaultArgumentsConfig(argparse::ArgumentParser& arg_parser) {
     arg_parser.add_argument("-h", "--help")
         .action([&](const auto&) {
             printVersion();
@@ -60,14 +61,15 @@ int main(int argc, char** argv) {
     std::vector<std::unique_ptr<fl::nlp::tools::ActionConfig>> actions;
     actions.emplace_back(std::make_unique<fl::nlp::tools::CoreUiActionConfig>());
     actions.emplace_back(std::make_unique<fl::nlp::tools::PrepWiktextractActionConfig>());
+    actions.emplace_back(std::make_unique<fl::nlp::tools::TrainRawTextActionConfig>());
 
     fl::nlp::tools::Program program(PROGRAM_NAME, PROGRAM_VERSION, argc, argv);
-    initDefaultArguments(program.arg_parser);
     for (auto& action : actions) {
-        initDefaultArguments(action->arg_parser);
         action->initArgumentConfig(action->arg_parser);
+        initDefaultArgumentsConfig(action->arg_parser);
         program.arg_parser.add_subparser(action->arg_parser);
     }
+    initDefaultArgumentsConfig(program.arg_parser);
 
     if (argc <= 1) {
         printVersion();
@@ -77,15 +79,14 @@ int main(int argc, char** argv) {
 
     try {
         program.parse_args();
-    } catch (const std::runtime_error& err) {
-        std::cerr << err.what() << std::endl;
-        return 1;
-    }
-
-    for (auto& action : actions) {
-        if (program.arg_parser.is_subcommand_used(action->name)) {
-            return action->runAction(action->arg_parser);
+        for (auto& action : actions) {
+            if (program.arg_parser.is_subcommand_used(action->name)) {
+                return action->runAction(action->arg_parser);
+            }
         }
+    } catch (const std::exception& err) {
+        std::cerr << "Fatal: " << err.what() << " Aborting." << std::endl;
+        return 1;
     }
 
     std::cerr << "Fatal: How Did We Get Here? Aborting.\n";

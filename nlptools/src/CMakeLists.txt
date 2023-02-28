@@ -2,13 +2,15 @@
 add_subdirectory(common)
 add_subdirectory(core_ui)
 add_subdirectory(prep)
+add_subdirectory(train)
 
 add_executable(fl_nlp_tools)
 add_executable(fl::nlp::tools ALIAS fl_nlp_tools)
 target_sources(fl_nlp_tools PUBLIC main.cpp)
 target_link_libraries(fl_nlp_tools PUBLIC
         fl::nlp::tools::core_ui
-        fl::nlp::tools::prep_wiktextract
+        fl::nlp::tools::prep
+        fl::nlp::tools::train
         argparse::argparse
         )
 target_compile_definitions(fl_nlp_tools PUBLIC PROGRAM_NAME="nlptools" PROGRAM_VERSION="${CMAKE_PROJECT_VERSION}")
