@@ -23,9 +23,12 @@ export module fl.icuext:utext;
 namespace fl::icuext {
 
 /**
+ * Helper class which wraps the ICU C API UText into a modern C++ class with automatic closing on destruct.
+ *
+ * For the exact documentation of UText and each of its methods see the docs for the UText C API.
+ *
  * @see https://unicode-org.github.io/icu-docs/apidoc/dev/icu4c/utext_8h.html
  */
- // TODO: not all open() function variations are implemented yet
 export class Text {
   public:
     Text() : ut(nullptr) {};
@@ -55,8 +58,43 @@ export class Text {
         ut = utext_openUTF8(ut, str.c_str(), str.size(), &status);
     }
 
+    void openUTF8(const char* str, int64_t length, UErrorCode& status) {
+        if (status != U_ZERO_ERROR) return;
+
+        ut = utext_openUTF8(ut, str, length, &status);
+    }
+
+    void openCharacterIterator(icu::CharacterIterator& ci, UErrorCode& status) {
+        if (status != U_ZERO_ERROR) return;
+
+        ut = utext_openCharacterIterator(ut, &ci, &status);
+    }
+
+    void openReplaceable(icu::Replaceable& rep, UErrorCode& status) {
+        if (status != U_ZERO_ERROR) return;
+
+        ut = utext_openReplaceable(ut, &rep, &status);
+    }
+
+    void openUChars(const UChar* str, int64_t length, UErrorCode& status) {
+        if (status != U_ZERO_ERROR) return;
+
+        ut = utext_openUChars(ut, str, length, &status);
+    }
+
+    void openUnicodeString(icu::UnicodeString& str, UErrorCode& status) {
+        if (status != U_ZERO_ERROR) return;
+
+        ut = utext_openUnicodeString(ut, &str, &status);
+    }
+
+    void openConstUnicodeString(const icu::UnicodeString& str, UErrorCode& status) {
+        if (status != U_ZERO_ERROR) return;
+
+        ut = utext_openConstUnicodeString(ut, &str, &status);
+    }
+
     void close() {
-        // TODO: what if utext_close returns non-nullptr??
         utext_close(ut);
         ut = nullptr;
     }
