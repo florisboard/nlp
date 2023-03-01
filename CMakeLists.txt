@@ -39,5 +39,6 @@ add_subdirectory(external)
 add_subdirectory(icu4c)
 
 # Internal libraries
+add_subdirectory(icuext)
 add_subdirectory(nlpcore)
 add_subdirectory(nlptools)

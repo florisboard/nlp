@@ -30,8 +30,8 @@ export module fl.nlp.core.latin:nlp_session;
 
 import :dictionary;
 import :prediction_weights;
+import fl.icuext;
 import fl.nlp.core.common;
-import fl.nlp.icuext;
 import fl.nlp.string;
 
 namespace fl::nlp {

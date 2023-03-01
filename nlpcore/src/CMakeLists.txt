@@ -4,13 +4,6 @@ add_library(fl::nlp::string ALIAS fl_nlp_string)
 target_module_sources(fl_nlp_string PUBLIC string.cppm)
 target_link_icu4c_libraries(fl_nlp_string PUBLIC FlorisICU::uc FlorisICU::data)
 
-# fl::nlp::icuext
-add_library(fl_nlp_icuext)
-add_library(fl::nlp::icuext ALIAS fl_nlp_icuext)
-target_module_sources(fl_nlp_icuext PUBLIC icuext.cppm)
-target_link_icu4c_libraries(fl_nlp_icuext PUBLIC FlorisICU::uc FlorisICU::data)
-target_link_libraries(fl_nlp_icuext PUBLIC nlohmann_json::nlohmann_json)
-
 # fl::nlp::core
 add_subdirectory(common)
 add_subdirectory(latin)

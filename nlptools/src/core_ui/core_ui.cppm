@@ -31,7 +31,7 @@ module;
 
 export module fl.nlp.tools.core_ui;
 
-import fl.nlp.icuext;
+import fl.icuext;
 import fl.nlp.string;
 import fl.nlp.core.common;
 import fl.nlp.core.latin;
@@ -170,7 +170,7 @@ void drawNlpSessionConfigBox(const CoreUiState& state, const BoundedBox& bounds)
 void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexcept;
 
 int mainCoreUi(const std::string& fldic_path) {
-    if (U_FAILURE(fl::nlp::icuext::loadAndSetCommonData(ICU_DATA_FILE_PATH))) {
+    if (U_FAILURE(fl::icuext::loadAndSetCommonData(ICU_DATA_FILE_PATH))) {
         std::cerr << "Fatal: Failed to load ICU data file! Aborting.\n";
         return 1;
     }

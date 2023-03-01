@@ -17,16 +17,15 @@
 module;
 
 #include <nlohmann/json.hpp>
-
 #include <unicode/locid.h>
 #include <unicode/udata.h>
 #include <unicode/utypes.h>
 
 #include <fstream>
 
-export module fl.nlp.icuext;
+export module fl.icuext:udata;
 
-namespace fl::nlp::icuext {
+namespace fl::icuext {
 
 export UErrorCode loadAndSetCommonData(const std::string& path) {
     std::ifstream in_file(path, std::ios::in | std::ios::binary);
@@ -53,11 +52,12 @@ export UErrorCode loadAndSetCommonData(const std::string& path) {
     return status;
 }
 
-} // namespace fl::nlp::icuext
+} // namespace fl::icuext
 
 namespace nlohmann {
 
-export template<> struct adl_serializer<icu::Locale> {
+export template<>
+struct adl_serializer<icu::Locale> {
     static void to_json(nlohmann::json& j, const icu::Locale& locale) {
         UErrorCode status = U_ZERO_ERROR;
         j = nlohmann::json(locale.toLanguageTag<std::string>(status));
