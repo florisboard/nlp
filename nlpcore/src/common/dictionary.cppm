@@ -133,7 +133,7 @@ export class DictionaryMeta {
             locales.clear();
             auto locale_tags = decodeList(value);
             for (const auto& locale_tag : locale_tags) {
-                UErrorCode status;
+                UErrorCode status = U_ZERO_ERROR;
                 locales.push_back(icu::Locale::forLanguageTag(locale_tag, status));
             }
         } else if (key == FLDIC_META_GENERATED_BY) {

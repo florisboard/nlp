@@ -51,7 +51,7 @@ export class DictionaryArgsUtils {
     static std::pair<std::string, std::string> readArgumentsAndCheckFiles(argparse::ArgumentParser& arg_parser,
                                                                           bool user_dict_required = true) {
         std::string base_dict_path = arg_parser.get(ARG_BASE_DICT_PATH);
-        std::string user_dict_path = arg_parser.get(ARG_BASE_DICT_PATH);
+        std::string user_dict_path = arg_parser.get(ARG_USER_DICT_PATH);
         fl::str::trim(base_dict_path);
         fl::str::trim(user_dict_path);
         if (base_dict_path.empty()) {

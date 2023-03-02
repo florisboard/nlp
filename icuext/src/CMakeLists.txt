@@ -3,6 +3,7 @@ add_library(fl_icuext)
 add_library(fl::icuext ALIAS fl_icuext)
 target_module_sources(fl_icuext PUBLIC
         icuext.cppm
+        brkiter.cppm
         udata.cppm
         utext.cppm
         )

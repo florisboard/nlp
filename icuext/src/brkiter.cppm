@@ -14,8 +14,21 @@
  * limitations under the License.
  */
 
-export module fl.icuext;
+module;
 
-export import :brkiter;
-export import :udata;
-export import :utext;
+#include <unicode/brkiter.h>
+
+export module fl.icuext:brkiter;
+
+namespace fl::icuext::brkiter {
+
+export void forEach(icu::BreakIterator* bi, const std::function<void(int32_t, int32_t)>& action) {
+    int32_t current = bi->first();
+    int32_t next;
+    while ((next = bi->next()) != icu::BreakIterator::DONE) {
+        action(current, next);
+        current = next;
+    }
+}
+
+} // namespace nlohmann
