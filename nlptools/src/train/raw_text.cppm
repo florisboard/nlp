@@ -41,14 +41,14 @@ import fl.nlp.tools.common;
 
 const auto ARG_TXT_FILE = "--txt-file";
 
-void trainDict(const fl::nlp::LatinDictionary& base_dict, fl::nlp::LatinDictionary& user_dict, std::istream& istream) {
+void trainDict(const fl::nlp::LatinNlpSession& session, std::istream& istream) {
     UErrorCode status = U_ZERO_ERROR;
     const std::string content(std::istreambuf_iterator<char>(istream), {});
     fl::icuext::Text content_text;
     fl::icuext::Text sentence_text;
     content_text.openUTF8(content, status);
-    auto sentence_iterator = icu::BreakIterator::createSentenceInstance(base_dict.meta.locales[0], status);
-    auto word_iterator = icu::BreakIterator::createWordInstance(base_dict.meta.locales[0], status);
+    auto sentence_iterator = icu::BreakIterator::createSentenceInstance(session.config.primary_locale, status);
+    auto word_iterator = icu::BreakIterator::createWordInstance(session.config.primary_locale, status);
     sentence_iterator->setText(content_text, status);
     std::string sentence;
     std::string word;
@@ -100,24 +100,16 @@ export class TrainRawTextActionConfig : public ActionConfig {
     }
 
     int runAction(argparse::ArgumentParser& arg_parser) override {
-        auto [base_dict_path, user_dict_path] = DictionaryArgsUtils::readArgumentsAndCheckFiles(arg_parser);
+        auto session_config_path = DictionaryArgsUtils::readArgumentsAndCheckFiles(arg_parser);
         std::string txt_file_path = arg_parser.get(ARG_TXT_FILE);
         auto start_time = std::chrono::high_resolution_clock::now();
         auto end_time = std::chrono::high_resolution_clock::now();
 
-        fl::nlp::LatinDictionary base_dict;
-        fl::nlp::LatinDictionary user_dict;
+        fl::nlp::LatinNlpSession session;
 
-        std::cout << "Loading base dictionary from disk... " << std::flush;
+        std::cout << "Initializing NLP session and loading dictionaries... " << std::flush;
         start_time = std::chrono::high_resolution_clock::now();
-        base_dict.loadFromDisk(base_dict_path);
-        end_time = std::chrono::high_resolution_clock::now();
-        std::cout << "Done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count()
-                  << "ms." << std::endl;
-
-        std::cout << "Loading user dictionary from disk... " << std::flush;
-        start_time = std::chrono::high_resolution_clock::now();
-        user_dict.loadFromDisk(user_dict_path);
+        session.loadConfigFromFile(session_config_path);
         end_time = std::chrono::high_resolution_clock::now();
         std::cout << "Done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count()
                   << "ms." << std::endl;
@@ -125,13 +117,13 @@ export class TrainRawTextActionConfig : public ActionConfig {
         std::cout << "Training user dictionary with provided txt file... " << std::flush;
         start_time = std::chrono::high_resolution_clock::now();
         std::ifstream txt_file(txt_file_path);
-        trainDict(base_dict, user_dict, txt_file);
+        trainDict(session, txt_file);
         std::cout << "Done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count()
                   << "ms." << std::endl;
 
         std::cout << "Persisting user dictionary to disk... " << std::flush;
         start_time = std::chrono::high_resolution_clock::now();
-        user_dict.persistToDisk();
+        session.user_dictionary->persistToDisk();
         end_time = std::chrono::high_resolution_clock::now();
         std::cout << "Done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count()
                   << "ms." << std::endl;

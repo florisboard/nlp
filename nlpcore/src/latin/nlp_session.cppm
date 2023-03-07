@@ -41,6 +41,8 @@ using json = nlohmann::json;
 export struct LatinNlpSessionConfig {
     icu::Locale primary_locale;
     std::vector<icu::Locale> secondary_locales;
+    std::vector<std::string> base_dictionary_paths;
+    std::string user_dictionary_path;
     LatinPredictionWeights weights;
     KeyProximityChecker key_proximity_checker;
 };
@@ -48,6 +50,8 @@ export struct LatinNlpSessionConfig {
 export void to_json(json& j, const LatinNlpSessionConfig& config) {
     j = json {{"primaryLocale", config.primary_locale},
               {"secondaryLocales", config.secondary_locales},
+              {"baseDictionaries", config.base_dictionary_paths},
+              {"userDictionary", config.user_dictionary_path},
               {"predictionWeights", config.weights},
               {"keyProximityChecker", config.key_proximity_checker}};
 }
@@ -55,6 +59,8 @@ export void to_json(json& j, const LatinNlpSessionConfig& config) {
 export void from_json(const json& j, LatinNlpSessionConfig& config) {
     j.at("primaryLocale").get_to(config.primary_locale);
     j.at("secondaryLocales").get_to(config.secondary_locales);
+    j.at("baseDictionaries").get_to(config.base_dictionary_paths);
+    j.at("userDictionary").get_to(config.user_dictionary_path);
     j.at("predictionWeights").get_to(config.weights);
     j.at("keyProximityChecker").get_to(config.key_proximity_checker);
 };
@@ -70,7 +76,8 @@ using WordTrieNode = TrieNode<fl::str::UniChar, WordProperties>;
 export class LatinNlpSession {
   public:
     LatinNlpSessionConfig config;
-    std::vector<std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
+    std::vector<std::unique_ptr<fl::nlp::LatinDictionary>> base_dictionaries;
+    std::unique_ptr<fl::nlp::LatinDictionary> user_dictionary = nullptr;
 
     void loadConfigFromFile(const std::filesystem::path& config_path) {
         std::ifstream config_file(config_path);
@@ -80,12 +87,22 @@ export class LatinNlpSession {
         auto json_config = nlohmann::json::parse(config_file);
         config_file.close();
         json_config.get_to(config);
+        for (auto& path : config.base_dictionary_paths) {
+            loadBaseDictionary(path);
+        }
+        loadUserDictionary(config.user_dictionary_path);
     }
 
     void loadBaseDictionary(const std::filesystem::path& dict_path) {
         auto base_dict = std::make_unique<LatinDictionary>();
         base_dict->loadFromDisk(dict_path);
-        dictionaries.push_back(std::move(base_dict));
+        base_dictionaries.push_back(std::move(base_dict));
+    }
+
+    void loadUserDictionary(const std::filesystem::path& dict_path) {
+        auto user_dict = std::make_unique<LatinDictionary>();
+        user_dict->loadFromDisk(dict_path);
+        user_dictionary = std::move(user_dict);
     }
 
     SpellingResult spell(const std::string& word, const std::vector<std::string>& prev_words,
@@ -96,13 +113,13 @@ export class LatinNlpSession {
         }
         fl::str::UniString uni_word;
         fl::str::toUniString(word, uni_word);
-        auto word_node = dictionaries[0]->words.getOrNull(uni_word);
+        auto word_node = base_dictionaries[0]->words.getOrNull(uni_word);
         if (word_node != nullptr && word_node->is_end_node) {
             return SpellingResult::validWord();
         }
 
         std::vector<std::unique_ptr<SuggestionCandidate>> results;
-        fuzzySearch(dictionaries[0]->words.rootNode(), FuzzySearchType::ProximityWithoutSelf,
+        fuzzySearch(base_dictionaries[0]->words.rootNode(), FuzzySearchType::ProximityWithoutSelf,
                     config.weights.words.lookup.max_cost, flags, word,
                     [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
                         double confidence = 1.0;
@@ -133,7 +150,7 @@ export class LatinNlpSession {
         results.clear();
         if (word.empty()) return;
 
-        auto& dict = dictionaries[0];
+        auto& dict = base_dictionaries[0];
 
         fuzzySearch(dict->words.rootNode(), FuzzySearchType::ProximityOrPrefix, config.weights.words.lookup.max_cost,
                     flags, word, [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {

@@ -29,44 +29,27 @@ import fl.nlp.string;
 
 namespace fl::nlp::tools {
 
-export const auto ARG_BASE_DICT_PATH = "--base-dict";
-export const auto ARG_USER_DICT_PATH = "--user-dict";
+export const auto ARG_SESSION_CONFIG_PATH = "--session-config";
 
 export class DictionaryArgsUtils {
   public:
-    static void initArgumentConfig(argparse::ArgumentParser& arg_parser, bool user_dict_required = true) {
-        arg_parser.add_argument(ARG_BASE_DICT_PATH)
+    static void initArgumentConfig(argparse::ArgumentParser& arg_parser) {
+        arg_parser.add_argument(ARG_SESSION_CONFIG_PATH)
             .required()
             .metavar("PATH")
-            .help("Path of the base dictionary to load in");
-        auto& arg =
-            arg_parser.add_argument(ARG_USER_DICT_PATH).metavar("PATH").help("Path of the user dictionary to load in");
-        if (user_dict_required) {
-            arg.required();
-        } else {
-            arg.default_value(std::string(""));
-        }
+            .help("Path of the NLP session config file to load");
     }
 
-    static std::pair<std::string, std::string> readArgumentsAndCheckFiles(argparse::ArgumentParser& arg_parser,
-                                                                          bool user_dict_required = true) {
-        std::string base_dict_path = arg_parser.get(ARG_BASE_DICT_PATH);
-        std::string user_dict_path = arg_parser.get(ARG_USER_DICT_PATH);
-        fl::str::trim(base_dict_path);
-        fl::str::trim(user_dict_path);
-        if (base_dict_path.empty()) {
-            throw std::runtime_error("Specified base dictionary path is empty!");
+    static std::string readArgumentsAndCheckFiles(argparse::ArgumentParser& arg_parser) {
+        std::string session_config_path = arg_parser.get(ARG_SESSION_CONFIG_PATH);
+        fl::str::trim(session_config_path);
+        if (session_config_path.empty()) {
+            throw std::runtime_error("Specified session config path is empty!");
         }
-        if (!std::filesystem::exists(base_dict_path)) {
-            throw std::runtime_error("Specified base dictionary path does not exist!");
+        if (!std::filesystem::exists(session_config_path)) {
+            throw std::runtime_error("Specified session config path does not exist!");
         }
-        if (user_dict_required && user_dict_path.empty()) {
-            throw std::runtime_error("Specified user dictionary path is empty!");
-        }
-        if (user_dict_required && !std::filesystem::exists(user_dict_path)) {
-            throw std::runtime_error("Specified user dictionary path does not exist!");
-        }
-        return std::make_pair(std::move(base_dict_path), std::move(user_dict_path));
+        return std::move(session_config_path);
     }
 };
 

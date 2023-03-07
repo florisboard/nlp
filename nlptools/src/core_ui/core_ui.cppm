@@ -43,8 +43,7 @@ import fl.nlp.tools.common;
 
 namespace fl::nlp::tools {
 
-const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/71.1/icudt71l.dat";
-const std::string NLP_SESSION_CONFIG = "data/nlp_session_config.json";
+const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/72.1/icudt72l.dat";
 
 const char* attrStatusSymbol(int32_t suggestion_attribute) noexcept {
     if (suggestion_attribute == fl::nlp::RESULT_ATTR_IN_THE_DICTIONARY) {
@@ -169,15 +168,14 @@ void drawSuggestionRequestFlagsBox(const CoreUiState& state, const BoundedBox& b
 void drawNlpSessionConfigBox(const CoreUiState& state, const BoundedBox& bounds) noexcept;
 void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexcept;
 
-int mainCoreUi(const std::string& fldic_path) {
+int mainCoreUi(const std::string& session_config_path) {
     if (U_FAILURE(fl::icuext::loadAndSetCommonData(ICU_DATA_FILE_PATH))) {
         std::cerr << "Fatal: Failed to load ICU data file! Aborting.\n";
         return 1;
     }
 
     CoreUiState state;
-    state.nlp_session.loadConfigFromFile(NLP_SESSION_CONFIG);
-    state.nlp_session.loadBaseDictionary(fldic_path);
+    state.nlp_session.loadConfigFromFile(session_config_path);
 
     tb_init();
     state.width = tb_width();
@@ -353,12 +351,12 @@ export class CoreUiActionConfig : public ActionConfig {
 
     void initArgumentConfig(argparse::ArgumentParser& arg_parser) override {
         arg_parser.add_description("Debug frontend UI for the NLP core");
-        DictionaryArgsUtils::initArgumentConfig(arg_parser, false);
+        DictionaryArgsUtils::initArgumentConfig(arg_parser);
     }
 
     int runAction(argparse::ArgumentParser& arg_parser) override {
-        auto [base_dict_path, user_dict_path] = DictionaryArgsUtils::readArgumentsAndCheckFiles(arg_parser, false);
-        return mainCoreUi(base_dict_path);
+        auto session_config_path = DictionaryArgsUtils::readArgumentsAndCheckFiles(arg_parser);
+        return mainCoreUi(session_config_path);
     }
 };
 
