@@ -53,43 +53,43 @@ export class Text {
     }
 
     void openUTF8(const std::string& str, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return;
+        if (U_FAILURE(status)) return;
 
         ut = utext_openUTF8(ut, str.c_str(), str.size(), &status);
     }
 
     void openUTF8(const char* str, int64_t length, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return;
+        if (U_FAILURE(status)) return;
 
         ut = utext_openUTF8(ut, str, length, &status);
     }
 
     void openCharacterIterator(icu::CharacterIterator& ci, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return;
+        if (U_FAILURE(status)) return;
 
         ut = utext_openCharacterIterator(ut, &ci, &status);
     }
 
     void openReplaceable(icu::Replaceable& rep, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return;
+        if (U_FAILURE(status)) return;
 
         ut = utext_openReplaceable(ut, &rep, &status);
     }
 
     void openUChars(const UChar* str, int64_t length, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return;
+        if (U_FAILURE(status)) return;
 
         ut = utext_openUChars(ut, str, length, &status);
     }
 
     void openUnicodeString(icu::UnicodeString& str, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return;
+        if (U_FAILURE(status)) return;
 
         ut = utext_openUnicodeString(ut, &str, &status);
     }
 
     void openConstUnicodeString(const icu::UnicodeString& str, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return;
+        if (U_FAILURE(status)) return;
 
         ut = utext_openConstUnicodeString(ut, &str, &status);
     }
@@ -104,7 +104,7 @@ export class Text {
     }
 
     Text clone(bool deep, bool read_only, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return {};
+        if (U_FAILURE(status)) return {};
 
         UText* ut_clone = utext_clone(nullptr, ut, deep, read_only, &status);
         if (ut_clone == nullptr) {
@@ -114,7 +114,7 @@ export class Text {
     }
 
     void copy(int64_t native_start, int64_t native_limit, int64_t dest_index, bool move, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return;
+        if (U_FAILURE(status)) return;
 
         utext_copy(ut, native_start, native_limit, dest_index, move, &status);
     }
@@ -125,7 +125,7 @@ export class Text {
 
     int32_t extract(int64_t native_start, int64_t native_limit, UChar* dest, int32_t dest_capacity,
                     UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return 0;
+        if (U_FAILURE(status)) return 0;
 
         return utext_extract(ut, native_start, native_limit, dest, dest_capacity, &status);
     }
@@ -180,7 +180,7 @@ export class Text {
 
     UChar32 replace(int64_t native_start, int64_t native_limit, const UChar* replacement_text,
                     int32_t replacement_length, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return 0;
+        if (U_FAILURE(status)) return 0;
 
         return utext_replace(ut, native_start, native_limit, replacement_text, replacement_length, &status);
     }
@@ -190,7 +190,7 @@ export class Text {
     }
 
     void setup(int32_t extra_space, UErrorCode& status) {
-        if (status != U_ZERO_ERROR) return;
+        if (U_FAILURE(status)) return;
 
         utext_setup(ut, extra_space, &status);
     }
