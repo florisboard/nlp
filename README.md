@@ -20,7 +20,7 @@ This repository is currently in alpha and will move along with the 0.4.0 FlorisB
 - Ninja 1.11+
 - GNU make 3.80+
     - MUST be GNU make and not some other variation of make or the ICU build will fail!!
-- Clang ~~15.x+~~ (atm custom compiled, see below)
+- Clang 16.x+ (needs to be custom compiled atm, see below)
 - Package `libc++-dev` and `libc++abi-dev` (version 15.x+)
 - Git (only to clone and to initialize the submodules)
 
@@ -28,30 +28,29 @@ Note for Windows 10/11 users: Native Windows compilation is not supported and pr
 fully compile this project using WSL2 (Windows Subsystem for Linux 2). It has been tested with an Ubuntu 22.10 instance
 and everything compiled fine. See the [official docs](https://learn.microsoft.com/en-us/windows/wsl/) for more info.
 
-### (Temporary) Compile custom version of clang
+### (Temporary) Compile pre-release version of clang-16
 
-To properly support C++ modules we need a custom version of clang as of February 2023, which has been provided by a dev
-of Kitware here: https://github.com/mathstuf/llvm-project/releases/tag/p1689r5-cmake-ci-20221215
+To properly support C++ modules we need a pre-release version of clang-16 as of March 2023, which can be found here:
+https://github.com/llvm/llvm-project/tree/release/16.x
 
-To compile the custom version of clang, issue the following commands:
+To compile the pre-release version of clang-16, issue the following commands:
 
 ```shell
 # Get the source code
-git clone https://github.com/mathstuf/llvm-project.git
+git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
-git checkout p1689r5-cmake-ci-20221215
+git checkout origin/release/16.x
 
 # Set up build directory
 mkdir build
 cd build
 
 # Build clang (may take a while, depending on the CPU anything from 15-60 mins)
-cmake -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_BUILD_TYPE=Release -G Ninja ../llvm
-ninja
+cmake -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_BUILD_TYPE=Release -G Ninja ../llvm && ninja
 ```
 
-This step is only temporary, once this fork is merged into the main LLVM project and released we can use a precompiled
-clang version and this step is obsolete.
+This step is only temporary, once clang-16 is released we can use a pre-compiled clang version and this step is
+obsolete.
 
 ### Setting up and building locally
 
