@@ -19,7 +19,7 @@
       },
       "training": {
         "usageBonus": 128,
-        "usageReductionOthers": -1
+        "usageReductionOthers": 1
       }
     },
     "ngrams": {
@@ -28,7 +28,7 @@
       },
       "training": {
         "usageBonus": 128,
-        "usageReductionOthers": -1
+        "usageReductionOthers": 1
       }
     }
   },

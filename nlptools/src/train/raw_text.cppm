@@ -41,7 +41,7 @@ import fl.nlp.tools.common;
 
 const auto ARG_TXT_FILE = "--txt-file";
 
-void trainDict(const fl::nlp::LatinNlpSession& session, std::istream& istream) {
+void trainDict(fl::nlp::LatinNlpSession& session, std::istream& istream) {
     UErrorCode status = U_ZERO_ERROR;
     const std::string content(std::istreambuf_iterator<char>(istream), {});
     fl::icuext::Text content_text;
@@ -79,7 +79,7 @@ void trainDict(const fl::nlp::LatinNlpSession& session, std::istream& istream) {
                 }
             });
             fmt::print("{}\n", uni_words);
-            // TODO: pass uni_words to NLP Session training here
+            session.train(uni_words, 3);
         }
     });
 

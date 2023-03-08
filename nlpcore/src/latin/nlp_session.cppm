@@ -23,6 +23,7 @@ module;
 
 #include <filesystem>
 #include <functional>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -37,6 +38,8 @@ import fl.nlp.string;
 namespace fl::nlp {
 
 using json = nlohmann::json;
+
+const fl::str::UniString FLDIC_UNI_TOKEN_START_OF_SENTENCE = {std::string(1, FLDIC_TOKEN_START_OF_SENTENCE)};
 
 export struct LatinNlpSessionConfig {
     icu::Locale primary_locale;
@@ -166,6 +169,35 @@ export class LatinNlpSession {
                             results.erase(results.end() - 1);
                         }
                     });
+    }
+
+    void train(std::vector<fl::str::UniString>& sentence, int32_t max_ngram_level) noexcept {
+        if (sentence.empty()) return;
+
+        // Read and insert words
+        for (auto& word : sentence) {
+            auto word_node = user_dictionary->words.getOrCreate(word);
+            word_node->value.absolute_score += config.weights.words.training.usage_bonus;
+            word_node->value.absolute_score += config.weights.words.training.usage_reduction_others;
+            user_dictionary->global_penalty_words += config.weights.words.training.usage_reduction_others;
+        }
+
+        // Insert "start of sentence" tokens
+        for (int i = 0; i < max_ngram_level - 1; i++) {
+            sentence.insert(sentence.begin(), FLDIC_UNI_TOKEN_START_OF_SENTENCE);
+        }
+
+        // Read and insert ngrams
+        for (int ngram_level = 2; ngram_level <= max_ngram_level; ngram_level++) {
+            for (int i = max_ngram_level - ngram_level; i < sentence.size() - ngram_level + 1; i++) {
+                auto ngram = std::span(sentence.begin() + i, ngram_level);
+                auto ngram_node = user_dictionary->insertNgram(ngram);
+                ngram_node->value.absolute_score += config.weights.ngrams.training.usage_bonus;
+                ngram_node->value.absolute_score += config.weights.ngrams.training.usage_reduction_others;
+                user_dictionary->global_penalty_ngrams[ngram_level] +=
+                    config.weights.ngrams.training.usage_reduction_others;
+            }
+        }
     }
 
   private:
@@ -346,6 +378,16 @@ export class LatinNlpSession {
         FuzzySearchState state(*this, type, max_distance, flags, word);
         state.on_result = std::move(on_result);
         fuzzySearchRecursiveDld(root_node, state, 0);
+    }
+
+    bool baseDictsContainWord(fl::str::UniString& uni_word) const noexcept {
+        for (auto& base_dict : base_dictionaries) {
+            auto word_node = base_dict->words.getOrNull(uni_word);
+            if (word_node != nullptr && word_node->is_end_node) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static bool suggestions_sorter(const std::unique_ptr<fl::nlp::SuggestionCandidate>& a,

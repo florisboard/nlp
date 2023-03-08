@@ -33,6 +33,7 @@ namespace fl::str {
 
 export using UniChar = std::basic_string<char>;
 export using UniString = std::vector<UniChar>;
+export using UniStringSpan = std::span<UniChar>;
 
 export void applyCasemap(
     std::string& str,
