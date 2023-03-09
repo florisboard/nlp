@@ -44,47 +44,43 @@ const auto ARG_TXT_FILE = "--txt-file";
 void trainDict(fl::nlp::LatinNlpSession& session, std::istream& istream) {
     UErrorCode status = U_ZERO_ERROR;
     const std::string content(std::istreambuf_iterator<char>(istream), {});
-    fl::icuext::Text content_text;
-    fl::icuext::Text sentence_text;
-    content_text.openUTF8(content, status);
-    auto sentence_iterator = icu::BreakIterator::createSentenceInstance(session.config.primary_locale, status);
-    auto word_iterator = icu::BreakIterator::createWordInstance(session.config.primary_locale, status);
-    sentence_iterator->setText(content_text, status);
+    auto content_text = fl::icuext::Text::newUTF8(content, status);
+    auto sentence_text = fl::icuext::Text();
+
+    fl::icuext::BreakIteratorCache iterators;
+    iterators.init(session.config.primary_locale, status);
+    iterators.sentence()->setText(content_text, status);
+
     std::string sentence;
     std::string word;
-    fl::str::UniString uni_word;
-    std::vector<fl::str::UniString> uni_words;
+    std::vector<std::string> words;
 
     if (U_FAILURE(status)) {
         throw std::runtime_error("Error in initializing trainDict()");
     }
 
     std::cout << "\n";
-    fl::icuext::brkiter::forEach(sentence_iterator, [&](int32_t start, int32_t end) {
+    fl::icuext::forEach(iterators.sentence(), [&](int32_t start, int32_t end) {
         sentence.assign(content, start, end - start);
         fl::str::trim(sentence);
         if (!sentence.empty()) {
             sentence_text.openUTF8(sentence, status);
-            word_iterator->setText(sentence_text, status);
+            iterators.word()->setText(sentence_text, status);
             if (U_FAILURE(status)) {
                 throw std::runtime_error("Error in initializing word iterator data");
             }
-            uni_words.clear();
-            fl::icuext::brkiter::forEach(word_iterator, [&](int32_t start, int32_t end) {
+            words.clear();
+            fl::icuext::forEach(iterators.word(), [&](int32_t start, int32_t end) {
                 word.assign(sentence, start, end - start);
-                auto rule_status = word_iterator->getRuleStatus();
+                auto rule_status = iterators.word()->getRuleStatus();
                 if (rule_status != UWordBreak::UBRK_WORD_NONE) {
-                    fl::str::toUniString(word, uni_word);
-                    uni_words.emplace_back(uni_word);
+                    words.emplace_back(word);
                 }
             });
-            fmt::print("{}\n", uni_words);
-            session.train(uni_words, 3);
+            fmt::print("{}\n", words);
+            session.train(words, 3);
         }
     });
-
-    delete word_iterator;
-    delete sentence_iterator;
 }
 
 namespace fl::nlp::tools {

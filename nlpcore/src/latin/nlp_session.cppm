@@ -18,7 +18,6 @@ module;
 
 #include <nlohmann/json.hpp>
 #include <unicode/locid.h>
-#include <unicode/ubrk.h>
 #include <unicode/utext.h>
 
 #include <filesystem>
@@ -82,6 +81,10 @@ export class LatinNlpSession {
     std::vector<std::unique_ptr<fl::nlp::LatinDictionary>> base_dictionaries;
     std::unique_ptr<fl::nlp::LatinDictionary> user_dictionary = nullptr;
 
+  private:
+    fl::icuext::BreakIteratorCache iterators;
+
+  public:
     void loadConfigFromFile(const std::filesystem::path& config_path) {
         std::ifstream config_file(config_path);
         if (!config_file.is_open()) {
@@ -94,6 +97,8 @@ export class LatinNlpSession {
             loadBaseDictionary(path);
         }
         loadUserDictionary(config.user_dictionary_path);
+        UErrorCode status = U_ZERO_ERROR;
+        iterators.init(config.primary_locale, status);
     }
 
     void loadBaseDictionary(const std::filesystem::path& dict_path) {
@@ -171,26 +176,31 @@ export class LatinNlpSession {
                     });
     }
 
-    void train(std::vector<fl::str::UniString>& sentence, int32_t max_ngram_level) noexcept {
+    void train(const std::vector<std::string>& sentence, int32_t max_ngram_level) noexcept {
         if (sentence.empty()) return;
+
+        std::vector<fl::str::UniString> uni_sentence;
+        fl::str::UniString uni_word;
 
         // Read and insert words
         for (auto& word : sentence) {
-            auto word_node = user_dictionary->words.getOrCreate(word);
+            fl::str::toUniString(word, uni_word);
+            auto word_node = user_dictionary->words.getOrCreate(uni_word);
             word_node->value.absolute_score += config.weights.words.training.usage_bonus;
             word_node->value.absolute_score += config.weights.words.training.usage_reduction_others;
             user_dictionary->global_penalty_words += config.weights.words.training.usage_reduction_others;
+            uni_sentence.push_back(std::move(uni_word));
         }
 
         // Insert "start of sentence" tokens
         for (int i = 0; i < max_ngram_level - 1; i++) {
-            sentence.insert(sentence.begin(), FLDIC_UNI_TOKEN_START_OF_SENTENCE);
+            uni_sentence.insert(uni_sentence.begin(), FLDIC_UNI_TOKEN_START_OF_SENTENCE);
         }
 
         // Read and insert ngrams
         for (int ngram_level = 2; ngram_level <= max_ngram_level; ngram_level++) {
-            for (int i = max_ngram_level - ngram_level; i < sentence.size() - ngram_level + 1; i++) {
-                auto ngram = std::span(sentence.begin() + i, ngram_level);
+            for (int i = max_ngram_level - ngram_level; i < uni_sentence.size() - ngram_level + 1; i++) {
+                auto ngram = std::span(uni_sentence.begin() + i, ngram_level);
                 auto ngram_node = user_dictionary->insertNgram(ngram);
                 ngram_node->value.absolute_score += config.weights.ngrams.training.usage_bonus;
                 ngram_node->value.absolute_score += config.weights.ngrams.training.usage_reduction_others;
@@ -299,16 +309,12 @@ export class LatinNlpSession {
             if (word.empty()) return;
 
             UErrorCode status = U_ZERO_ERROR;
-            auto ut = utext_openUTF8(nullptr, word.c_str(), -1, &status);
-            auto ub = ubrk_open(UBRK_CHARACTER, session.config.primary_locale.getLanguage(), nullptr, 0, &status);
-            ubrk_setUText(ub, ut, &status);
+            auto ut_word = fl::icuext::Text::newUTF8(word, status);
+            session.iterators.character()->setText(ut_word, status);
 
             if (U_SUCCESS(status)) {
-                int32_t prev_n = 0;
-                int32_t curr_n;
-
-                while ((curr_n = ubrk_next(ub)) != UBRK_DONE) {
-                    auto uni_char = word.substr(prev_n, curr_n - prev_n);
+                fl::icuext::forEach(session.iterators.character(), [=](int32_t start, int32_t end) {
+                    auto uni_char = word.substr(start, end - start);
                     auto uni_char_mod(uni_char);
                     fl::str::uppercase(uni_char_mod);
                     if (uni_char != uni_char_mod) {
@@ -318,12 +324,8 @@ export class LatinNlpSession {
                         uni_word_opposite_case.push_back(std::move(uni_char_mod));
                     }
                     uni_word.push_back(std::move(uni_char));
-                    prev_n = curr_n;
-                }
+                });
             }
-
-            ubrk_close(ub);
-            utext_close(ut);
         }
 
         void ensureCapacityFor(std::size_t prefix_index) noexcept {

@@ -2,7 +2,7 @@
   "primaryLocale": "en-US",
   "secondaryLocales": [],
   "baseDictionaries": ["data/words_en.fldic"],
-  "userDictionary": "data/user_dict.fldic",
+  "userDictionary": "data/user_dict_core.fldic",
   "predictionWeights": {
     "words": {
       "lookup": {

@@ -58,6 +58,12 @@ export class Text {
         ut = utext_openUTF8(ut, str.c_str(), str.size(), &status);
     }
 
+    static Text newUTF8(const std::string& str, UErrorCode& status) {
+        Text text;
+        text.openUTF8(str, status);
+        return text;
+    }
+
     void openUTF8(const char* str, int64_t length, UErrorCode& status) {
         if (U_FAILURE(status)) return;
 

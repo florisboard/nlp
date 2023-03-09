@@ -17,10 +17,46 @@
 module;
 
 #include <unicode/brkiter.h>
+#include <unicode/locid.h>
 
 export module fl.icuext:brkiter;
 
-namespace fl::icuext::brkiter {
+namespace fl::icuext {
+
+export struct BreakIteratorCache {
+    std::unique_ptr<icu::BreakIterator> sentence_iterator = nullptr;
+    std::unique_ptr<icu::BreakIterator> word_iterator = nullptr;
+    std::unique_ptr<icu::BreakIterator> character_iterator = nullptr;
+
+    inline icu::BreakIterator* sentence() const noexcept {
+        return sentence_iterator.get();
+    }
+
+    inline icu::BreakIterator* word() const noexcept {
+        return word_iterator.get();
+    }
+
+    inline icu::BreakIterator* character() const noexcept {
+        return character_iterator.get();
+    }
+
+    void init(const icu::Locale& locale, UErrorCode& status) noexcept {
+        reset();
+
+        sentence_iterator = //
+            std::unique_ptr<icu::BreakIterator>(icu::BreakIterator::createSentenceInstance(locale, status));
+        word_iterator = //
+            std::unique_ptr<icu::BreakIterator>(icu::BreakIterator::createWordInstance(locale, status));
+        character_iterator = //
+            std::unique_ptr<icu::BreakIterator>(icu::BreakIterator::createCharacterInstance(locale, status));
+    }
+
+    void reset() noexcept {
+        sentence_iterator.reset();
+        word_iterator.reset();
+        character_iterator.reset();
+    }
+};
 
 export void forEach(icu::BreakIterator* bi, const std::function<void(int32_t, int32_t)>& action) {
     int32_t current = bi->first();
@@ -31,4 +67,4 @@ export void forEach(icu::BreakIterator* bi, const std::function<void(int32_t, in
     }
 }
 
-} // namespace nlohmann
+} // namespace fl::icuext
