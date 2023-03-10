@@ -38,7 +38,7 @@ struct LookupWeights {
 };
 
 void to_json(json& j, const LookupWeights& lw) {
-    j = json{
+    j = json {
         {"maxCost", lw.max_cost},
         {"costIsEqual", lw.cost_is_equal},
         {"costIsOppositeCase", lw.cost_is_opposite_case},
@@ -48,8 +48,7 @@ void to_json(json& j, const LookupWeights& lw) {
         {"costSubstituteInProximity", lw.cost_substitute_in_proximity},
         {"costTranspose", lw.cost_transpose},
         {"penaltyDefault", lw.penalty_default},
-        {"penaltyStartOfStr", lw.penalty_start_of_str}
-    };
+        {"penaltyStartOfStr", lw.penalty_start_of_str}};
 }
 
 void from_json(const json& j, LookupWeights& lw) {
@@ -71,10 +70,7 @@ struct TrainingWeights {
 };
 
 void to_json(json& j, const TrainingWeights& tw) {
-    j = json{
-        {"usageBonus", tw.usage_bonus},
-        {"usageReductionOthers", tw.usage_reduction_others}
-    };
+    j = json {{"usageBonus", tw.usage_bonus}, {"usageReductionOthers", tw.usage_reduction_others}};
 }
 
 void from_json(const json& j, TrainingWeights& tw) {
@@ -88,10 +84,7 @@ struct PredictionWeights {
 };
 
 void to_json(json& j, const PredictionWeights& pw) {
-    j = json{
-        {"lookup", pw.lookup},
-        {"training", pw.training}
-    };
+    j = json {{"lookup", pw.lookup}, {"training", pw.training}};
 }
 
 void from_json(const json& j, PredictionWeights& pw) {
@@ -105,10 +98,7 @@ export struct LatinPredictionWeights {
 };
 
 export void to_json(json& j, const LatinPredictionWeights& lpw) {
-    j = json{
-        {"words", lpw.words},
-        {"ngrams", lpw.ngrams}
-    };
+    j = json {{"words", lpw.words}, {"ngrams", lpw.ngrams}};
 }
 
 export void from_json(const json& j, LatinPredictionWeights& lpw) {

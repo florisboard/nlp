@@ -50,12 +50,13 @@ export struct LatinNlpSessionConfig {
 };
 
 export void to_json(json& j, const LatinNlpSessionConfig& config) {
-    j = json {{"primaryLocale", config.primary_locale},
-              {"secondaryLocales", config.secondary_locales},
-              {"baseDictionaries", config.base_dictionary_paths},
-              {"userDictionary", config.user_dictionary_path},
-              {"predictionWeights", config.weights},
-              {"keyProximityChecker", config.key_proximity_checker}};
+    j = json {
+        {"primaryLocale", config.primary_locale},
+        {"secondaryLocales", config.secondary_locales},
+        {"baseDictionaries", config.base_dictionary_paths},
+        {"userDictionary", config.user_dictionary_path},
+        {"predictionWeights", config.weights},
+        {"keyProximityChecker", config.key_proximity_checker}};
 }
 
 export void from_json(const json& j, LatinNlpSessionConfig& config) {
@@ -113,9 +114,12 @@ export class LatinNlpSession {
         user_dictionary = std::move(user_dict);
     }
 
-    SpellingResult spell(const std::string& word, const std::vector<std::string>& prev_words,
-                         const std::vector<std::string>& next_words,
-                         const SuggestionRequestFlags& flags) const noexcept {
+    SpellingResult spell(
+        const std::string& word,
+        const std::vector<std::string>& prev_words,
+        const std::vector<std::string>& next_words,
+        const SuggestionRequestFlags& flags
+    ) const noexcept {
         if (word.empty()) {
             return SpellingResult::unspecified();
         }
@@ -127,22 +131,24 @@ export class LatinNlpSession {
         }
 
         std::vector<std::unique_ptr<SuggestionCandidate>> results;
-        fuzzySearch(base_dictionaries[0]->words.rootNode(), FuzzySearchType::ProximityWithoutSelf,
-                    config.weights.words.lookup.max_cost, flags, word,
-                    [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
-                        double confidence = 1.0;
-                        //    (static_cast<double>(node->properties.absolute_score) /
-                        //    _base_dictionaries[0]->max_unigram_score);
+        fuzzySearch(
+            base_dictionaries[0]->words.rootNode(), FuzzySearchType::ProximityWithoutSelf,
+            config.weights.words.lookup.max_cost, flags, word,
+            [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
+                double confidence = 1.0;
+                //    (static_cast<double>(node->properties.absolute_score) /
+                //    _base_dictionaries[0]->max_unigram_score);
 
-                        auto candidate = std::make_unique<SuggestionCandidate>(
-                            SuggestionCandidate {std::move(suggested_word), "", cost, confidence});
-                        results.push_back(std::move(candidate));
-                        std::sort(results.begin(), results.end(), suggestions_sorter);
+                auto candidate = std::make_unique<SuggestionCandidate>(SuggestionCandidate {
+                    std::move(suggested_word), "", cost, confidence});
+                results.push_back(std::move(candidate));
+                std::sort(results.begin(), results.end(), suggestions_sorter);
 
-                        if (results.size() > flags.maxSuggestionCount()) {
-                            results.erase(results.end() - 1);
-                        }
-                    });
+                if (results.size() > flags.maxSuggestionCount()) {
+                    results.erase(results.end() - 1);
+                }
+            }
+        );
 
         std::vector<std::string> suggested_corrections;
         for (auto& candidate : results) {
@@ -152,28 +158,34 @@ export class LatinNlpSession {
         return SpellingResult::typo(suggested_corrections);
     }
 
-    void suggest(const std::string& word, const std::vector<std::string>& prev_words,
-                 const SuggestionRequestFlags& flags,
-                 std::vector<std::unique_ptr<SuggestionCandidate>>& results) const noexcept {
+    void suggest(
+        const std::string& word,
+        const std::vector<std::string>& prev_words,
+        const SuggestionRequestFlags& flags,
+        std::vector<std::unique_ptr<SuggestionCandidate>>& results
+    ) const noexcept {
         results.clear();
         if (word.empty()) return;
 
         auto& dict = base_dictionaries[0];
 
-        fuzzySearch(dict->words.rootNode(), FuzzySearchType::ProximityOrPrefix, config.weights.words.lookup.max_cost,
-                    flags, word, [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
-                        double confidence =
-                            1.0; //(static_cast<double>(node->properties.absolute_score) / dict->max_unigram_score);
+        fuzzySearch(
+            dict->words.rootNode(), FuzzySearchType::ProximityOrPrefix, config.weights.words.lookup.max_cost, flags,
+            word,
+            [&](std::string&& suggested_word, const WordTrieNode* node, int cost) {
+                double confidence =
+                    1.0; //(static_cast<double>(node->properties.absolute_score) / dict->max_unigram_score);
 
-                        auto candidate = std::make_unique<SuggestionCandidate>(
-                            SuggestionCandidate {suggested_word, "", cost, confidence});
-                        results.push_back(std::move(candidate));
-                        std::sort(results.begin(), results.end(), suggestions_sorter);
+                auto candidate =
+                    std::make_unique<SuggestionCandidate>(SuggestionCandidate {suggested_word, "", cost, confidence});
+                results.push_back(std::move(candidate));
+                std::sort(results.begin(), results.end(), suggestions_sorter);
 
-                        if (results.size() > flags.maxSuggestionCount()) {
-                            results.erase(results.end() - 1);
-                        }
-                    });
+                if (results.size() > flags.maxSuggestionCount()) {
+                    results.erase(results.end() - 1);
+                }
+            }
+        );
     }
 
     void train(const std::vector<std::string>& sentence, int32_t max_ngram_level) noexcept {
@@ -223,8 +235,13 @@ export class LatinNlpSession {
         std::vector<std::vector<int>> distances;
         std::function<void(std::string&&, const WordTrieNode*, int)> on_result;
 
-        FuzzySearchState(const LatinNlpSession& session, const FuzzySearchType type, const int max_distance,
-                         const SuggestionRequestFlags& flags, const std::string& word)
+        FuzzySearchState(
+            const LatinNlpSession& session,
+            const FuzzySearchType type,
+            const int max_distance,
+            const SuggestionRequestFlags& flags,
+            const std::string& word
+        )
             : session(session), type(type), max_distance(max_distance), flags(flags) {
             initUniWord(word);
             setPrefixUniCharAt(0, "");
@@ -257,8 +274,7 @@ export class LatinNlpSession {
                     } else if (uni_word_opposite_case[i] == uni_char) {
                         // No penalty even on start of word
                         substitution_cost = session.config.weights.words.lookup.cost_is_opposite_case;
-                    } else if (prefix_index > 1 && i > 1 && prefix_chars[prefix_index - 1] == uni_word[i] &&
-                               uni_char == uni_word[i - 1]) {
+                    } else if (prefix_index > 1 && i > 1 && prefix_chars[prefix_index - 1] == uni_word[i] && uni_char == uni_word[i - 1]) {
                         // TODO: investigate if transpose calculation could be incorrect for certain edge cases
                         substitution_cost = session.config.weights.words.lookup.cost_transpose - 1 + penalty;
                     } else if (session.config.key_proximity_checker.isInProximity(uni_char, uni_word[i])) {
@@ -267,13 +283,15 @@ export class LatinNlpSession {
                         substitution_cost = session.config.weights.words.lookup.cost_substitute + penalty;
                     }
 
-                    distances[prefix_index][i] =
-                        std::min(std::min(distances[prefix_index - 1][i] +
-                                              session.config.weights.words.lookup.cost_insert, // DELETION
-                                          distances[prefix_index][i - 1] +
-                                              session.config.weights.words.lookup.cost_delete // INSERTION
-                                          ),
-                                 distances[prefix_index - 1][i - 1] + substitution_cost);
+                    distances[prefix_index][i] = std::min(
+                        std::min(
+                            distances[prefix_index - 1][i] +
+                                session.config.weights.words.lookup.cost_insert, // DELETION
+                            distances[prefix_index][i - 1] +
+                                session.config.weights.words.lookup.cost_delete // INSERTION
+                        ),
+                        distances[prefix_index - 1][i - 1] + substitution_cost
+                    );
                 }
             } else {
                 for (std::size_t i = 0; i < uni_word.size(); i++) {
@@ -372,9 +390,14 @@ export class LatinNlpSession {
         }
     }
 
-    void fuzzySearch(const WordTrieNode* root_node, FuzzySearchType type, int max_distance,
-                     const SuggestionRequestFlags& flags, const std::string& word,
-                     std::function<void(std::string&&, const WordTrieNode*, int)> on_result) const noexcept {
+    void fuzzySearch(
+        const WordTrieNode* root_node,
+        FuzzySearchType type,
+        int max_distance,
+        const SuggestionRequestFlags& flags,
+        const std::string& word,
+        std::function<void(std::string&&, const WordTrieNode*, int)> on_result
+    ) const noexcept {
         if (word.empty()) return;
 
         FuzzySearchState state(*this, type, max_distance, flags, word);
@@ -392,8 +415,9 @@ export class LatinNlpSession {
         return false;
     }
 
-    static bool suggestions_sorter(const std::unique_ptr<fl::nlp::SuggestionCandidate>& a,
-                                   const std::unique_ptr<fl::nlp::SuggestionCandidate>& b) {
+    static bool suggestions_sorter(
+        const std::unique_ptr<fl::nlp::SuggestionCandidate>& a, const std::unique_ptr<fl::nlp::SuggestionCandidate>& b
+    ) {
         if (a->edit_distance == b->edit_distance) {
             return a->confidence > b->confidence;
         }

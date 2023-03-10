@@ -37,7 +37,8 @@ export using UniStringSpan = std::span<UniChar>;
 
 export void applyCasemap(
     std::string& str,
-    const std::function<int32_t(UCaseMap*, char*, int32_t, const char*, int32_t, UErrorCode*)>& casemapper) noexcept {
+    const std::function<int32_t(UCaseMap*, char*, int32_t, const char*, int32_t, UErrorCode*)>& casemapper
+) noexcept {
     if (str.empty()) return;
 
     // Set up case mapper
@@ -82,8 +83,9 @@ export void trim(std::string& src) noexcept {
     src.erase(src.begin(), std::find_if_not(src.begin(), src.end(), is_whitespace));
 }
 
-export void split(const std::string& src, const std::string& delim, std::vector<std::string>& dst,
-                  std::size_t max_split_ops = 0) noexcept {
+export void split(
+    const std::string& src, const std::string& delim, std::vector<std::string>& dst, std::size_t max_split_ops = 0
+) noexcept {
     dst.clear();
     size_t last = 0;
     size_t next;
@@ -99,8 +101,9 @@ export void split(const std::string& src, const std::string& delim, std::vector<
     dst.push_back(src.substr(last));
 }
 
-export void split(const std::string& src, char delim, std::vector<std::string>& dst,
-                  std::size_t max_split_ops = 0) noexcept {
+export void split(
+    const std::string& src, char delim, std::vector<std::string>& dst, std::size_t max_split_ops = 0
+) noexcept {
     dst.clear();
     size_t last = 0;
     size_t next;

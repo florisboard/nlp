@@ -54,8 +54,9 @@ struct FilterRule {
     std::vector<std::string> categories;
 
     [[nodiscard]]
-    bool matches(const std::string& _word, const std::vector<std::string>& _tags,
-                 const std::vector<std::string>& _categories) const noexcept {
+    bool matches(
+        const std::string& _word, const std::vector<std::string>& _tags, const std::vector<std::string>& _categories
+    ) const noexcept {
         for (auto& word : words) {
             if (std::regex_match(_word, word)) return true;
         }
@@ -169,8 +170,13 @@ class WiktextractPreprocessor {
         return true;
     }
 
-    void mergeEvaluatorCounts(WordEvaluator& target_evaluator, const WordEvaluator& pos_evaluator,
-                              const std::string& pos, short max_depth, short depth = 0) const noexcept {
+    void mergeEvaluatorCounts(
+        WordEvaluator& target_evaluator,
+        const WordEvaluator& pos_evaluator,
+        const std::string& pos,
+        short max_depth,
+        short depth = 0
+    ) const noexcept {
         target_evaluator.exclusion_count += (depth + 1) * pos_evaluator.exclusion_count;
         target_evaluator.offensive_count += (depth + 1) * pos_evaluator.offensive_count;
         target_evaluator.normal_count += (depth + 1) * pos_evaluator.normal_count;
@@ -269,8 +275,9 @@ class WiktextractPreprocessor {
         }
     }
 
-    void readWiktextractDataIntoDictionary(const std::filesystem::path& wiktextract_json_path,
-                                           const std::string& filter_name) {
+    void readWiktextractDataIntoDictionary(
+        const std::filesystem::path& wiktextract_json_path, const std::string& filter_name
+    ) {
         auto parse_start_time = std::chrono::high_resolution_clock::now();
 
         readWiktextractJsonFile(wiktextract_json_path, filter_name);

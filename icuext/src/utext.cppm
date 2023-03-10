@@ -129,8 +129,9 @@ export class Text {
         return utext_current32(ut);
     }
 
-    int32_t extract(int64_t native_start, int64_t native_limit, UChar* dest, int32_t dest_capacity,
-                    UErrorCode& status) {
+    int32_t extract(
+        int64_t native_start, int64_t native_limit, UChar* dest, int32_t dest_capacity, UErrorCode& status
+    ) {
         if (U_FAILURE(status)) return 0;
 
         return utext_extract(ut, native_start, native_limit, dest, dest_capacity, &status);
@@ -184,8 +185,13 @@ export class Text {
         return utext_previous32From(ut, native_index);
     }
 
-    UChar32 replace(int64_t native_start, int64_t native_limit, const UChar* replacement_text,
-                    int32_t replacement_length, UErrorCode& status) {
+    UChar32 replace(
+        int64_t native_start,
+        int64_t native_limit,
+        const UChar* replacement_text,
+        int32_t replacement_length,
+        UErrorCode& status
+    ) {
         if (U_FAILURE(status)) return 0;
 
         return utext_replace(ut, native_start, native_limit, replacement_text, replacement_length, &status);

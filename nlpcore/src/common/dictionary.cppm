@@ -101,7 +101,7 @@ export std::string encodeList(const std::vector<std::string>& list) noexcept {
     return dst.str();
 }
 
-}
+} // namespace dictionary_serialization_helpers
 
 export class DictionaryMeta {
   public:
@@ -258,10 +258,8 @@ export class Dictionary {
     }
 
     void serialize(std::ostream& ostream) {
-        ostream << FLDIC_GLOBAL_SCHEMA << " " << schema << FLDIC_NEWLINE
-                << FLDIC_GLOBAL_ENCODING << " " << encoding << FLDIC_NEWLINE
-                << FLDIC_NEWLINE
-                << FLDIC_SECTION_META << FLDIC_NEWLINE;
+        ostream << FLDIC_GLOBAL_SCHEMA << " " << schema << FLDIC_NEWLINE << FLDIC_GLOBAL_ENCODING << " " << encoding
+                << FLDIC_NEWLINE << FLDIC_NEWLINE << FLDIC_SECTION_META << FLDIC_NEWLINE;
         meta.writeAllTo(ostream);
         serializeContent(ostream);
     }

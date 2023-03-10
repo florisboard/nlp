@@ -6,10 +6,14 @@ UseTab: Never
 ---
 Language: Cpp
 Standard: c++20
+AlignAfterOpenBracket: BlockIndent
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: true
+BinPackParameters: false
 BreakAfterAttributes: Always
+PenaltyReturnTypeOnItsOwnLine: 1000000
 PointerAlignment: Left
 SpaceAfterTemplateKeyword: false
 SpaceBeforeCpp11BracedList: true

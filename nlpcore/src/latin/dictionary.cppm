@@ -105,7 +105,6 @@ export class LatinDictionary : public Dictionary {
         return nullptr;
     }
 
-
   private:
     void deserializeContent(std::istream& istream) override {
         auto section = LatinDictionarySection::UNSPECIFIED;
@@ -210,10 +209,15 @@ export class LatinDictionary : public Dictionary {
         serializeNgrams(ostream, ngram, 1, &ngrams);
     }
 
-    void serializeNgrams(std::ostream& ostream, std::vector<WordIdT>& ngram, int32_t current_ngram_level,
-                         TrieMap<fl::str::UniChar, NgramProperties>* current_map) noexcept {
-        current_map->forEach([&ostream, &ngram, &current_ngram_level, this](auto uni_word,
-                                                                            const NgramProperties& properties) {
+    void serializeNgrams(
+        std::ostream& ostream,
+        std::vector<WordIdT>& ngram,
+        int32_t current_ngram_level,
+        TrieMap<fl::str::UniChar, NgramProperties>* current_map
+    ) noexcept {
+        current_map->forEach([&ostream, &ngram, &current_ngram_level, this](
+                                 auto uni_word, const NgramProperties& properties
+                             ) {
             ngram.resize(current_ngram_level);
             ngram[current_ngram_level - 1] = getWordId(uni_word);
             if (current_ngram_level >= 2 && !std::all_of(ngram.begin(), ngram.end(), [](auto id) { return id < 0; })) {

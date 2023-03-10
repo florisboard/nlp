@@ -65,7 +65,7 @@ export class SuggestionRequestFlags {
     static const uint32_t O_INPUT_SHIFT_STATE_CURRENT = std::countr_zero(M_INPUT_SHIFT_STATE_CURRENT);
 
     SuggestionRequestFlags(uint32_t flags) : flags_(flags) {}; // NOLINT(google-explicit-constructor)
-    SuggestionRequestFlags(int32_t flags) : flags_(flags) {}; // NOLINT(google-explicit-constructor)
+    SuggestionRequestFlags(int32_t flags) : flags_(flags) {};  // NOLINT(google-explicit-constructor)
     SuggestionRequestFlags(const SuggestionRequestFlags&) = default;
     SuggestionRequestFlags(SuggestionRequestFlags&&) = default;
     ~SuggestionRequestFlags() = default;

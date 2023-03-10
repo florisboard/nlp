@@ -123,8 +123,10 @@ class BoundedBox {
         auto adj_title = title.substr(0, std::min((int)title.length(), width - 4));
         int y = y_min;
 
-        tb_printf(x_min, y++, 0, 0, "╔╡%s╞%s╗", adj_title.c_str(),
-                  fl::str::repeat("═", width - 4 - adj_title.length()).c_str());
+        tb_printf(
+            x_min, y++, 0, 0, "╔╡%s╞%s╗", adj_title.c_str(),
+            fl::str::repeat("═", width - 4 - adj_title.length()).c_str()
+        );
         for (; y < y_max; y++) {
             tb_print(x_min, y, 0, 0, "║");
             tb_print(x_max, y, 0, 0, "║");
@@ -323,15 +325,18 @@ void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexce
     auto flags = state.srf_input.toFlags();
     if (state.is_suggestion_mode) {
         auto start = std::chrono::high_resolution_clock::now();
-        state.nlp_session.suggest(state.input_words[state.input_words.size() - 1], state.prev_words, flags,
-                                  state.suggestion_results);
+        state.nlp_session.suggest(
+            state.input_words[state.input_words.size() - 1], state.prev_words, flags, state.suggestion_results
+        );
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
         bounds.drawTextStart(
-            line++, fmt::format("Suggested words ({}, {}ms):", state.suggestion_results.size(), duration.count()));
+            line++, fmt::format("Suggested words ({}, {}ms):", state.suggestion_results.size(), duration.count())
+        );
         for (auto& result : state.suggestion_results) {
-            bounds.drawTextStart(line++, fmt::format("{} | e={} | c={}", result->text.c_str(), result->edit_distance,
-                                                     result->confidence));
+            bounds.drawTextStart(
+                line++, fmt::format("{} | e={} | c={}", result->text.c_str(), result->edit_distance, result->confidence)
+            );
         }
     } else {
         bounds.drawTextStart(line++, "Spelling results:");
@@ -349,8 +354,9 @@ void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexce
                     ss << suggestion;
                 }
             }
-            bounds.drawTextStart(line++,
-                                 fmt::format("  {}{}", attrStatusSymbol(result.suggestion_attributes), ss.str()));
+            bounds.drawTextStart(
+                line++, fmt::format("  {}{}", attrStatusSymbol(result.suggestion_attributes), ss.str())
+            );
         }
     }
 }

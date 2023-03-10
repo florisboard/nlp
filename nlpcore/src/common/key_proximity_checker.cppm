@@ -65,10 +65,7 @@ export class KeyProximityChecker {
 };
 
 export void to_json(json& j, const KeyProximityChecker& checker) {
-    j = json{
-        {"enabled", checker.enabled},
-        {"mapping", checker.mapping}
-    };
+    j = json {{"enabled", checker.enabled}, {"mapping", checker.mapping}};
 }
 
 export void from_json(const json& j, KeyProximityChecker& checker) {
