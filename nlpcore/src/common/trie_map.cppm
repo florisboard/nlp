@@ -92,6 +92,28 @@ struct TrieNode {
     void setChild(const KeyT& key, ValueT&& new_value) noexcept {
         children.insert_or_assign(key, new_value);
     }
+
+    void forEach(const std::function<void(const std::span<KeyT>&, ValueT&)>& action) noexcept {
+        std::vector<KeyT> word_cache;
+        forEach(word_cache, 0, action);
+    }
+
+    void forEach(
+        std::vector<KeyT>& word_cache,
+        size_t insert_index,
+        const std::function<void(const std::span<KeyT>&, ValueT&)>& action
+    ) noexcept {
+        for (auto it = children.begin(); it != children.end(); it++) {
+            word_cache.resize(insert_index + 1);
+            auto& key = it->first;
+            auto* child_node = it->second.get();
+            word_cache[insert_index] = key;
+            if (child_node->is_end_node) {
+                action(word_cache, child_node->value);
+            }
+            child_node->forEach(word_cache, insert_index + 1, action);
+        }
+    }
 };
 
 export template<class KeyT, class ValueT>
@@ -185,34 +207,16 @@ class TrieMap {
 
     void forEach(const std::function<void(const KeySpanT&, const ValueT&)>& action) const noexcept {
         std::vector<KeyT> word_cache;
-        forEachInternal(word_cache, 0, rootNode(), action);
+        rootNode()->forEach(word_cache, 0, action);
     }
 
     void forEach(const std::function<void(const KeySpanT&, ValueT&)>& action) noexcept {
         std::vector<KeyT> word_cache;
-        forEachInternal(word_cache, 0, rootNode(), action);
+        rootNode()->forEach(word_cache, 0, action);
     }
 
   private:
     NodeT root_node_;
-
-    void forEachInternal(
-        std::vector<KeyT>& word_cache,
-        size_t insert_index,
-        const NodeT* current_node,
-        const std::function<void(const KeySpanT&, ValueT&)>& action
-    ) noexcept {
-        for (auto it = current_node->children.begin(); it != current_node->children.end(); it++) {
-            word_cache.resize(insert_index + 1);
-            auto& key = it->first;
-            auto* child_node = it->second.get();
-            word_cache[insert_index] = key;
-            if (child_node->is_end_node) {
-                action(word_cache, child_node->value);
-            }
-            forEachInternal(word_cache, insert_index + 1, child_node, action);
-        }
-    }
 };
 
 } // namespace fl::nlp
