@@ -150,17 +150,25 @@ export void toUniString(const std::string& str, UniString& uni_str, const std::s
     utext_close(ut);
 }
 
-export void toStdString(const std::span<UniChar>& uni_str, std::string& str) noexcept {
+export void toStdString(std::span<const UniChar> uni_str, std::string& str) noexcept {
     str.clear();
     for (auto& uni_char : uni_str) {
         str.append(uni_char);
     }
 }
 
-export bool compare(const std::span<UniChar>& a, const std::span<UniChar>& b) noexcept {
+export bool compare(std::span<const UniChar> a, std::span<const UniChar> b) noexcept {
     if (a.size() != b.size()) return false;
     for (size_t i = 0; i < a.size(); i++) {
         if (a[i] != b[i]) return false;
+    }
+    return true;
+}
+
+export bool startsWith(std::span<const UniChar> str, std::span<const UniChar> prefix) noexcept {
+    if (prefix.size() > str.size()) return false;
+    for (int i = 0; i < prefix.size(); i++) {
+        if (prefix[i] != str[i]) return false;
     }
     return true;
 }
