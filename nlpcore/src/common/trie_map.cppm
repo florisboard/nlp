@@ -93,23 +93,40 @@ struct TrieNode {
         children.insert_or_assign(key, new_value);
     }
 
-    void forEach(const std::function<void(const std::span<KeyT>&, ValueT&)>& action) noexcept {
+    void forEach(const std::function<void(std::span<const KeyT>, const ValueT&)>& action) const noexcept {
+        std::vector<KeyT> word_cache;
+        forEach(word_cache, 0, [&](std::span<KeyT> key, TrieNode<KeyT, ValueT>* node) { action(key, node->value); });
+    }
+
+    void forEach(const std::function<void(std::span<KeyT>, ValueT&)>& action) noexcept {
+        std::vector<KeyT> word_cache;
+        forEach(word_cache, 0, [&](std::span<KeyT> key, TrieNode<KeyT, ValueT>* node) { action(key, node->value); });
+    }
+
+    void forEach(const std::function<void(std::span<const KeyT>, const TrieNode<KeyT, ValueT>*)>& action
+    ) const noexcept {
         std::vector<KeyT> word_cache;
         forEach(word_cache, 0, action);
     }
 
+    void forEach(const std::function<void(std::span<KeyT>, TrieNode<KeyT, ValueT>*)>& action) noexcept {
+        std::vector<KeyT> word_cache;
+        forEach(word_cache, 0, action);
+    }
+
+  private:
     void forEach(
         std::vector<KeyT>& word_cache,
         size_t insert_index,
-        const std::function<void(const std::span<KeyT>&, ValueT&)>& action
-    ) noexcept {
+        const std::function<void(std::span<KeyT>, TrieNode<KeyT, ValueT>*)>& action
+    ) const noexcept {
         for (auto it = children.begin(); it != children.end(); it++) {
             word_cache.resize(insert_index + 1);
             auto& key = it->first;
             auto* child_node = it->second.get();
             word_cache[insert_index] = key;
             if (child_node->is_end_node) {
-                action(word_cache, child_node->value);
+                action(word_cache, child_node);
             }
             child_node->forEach(word_cache, insert_index + 1, action);
         }
@@ -119,33 +136,32 @@ struct TrieNode {
 export template<class KeyT, class ValueT>
 class TrieMap {
   private:
-    using KeySpanT = std::span<KeyT>;
     using NodeT = TrieNode<KeyT, ValueT>;
 
   public:
-    NodeT* get(KeySpanT key_span) {
+    NodeT* get(std::span<const KeyT> key_span) {
         auto* current_node = &root_node_;
         for (auto& key : key_span) {
             current_node = current_node->getChild(key);
         }
-        if (!current_node->is_end_node) {
+        if (!current_node->is_end_node && current_node != &root_node_) {
             throw std::out_of_range("Key exists in map but is not marked as end node!");
         }
         return current_node;
     }
 
-    const NodeT* get(KeySpanT key_span) const {
+    const NodeT* get(std::span<const KeyT> key_span) const {
         auto* current_node = &root_node_;
         for (auto& key : key_span) {
             current_node = current_node->getChild(key);
         }
-        if (!current_node->is_end_node) {
+        if (!current_node->is_end_node && current_node != &root_node_) {
             throw std::out_of_range("Key exists in map but is not marked as end node!");
         }
         return current_node;
     }
 
-    NodeT* getOrNull(KeySpanT key_span) noexcept {
+    NodeT* getOrNull(std::span<const KeyT> key_span) noexcept {
         auto* current_node = &root_node_;
         for (auto& key : key_span) {
             current_node = current_node->getChildOrNull(key);
@@ -153,13 +169,13 @@ class TrieMap {
                 return nullptr;
             }
         }
-        if (!current_node->is_end_node) {
+        if (!current_node->is_end_node && current_node != &root_node_) {
             return nullptr;
         }
         return current_node;
     }
 
-    const NodeT* getOrNull(KeySpanT key_span) const noexcept {
+    const NodeT* getOrNull(std::span<const KeyT> key_span) const noexcept {
         auto* current_node = &root_node_;
         for (auto& key : key_span) {
             current_node = current_node->getChildOrNull(key);
@@ -167,13 +183,13 @@ class TrieMap {
                 return nullptr;
             }
         }
-        if (!current_node->is_end_node) {
+        if (!current_node->is_end_node && current_node != &root_node_) {
             return nullptr;
         }
         return current_node;
     }
 
-    NodeT* getOrCreate(KeySpanT key_span) noexcept {
+    NodeT* getOrCreate(std::span<const KeyT> key_span) noexcept {
         auto* current_node = &root_node_;
         for (auto& key : key_span) {
             current_node = current_node->getChildOrCreate(key);
@@ -182,18 +198,18 @@ class TrieMap {
         return current_node;
     }
 
-    void set(KeySpanT key_span, const ValueT& new_value) noexcept {
+    void set(std::span<const KeyT> key_span, const ValueT& new_value) noexcept {
         auto* end_node = getOrCreate(key_span);
         end_node->is_end_node = true;
         end_node->value = new_value;
     }
 
-    void set(KeySpanT key_span, ValueT&& new_value) noexcept {
+    void set(std::span<const KeyT> key_span, ValueT&& new_value) noexcept {
         auto* end_node = getOrCreate(key_span);
         end_node->value = new_value;
     }
 
-    bool contains(KeySpanT key_span) const noexcept {
+    bool contains(std::span<const KeyT> key_span) const noexcept {
         return getOrNull(key_span) != nullptr;
     }
 
@@ -205,14 +221,12 @@ class TrieMap {
         return &root_node_;
     }
 
-    void forEach(const std::function<void(const KeySpanT&, const ValueT&)>& action) const noexcept {
-        std::vector<KeyT> word_cache;
-        rootNode()->forEach(word_cache, 0, action);
+    inline void forEach(const std::function<void(std::span<const KeyT>, const ValueT&)>& action) const noexcept {
+        rootNode()->forEach(action);
     }
 
-    void forEach(const std::function<void(const KeySpanT&, ValueT&)>& action) noexcept {
-        std::vector<KeyT> word_cache;
-        rootNode()->forEach(word_cache, 0, action);
+    inline void forEach(const std::function<void(std::span<KeyT>, ValueT&)>& action) noexcept {
+        rootNode()->forEach(action);
     }
 
   private:
