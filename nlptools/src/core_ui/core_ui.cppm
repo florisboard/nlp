@@ -81,16 +81,20 @@ const char* inputShiftStateShorthand(fl::nlp::InputShiftState iss) noexcept {
 
 struct SuggestionRequestFlagsInput {
     uint8_t max_suggestion_count = 8;
+    uint8_t max_ngram_level = 2;
+    fl::nlp::InputShiftState iss_start = fl::nlp::InputShiftState::UNSHIFTED;
+    fl::nlp::InputShiftState iss_current = fl::nlp::InputShiftState::UNSHIFTED;
     bool allow_possibly_offensive = false;
     bool override_hidden_flag = false;
     bool is_private_session = false;
-    fl::nlp::InputShiftState iss_start = fl::nlp::InputShiftState::UNSHIFTED;
-    fl::nlp::InputShiftState iss_current = fl::nlp::InputShiftState::UNSHIFTED;
 
     [[nodiscard]]
     fl::nlp::SuggestionRequestFlags toFlags() const noexcept {
         uint32_t flags = 0;
         flags |= (max_suggestion_count << fl::nlp::SuggestionRequestFlags::O_MAX_SUGGESTION_COUNT);
+        flags |= (max_ngram_level << fl::nlp::SuggestionRequestFlags::O_MAX_NGRAM_LEVEL);
+        flags |= (static_cast<uint32_t>(iss_start) << fl::nlp::SuggestionRequestFlags::O_INPUT_SHIFT_STATE_START);
+        flags |= (static_cast<uint32_t>(iss_current) << fl::nlp::SuggestionRequestFlags::O_INPUT_SHIFT_STATE_CURRENT);
         if (allow_possibly_offensive) {
             flags |= fl::nlp::SuggestionRequestFlags::F_ALLOW_POSSIBLY_OFFENSIVE;
         }
@@ -100,8 +104,6 @@ struct SuggestionRequestFlagsInput {
         if (is_private_session) {
             flags |= fl::nlp::SuggestionRequestFlags::F_IS_PRIVATE_SESSION;
         }
-        flags |= (static_cast<uint32_t>(iss_start) << fl::nlp::SuggestionRequestFlags::O_INPUT_SHIFT_STATE_START);
-        flags |= (static_cast<uint32_t>(iss_current) << fl::nlp::SuggestionRequestFlags::O_INPUT_SHIFT_STATE_CURRENT);
         return flags;
     }
 };
@@ -160,7 +162,7 @@ struct CoreUiState {
     icu::UnicodeString raw_input_buffer;
     std::string input_buffer;
     std::vector<std::string> input_words;
-    std::vector<std::unique_ptr<fl::nlp::SuggestionCandidate>> suggestion_results;
+    SuggestionResults suggestion_results;
     std::vector<std::string> prev_words;
 };
 
@@ -196,19 +198,19 @@ int mainCoreUi(const std::string& session_config_path) {
         // TODO: clean up this hardcoded mess of coords
         if (state.width > 120) {
             drawHeaderBox(state, BoundedBox(0, 0, 44, 6));
-            drawSuggestionRequestFlagsBox(state, BoundedBox(state.width - 36, 0, 36, 9));
-            drawNlpSessionConfigBox(state, BoundedBox(state.width - 36, 9, 36, 4));
+            drawSuggestionRequestFlagsBox(state, BoundedBox(state.width - 36, 0, 36, 10));
+            drawNlpSessionConfigBox(state, BoundedBox(state.width - 36, 10, 36, 4));
             drawSuggestionInputBox(state, BoundedBox(45, 0, state.width - 45 - 37, state.height));
         } else if (state.width > 80) {
             drawHeaderBox(state, BoundedBox(0, 0, 44, 6));
-            drawSuggestionRequestFlagsBox(state, BoundedBox(state.width - 36, 0, 36, 9));
-            drawNlpSessionConfigBox(state, BoundedBox(state.width - 36, 9, 36, 4));
-            drawSuggestionInputBox(state, BoundedBox(0, 9 + 4, state.width, state.height - 9 - 4));
+            drawSuggestionRequestFlagsBox(state, BoundedBox(state.width - 36, 0, 36, 10));
+            drawNlpSessionConfigBox(state, BoundedBox(state.width - 36, 10, 36, 4));
+            drawSuggestionInputBox(state, BoundedBox(0, 10 + 4, state.width, state.height - 10 - 4));
         } else {
             drawHeaderBox(state, BoundedBox(0, 0, state.width, 6));
-            drawSuggestionRequestFlagsBox(state, BoundedBox(0, 6, state.width, 9));
-            drawNlpSessionConfigBox(state, BoundedBox(0, 6 + 9, state.width, 4));
-            drawSuggestionInputBox(state, BoundedBox(0, 6 + 9 + 4, state.width, state.height - 5 - 9 - 4));
+            drawSuggestionRequestFlagsBox(state, BoundedBox(0, 6, state.width, 10));
+            drawNlpSessionConfigBox(state, BoundedBox(0, 6 + 10, state.width, 4));
+            drawSuggestionInputBox(state, BoundedBox(0, 6 + 10 + 4, state.width, state.height - 5 - 10 - 4));
         }
 
         tb_present();
@@ -217,7 +219,7 @@ int mainCoreUi(const std::string& session_config_path) {
     }
     tb_shutdown();
 
-    state.nlp_session.user_dictionary->persistToDisk();
+    state.nlp_session.state.user_dictionary->persistToDisk();
 
     return 0;
 }
@@ -251,12 +253,14 @@ void handleEvents(CoreUiState& state) noexcept {
                 state.srf_input.max_suggestion_count--;
             }
         } else if (ev.key == TB_KEY_F2) {
-            state.srf_input.allow_possibly_offensive = !state.srf_input.allow_possibly_offensive;
+            bool increment = (ev.mod & TB_MOD_SHIFT) == 0;
+            auto val = state.srf_input.max_ngram_level;
+            if (increment) {
+                state.srf_input.max_ngram_level = val > 14 ? 0 : val + 1;
+            } else {
+                state.srf_input.max_ngram_level = val < 1 ? 15 : val - 1;
+            }
         } else if (ev.key == TB_KEY_F3) {
-            state.srf_input.override_hidden_flag = !state.srf_input.override_hidden_flag;
-        } else if (ev.key == TB_KEY_F4) {
-            state.srf_input.is_private_session = !state.srf_input.is_private_session;
-        } else if (ev.key == TB_KEY_F5) {
             bool increment = (ev.mod & TB_MOD_SHIFT) == 0;
             auto iss_val = static_cast<uint8_t>(state.srf_input.iss_start);
             if (increment) {
@@ -264,7 +268,7 @@ void handleEvents(CoreUiState& state) noexcept {
             } else {
                 state.srf_input.iss_start = static_cast<fl::nlp::InputShiftState>(iss_val < 1 ? 3 : iss_val - 1);
             }
-        } else if (ev.key == TB_KEY_F6) {
+        } else if (ev.key == TB_KEY_F4) {
             bool increment = (ev.mod & TB_MOD_SHIFT) == 0;
             auto iss_val = static_cast<uint8_t>(state.srf_input.iss_current);
             if (increment) {
@@ -272,6 +276,12 @@ void handleEvents(CoreUiState& state) noexcept {
             } else {
                 state.srf_input.iss_current = static_cast<fl::nlp::InputShiftState>(iss_val < 1 ? 3 : iss_val - 1);
             }
+        } else if (ev.key == TB_KEY_F5) {
+            state.srf_input.allow_possibly_offensive = !state.srf_input.allow_possibly_offensive;
+        } else if (ev.key == TB_KEY_F6) {
+            state.srf_input.override_hidden_flag = !state.srf_input.override_hidden_flag;
+        } else if (ev.key == TB_KEY_F7) {
+            state.srf_input.is_private_session = !state.srf_input.is_private_session;
         } else if (ev.key == TB_KEY_F12) {
             state.nlp_session.config.key_proximity_checker.enabled =
                 !state.nlp_session.config.key_proximity_checker.enabled;
@@ -294,16 +304,18 @@ void drawSuggestionRequestFlagsBox(const CoreUiState& state, const BoundedBox& b
     bounds.drawOutline("SuggestionRequestFlags");
     bounds.drawTextStart(line, "F1   maxSuggestionCount");
     bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.max_suggestion_count));
-    bounds.drawTextStart(line, "F2   allowPossiblyOffensive");
-    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.allow_possibly_offensive ? 'Y' : 'N'));
-    bounds.drawTextStart(line, "F3   overrideHiddenFlag");
-    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.override_hidden_flag ? 'Y' : 'N'));
-    bounds.drawTextStart(line, "F4   isPrivateSession");
-    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.override_hidden_flag ? 'Y' : 'N'));
-    bounds.drawTextStart(line, "F5   inputShiftStateStart");
+    bounds.drawTextStart(line, "F2   maxNgramLevel");
+    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.max_ngram_level));
+    bounds.drawTextStart(line, "F3   inputShiftStateStart");
     bounds.drawTextEnd(line++, fmt::format("= {}", inputShiftStateShorthand(state.srf_input.iss_start)));
-    bounds.drawTextStart(line, "F6   inputShiftStateCurrent");
+    bounds.drawTextStart(line, "F4   inputShiftStateCurrent");
     bounds.drawTextEnd(line++, fmt::format("= {}", inputShiftStateShorthand(state.srf_input.iss_current)));
+    bounds.drawTextStart(line, "F5   allowPossiblyOffensive");
+    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.allow_possibly_offensive ? 'Y' : 'N'));
+    bounds.drawTextStart(line, "F6   overrideHiddenFlag");
+    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.override_hidden_flag ? 'Y' : 'N'));
+    bounds.drawTextStart(line, "F7   isPrivateSession");
+    bounds.drawTextEnd(line++, fmt::format("= {}", state.srf_input.is_private_session ? 'Y' : 'N'));
 }
 
 void drawNlpSessionConfigBox(const CoreUiState& state, const BoundedBox& bounds) noexcept {
@@ -333,9 +345,9 @@ void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexce
         bounds.drawTextStart(
             line++, fmt::format("Suggested words ({}, {}ms):", state.suggestion_results.size(), duration.count())
         );
-        for (auto& result : state.suggestion_results) {
+        for (auto& result : state.suggestion_results.get()) {
             bounds.drawTextStart(
-                line++, fmt::format("{} | e={} | c={}", result->text.c_str(), result->edit_distance, result->confidence)
+                line++, fmt::format("{} | c={}", result->text.c_str(), result->confidence)
             );
         }
     } else {
