@@ -17,5 +17,8 @@
 export module fl.nlp.core.latin;
 
 export import :dictionary;
+export import :fuzzy_searcher;
 export import :nlp_session;
+export import :nlp_session_config;
+export import :nlp_session_state;
 export import :prediction_weights;

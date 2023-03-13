@@ -240,7 +240,7 @@ export class LatinDictionary : public Dictionary {
         ostream << FLDIC_NEWLINE << FLDIC_SECTION_SHORTCUTS << FLDIC_NEWLINE;
     }
 
-    int32_t getWordId(fl::str::UniStringSpan& uni_word) const noexcept {
+    int32_t getWordId(std::span<const fl::str::UniChar> uni_word) const noexcept {
         if (uni_word[0][0] < FLDIC_TOKEN_LIMIT) {
             return (-1) * static_cast<int32_t>(uni_word[0][0]);
         } else {
