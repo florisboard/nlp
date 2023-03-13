@@ -24,28 +24,12 @@ export module fl.nlp.core.common;
 
 export import :dictionary;
 export import :key_proximity_checker;
-export import :suggestion_request_flags;
+export import :suggestion;
 export import :trie_map;
 
 import fl.nlp.string;
 
 namespace fl::nlp {
-
-// ----- SuggestionCandidate ----- //
-
-export constexpr double SUGGESTION_CANDIDATE_MIN_CONFIDENCE = 0.0;
-// Everything above 0.9 to 1.0 is reserved for special suggestions such as contacts, clipboard, etc., which is not
-// handled in the native implementation
-export constexpr double SUGGESTION_CANDIDATE_MAX_CONFIDENCE = 0.9;
-
-export struct SuggestionCandidate {
-    const std::string text;
-    const std::string secondary_text;
-    const int edit_distance;
-    const double confidence = SUGGESTION_CANDIDATE_MIN_CONFIDENCE;
-    const bool is_eligible_for_auto_commit = false;
-    const bool is_eligible_for_user_removal = true;
-};
 
 // ----- SpellingResult ----- //
 
