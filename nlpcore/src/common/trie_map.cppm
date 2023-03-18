@@ -16,34 +16,51 @@
 
 module;
 
+#include <cstddef>
 #include <functional>
 #include <map>
 #include <memory>
 #include <span>
+#include <type_traits>
 
 export module fl.nlp.core.common:trie_map;
 
 namespace fl::nlp {
 
-export template<class KeyT, class ValueT>
+export template<typename KeyT, typename ValueT, typename ValueIdT = std::uint8_t>
+requires std::is_default_constructible_v<ValueT> && std::is_integral_v<ValueIdT>
 struct TrieNode {
   private:
-    using NodeT = TrieNode<KeyT, ValueT>;
+    using NodeT = TrieNode<KeyT, ValueT, ValueIdT>;
 
   public:
-    ValueT value;
-    bool is_end_node = false;
+    std::map<ValueIdT, ValueT> values;
     std::map<KeyT, std::unique_ptr<NodeT>> children;
 
-    NodeT* getChild(const KeyT& key) {
+    TrieNode() = default;
+    TrieNode(const TrieNode&) = delete;
+    TrieNode(TrieNode&&) noexcept = default;
+    ~TrieNode() = default;
+
+    TrieNode& operator=(const TrieNode&) = delete;
+    TrieNode& operator=(TrieNode&&) noexcept = default;
+
+    [[nodiscard]]
+    inline NodeT* find(const KeyT& key) {
         return children.at(key).get();
     }
 
-    const NodeT* getChild(const KeyT& key) const {
-        return children.at(key).get();
+    [[nodiscard]]
+    NodeT* find(std::span<const KeyT> key_span) {
+        auto node = this;
+        for (const auto& key : key_span) {
+            node = node->find(key);
+        }
+        return node;
     }
 
-    NodeT* getChildOrNull(const KeyT& key) noexcept {
+    [[nodiscard]]
+    inline NodeT* findOrNull(const KeyT& key) noexcept {
         auto it = children.find(key);
         if (it != children.end()) {
             return it->second.get();
@@ -52,16 +69,20 @@ struct TrieNode {
         }
     }
 
-    const NodeT* getChildOrNull(const KeyT& key) const noexcept {
-        auto it = children.find(key);
-        if (it != children.end()) {
-            return it->second.get();
-        } else {
-            return nullptr;
+    [[nodiscard]]
+    NodeT* findOrNull(std::span<const KeyT> key_span) noexcept {
+        auto node = this;
+        for (const auto& key : key_span) {
+            node = node->findOrNull(key);
+            if (node == nullptr) {
+                return nullptr;
+            }
         }
+        return node;
     }
 
-    NodeT* getChildOrCreate(const KeyT& key) {
+    [[nodiscard]]
+    inline NodeT* findOrCreate(const KeyT& key) {
         auto it = children.find(key);
         if (it != children.end()) {
             return it->second.get();
@@ -73,43 +94,31 @@ struct TrieNode {
         }
     }
 
-    const NodeT* getChildOrCreate(const KeyT& key) const {
-        auto it = children.find(key);
-        if (it != children.end()) {
-            return it->second.get();
-        } else {
-            auto new_child = std::make_unique<NodeT>();
-            auto ret_pointer = new_child.get();
-            children.insert(key, std::move(new_child));
-            return ret_pointer;
+    [[nodiscard]]
+    NodeT* findOrCreate(std::span<const KeyT> key_span) {
+        auto node = this;
+        for (const auto& key : key_span) {
+            node = node->findOrCreate(key);
         }
+        return node;
     }
 
-    void setChild(const KeyT& key, const ValueT& new_value) noexcept {
-        children.insert_or_assign(key, new_value);
+    [[nodiscard]]
+    inline bool isEndNode() const noexcept {
+        return !values.empty();
     }
 
-    void setChild(const KeyT& key, ValueT&& new_value) noexcept {
-        children.insert_or_assign(key, new_value);
+    [[nodiscard]]
+    inline bool isEndNode(ValueIdT id) const noexcept {
+        return values.find(id) != values.end();
     }
 
-    void forEach(const std::function<void(std::span<const KeyT>, const ValueT&)>& action) const noexcept {
-        std::vector<KeyT> word_cache;
-        forEach(word_cache, 0, [&](std::span<KeyT> key, TrieNode<KeyT, ValueT>* node) { action(key, node->value); });
-    }
-
-    void forEach(const std::function<void(std::span<KeyT>, ValueT&)>& action) noexcept {
-        std::vector<KeyT> word_cache;
-        forEach(word_cache, 0, [&](std::span<KeyT> key, TrieNode<KeyT, ValueT>* node) { action(key, node->value); });
-    }
-
-    void forEach(const std::function<void(std::span<const KeyT>, const TrieNode<KeyT, ValueT>*)>& action
-    ) const noexcept {
+    void forEach(const std::function<void(std::span<const KeyT>, const NodeT*)>& action) const noexcept {
         std::vector<KeyT> word_cache;
         forEach(word_cache, 0, action);
     }
 
-    void forEach(const std::function<void(std::span<KeyT>, TrieNode<KeyT, ValueT>*)>& action) noexcept {
+    void forEach(const std::function<void(std::span<const KeyT>, NodeT*)>& action) noexcept {
         std::vector<KeyT> word_cache;
         forEach(word_cache, 0, action);
     }
@@ -118,119 +127,19 @@ struct TrieNode {
     void forEach(
         std::vector<KeyT>& word_cache,
         size_t insert_index,
-        const std::function<void(std::span<KeyT>, TrieNode<KeyT, ValueT>*)>& action
+        const std::function<void(std::span<const KeyT>, NodeT*)>& action
     ) const noexcept {
         for (auto it = children.begin(); it != children.end(); it++) {
             word_cache.resize(insert_index + 1);
             auto& key = it->first;
             auto* child_node = it->second.get();
             word_cache[insert_index] = key;
-            if (child_node->is_end_node) {
+            if (child_node->isEndNode()) {
                 action(word_cache, child_node);
             }
             child_node->forEach(word_cache, insert_index + 1, action);
         }
     }
-};
-
-export template<class KeyT, class ValueT>
-class TrieMap {
-  private:
-    using NodeT = TrieNode<KeyT, ValueT>;
-
-  public:
-    NodeT* get(std::span<const KeyT> key_span) {
-        auto* current_node = &root_node_;
-        for (auto& key : key_span) {
-            current_node = current_node->getChild(key);
-        }
-        if (!current_node->is_end_node && current_node != &root_node_) {
-            throw std::out_of_range("Key exists in map but is not marked as end node!");
-        }
-        return current_node;
-    }
-
-    const NodeT* get(std::span<const KeyT> key_span) const {
-        auto* current_node = &root_node_;
-        for (auto& key : key_span) {
-            current_node = current_node->getChild(key);
-        }
-        if (!current_node->is_end_node && current_node != &root_node_) {
-            throw std::out_of_range("Key exists in map but is not marked as end node!");
-        }
-        return current_node;
-    }
-
-    NodeT* getOrNull(std::span<const KeyT> key_span) noexcept {
-        auto* current_node = &root_node_;
-        for (auto& key : key_span) {
-            current_node = current_node->getChildOrNull(key);
-            if (current_node == nullptr) {
-                return nullptr;
-            }
-        }
-        if (!current_node->is_end_node && current_node != &root_node_) {
-            return nullptr;
-        }
-        return current_node;
-    }
-
-    const NodeT* getOrNull(std::span<const KeyT> key_span) const noexcept {
-        auto* current_node = &root_node_;
-        for (auto& key : key_span) {
-            current_node = current_node->getChildOrNull(key);
-            if (current_node == nullptr) {
-                return nullptr;
-            }
-        }
-        if (!current_node->is_end_node && current_node != &root_node_) {
-            return nullptr;
-        }
-        return current_node;
-    }
-
-    NodeT* getOrCreate(std::span<const KeyT> key_span) noexcept {
-        auto* current_node = &root_node_;
-        for (auto& key : key_span) {
-            current_node = current_node->getChildOrCreate(key);
-        }
-        current_node->is_end_node = true;
-        return current_node;
-    }
-
-    void set(std::span<const KeyT> key_span, const ValueT& new_value) noexcept {
-        auto* end_node = getOrCreate(key_span);
-        end_node->is_end_node = true;
-        end_node->value = new_value;
-    }
-
-    void set(std::span<const KeyT> key_span, ValueT&& new_value) noexcept {
-        auto* end_node = getOrCreate(key_span);
-        end_node->value = new_value;
-    }
-
-    bool contains(std::span<const KeyT> key_span) const noexcept {
-        return getOrNull(key_span) != nullptr;
-    }
-
-    inline NodeT* rootNode() noexcept {
-        return &root_node_;
-    }
-
-    inline const NodeT* rootNode() const noexcept {
-        return &root_node_;
-    }
-
-    inline void forEach(const std::function<void(std::span<const KeyT>, const ValueT&)>& action) const noexcept {
-        rootNode()->forEach(action);
-    }
-
-    inline void forEach(const std::function<void(std::span<KeyT>, ValueT&)>& action) noexcept {
-        rootNode()->forEach(action);
-    }
-
-  private:
-    NodeT root_node_;
 };
 
 } // namespace fl::nlp
