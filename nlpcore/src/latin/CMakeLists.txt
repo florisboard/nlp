@@ -3,6 +3,7 @@ add_library(fl::nlp::core::latin ALIAS fl_nlp_core_latin)
 target_module_sources(fl_nlp_core_latin PUBLIC
         latin.cppm
         dictionary.cppm
+        entry_properties.cppm
         fuzzy_searcher.cppm
         nlp_session.cppm
         nlp_session_config.cppm
