@@ -13,8 +13,10 @@ AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: true
 BinPackParameters: false
 BreakAfterAttributes: Always
+IndentRequiresClause: false
 PenaltyReturnTypeOnItsOwnLine: 1000000
 PointerAlignment: Left
+RequiresClausePosition: OwnLine
 SpaceAfterTemplateKeyword: false
 SpaceBeforeCpp11BracedList: true
 SortIncludes: CaseSensitive
