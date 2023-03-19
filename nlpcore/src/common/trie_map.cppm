@@ -104,6 +104,26 @@ struct TrieNode {
     }
 
     [[nodiscard]]
+    inline ValueT* value(ValueIdT id) {
+        return values.at(id);
+    }
+
+    [[nodiscard]]
+    inline ValueT* valueOrNull(ValueIdT id) noexcept {
+        auto it = values.find(id);
+        if (it != values.end()) {
+            return &(it->second);
+        } else {
+            return nullptr;
+        }
+    }
+
+    [[nodiscard]]
+    inline ValueT* valueOrCreate(ValueIdT id) {
+        return &values[id];
+    }
+
+    [[nodiscard]]
     inline bool isEndNode() const noexcept {
         return !values.empty();
     }
