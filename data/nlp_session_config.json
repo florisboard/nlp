@@ -24,7 +24,16 @@
     },
     "ngrams": {
       "lookup": {
-        "maxCost": 6
+        "maxCost": 4,
+        "costIsEqual": 0,
+        "costIsOppositeCase": 1,
+        "costInsert": 2,
+        "costDelete": 2,
+        "costSubstitute": 2,
+        "costSubstituteInProximity": 1,
+        "costTranspose": 1,
+        "penaltyDefault": 0,
+        "penaltyStartOfStr": 2
       },
       "training": {
         "usageBonus": 128,

@@ -18,25 +18,33 @@ module;
 
 #include <functional>
 #include <memory>
-#include <vector>
+#include <map>
+#include <type_traits>
 
 export module fl.nlp.core.latin:nlp_session_state;
 
 import :dictionary;
+import :entry_properties;
+import fl.nlp.core.common;
+import fl.nlp.string;
 
 namespace fl::nlp {
 
 export struct LatinNlpSessionState {
-    std::vector<std::unique_ptr<fl::nlp::LatinDictionary>> base_dictionaries;
-    std::unique_ptr<fl::nlp::LatinDictionary> user_dictionary = nullptr;
+    using DictIdT = std::uint8_t;
+    using SharedNodeT = TrieNode<fl::str::UniChar, EntryProperties, DictIdT>;
 
-    void forEachDictionary(const std::function<void(const LatinDictionary&)>& action) const noexcept {
-        for (auto& base_dictionary : base_dictionaries) {
-            action(*base_dictionary);
-        }
-        if (user_dictionary != nullptr) {
-            action(*user_dictionary);
-        }
+    static const DictIdT USER_DICTIONARY_ID = 0;
+
+    std::shared_ptr<SharedNodeT> shared_data = std::make_shared<SharedNodeT>();
+    std::map<DictIdT, std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
+
+    inline fl::nlp::LatinDictionary* getDictionaryById(DictIdT id) {
+        return dictionaries.at(id).get();
+    }
+
+    inline fl::nlp::LatinDictionary* getUserDictionary() {
+        return getDictionaryById(USER_DICTIONARY_ID);
     }
 };
 

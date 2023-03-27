@@ -78,7 +78,7 @@ void trainDict(fl::nlp::LatinNlpSession& session, std::istream& istream) {
                 }
             });
             fmt::print("{}\n", words);
-            session.train(words, 3);
+            session.train(session.state.getUserDictionary(), words, 3);
         }
     });
 }
@@ -119,7 +119,7 @@ export class TrainRawTextActionConfig : public ActionConfig {
 
         std::cout << "Persisting user dictionary to disk... " << std::flush;
         start_time = std::chrono::high_resolution_clock::now();
-        session.state.user_dictionary->persistToDisk();
+        session.state.getUserDictionary()->persistToDisk();
         end_time = std::chrono::high_resolution_clock::now();
         std::cout << "Done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count()
                   << "ms." << std::endl;

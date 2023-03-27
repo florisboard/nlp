@@ -219,7 +219,7 @@ int mainCoreUi(const std::string& session_config_path) {
     }
     tb_shutdown();
 
-    state.nlp_session.state.user_dictionary->persistToDisk();
+    state.nlp_session.state.getUserDictionary()->persistToDisk();
 
     return 0;
 }
@@ -237,7 +237,7 @@ void handleEvents(CoreUiState& state) noexcept {
             }
         } else if (ev.key == TB_KEY_ENTER) {
             if (!state.raw_input_buffer.isEmpty()) {
-                state.nlp_session.train(state.input_words, 3);
+                state.nlp_session.train(state.nlp_session.state.getUserDictionary(), state.input_words, 3);
             }
             state.raw_input_buffer.remove();
         } else if (ev.key == TB_KEY_CTRL_C) {

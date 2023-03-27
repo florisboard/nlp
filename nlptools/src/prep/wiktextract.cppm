@@ -31,6 +31,7 @@ module;
 
 export module fl.nlp.tools.prep:wiktextract;
 
+import fl.nlp.core.common;
 import fl.nlp.core.latin;
 import fl.nlp.string;
 import fl.nlp.tools.common;
@@ -126,9 +127,12 @@ struct WordEvaluator {
 };
 
 class WiktextractPreprocessor {
+  private:
+    static const std::uint8_t DICT_ID = 0;
+
   public:
     WiktextractConfig config;
-    fl::nlp::LatinDictionary dict;
+    fl::nlp::LatinDictionary dict{DICT_ID};
 
     WiktextractPreprocessor() = default;
     WiktextractPreprocessor(const WiktextractPreprocessor&) = delete;
@@ -157,8 +161,8 @@ class WiktextractPreprocessor {
         fl::str::UniString uni_word;
         for (auto& word : config.project_specific_words) {
             fl::str::toUniString(word, uni_word);
-            auto node = dict.words.getOrCreate(uni_word);
-            node->value.absolute_score++;
+            auto node = dict.data->findOrCreate(uni_word);
+            node->values[dict.dict_id].wordPropertiesOrCreate()->absolute_score++;
         }
     }
 
@@ -310,15 +314,17 @@ class WiktextractPreprocessor {
                     total_words_offensive++;
                     fl::str::UniString uni_word;
                     fl::str::toUniString(word, uni_word);
-                    auto node = dict.words.getOrCreate(uni_word);
-                    node->value.absolute_score += evaluator_with_fo.offensive_count;
-                    node->value.is_possibly_offensive = true;
+                    auto node = dict.data->findOrCreate(uni_word);
+                    auto properties = node->values[dict.dict_id].wordPropertiesOrCreate();
+                    properties->absolute_score += evaluator_with_fo.offensive_count;
+                    properties->is_possibly_offensive = true;
                 } else {
                     total_words_normal++;
                     fl::str::UniString uni_word;
                     fl::str::toUniString(word, uni_word);
-                    auto node = dict.words.getOrCreate(uni_word);
-                    node->value.absolute_score += evaluator_with_fo.normal_count;
+                    auto node = dict.data->findOrCreate(uni_word);
+                    auto properties = node->values[dict.dict_id].wordPropertiesOrCreate();
+                    properties->absolute_score += evaluator_with_fo.normal_count;
                 }
             }
         }
