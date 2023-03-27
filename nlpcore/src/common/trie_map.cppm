@@ -105,7 +105,7 @@ struct TrieNode {
 
     [[nodiscard]]
     inline ValueT* value(ValueIdT id) {
-        return values.at(id);
+        return &values.at(id);
     }
 
     [[nodiscard]]
@@ -133,31 +133,49 @@ struct TrieNode {
         return values.find(id) != values.end();
     }
 
+    void forEach(
+        std::span<const KeyT> termination_tokens, const std::function<void(std::span<const KeyT>, const NodeT*)>& action
+    ) const noexcept {
+        std::vector<KeyT> word_cache;
+        forEach(word_cache, 0, termination_tokens, action);
+    }
+
+    void forEach(
+        std::span<const KeyT> termination_tokens, const std::function<void(std::span<const KeyT>, NodeT*)>& action
+    ) noexcept {
+        std::vector<KeyT> word_cache;
+        forEach(word_cache, 0, termination_tokens, action);
+    }
+
     void forEach(const std::function<void(std::span<const KeyT>, const NodeT*)>& action) const noexcept {
         std::vector<KeyT> word_cache;
-        forEach(word_cache, 0, action);
+        forEach(word_cache, 0, {}, action);
     }
 
     void forEach(const std::function<void(std::span<const KeyT>, NodeT*)>& action) noexcept {
         std::vector<KeyT> word_cache;
-        forEach(word_cache, 0, action);
+        forEach(word_cache, 0, {}, action);
     }
 
   private:
     void forEach(
         std::vector<KeyT>& word_cache,
         size_t insert_index,
+        std::span<const KeyT> termination_tokens,
         const std::function<void(std::span<const KeyT>, NodeT*)>& action
     ) const noexcept {
         for (auto it = children.begin(); it != children.end(); it++) {
             word_cache.resize(insert_index + 1);
             auto& key = it->first;
+            if (std::find(termination_tokens.begin(), termination_tokens.end(), key) != termination_tokens.end()) {
+                continue;
+            }
             auto* child_node = it->second.get();
             word_cache[insert_index] = key;
             if (child_node->isEndNode()) {
                 action(word_cache, child_node);
             }
-            child_node->forEach(word_cache, insert_index + 1, action);
+            child_node->forEach(word_cache, insert_index + 1, termination_tokens, action);
         }
     }
 };
