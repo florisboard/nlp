@@ -91,7 +91,7 @@ export struct EntryProperties {
     ShortcutEntryProperties* shortcutProperties() {
         auto p = shortcut_properties.get();
         if (p == nullptr) {
-            throw std::runtime_error("Ngram properties is not initialized");
+            throw std::runtime_error("Shortcut properties is not initialized");
         }
         return p;
     }
