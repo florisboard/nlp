@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+import fl.nlp.core.common;
 import fl.nlp.tools.common;
 import fl.nlp.tools.core_ui;
 import fl.nlp.tools.prep;
@@ -58,6 +59,17 @@ void initDefaultArgumentsConfig(argparse::ArgumentParser& arg_parser) {
 }
 
 int main(int argc, char** argv) {
+    fl::nlp::SyllableMatcher matcher("data/syllable_rules_en.json");
+    std::string word = argv[1];
+    std::vector<std::string> syllables;
+    matcher.divideWordIntoSyllables(word, syllables);
+    std::cout << word << " ";
+    for (auto& syllable : syllables) {
+        std::cout << syllable << "-";
+    }
+    std::cout << std::endl;
+    return 0;
+
     std::vector<std::unique_ptr<fl::nlp::tools::ActionConfig>> actions;
     actions.emplace_back(std::make_unique<fl::nlp::tools::CoreUiActionConfig>());
     actions.emplace_back(std::make_unique<fl::nlp::tools::PrepWiktextractActionConfig>());

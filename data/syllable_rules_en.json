@@ -1,0 +1,40 @@
+{
+  "divisionRules": [
+    {
+      "name": "splitAfterPrefixes",
+      "tokens": [
+        "re-", "un-", "pre-"
+      ]
+    },
+    {
+      "name": "splitBeforeSuffixes",
+      "tokens": [
+        "-ent", "-ing", "-less", "-ly", "-ment", "-ness"
+      ]
+    },
+    {
+      "name": "neverSplitDiphthongs",
+      "tokens": [
+        "ai", "ay", "ea", "ee", "ei", "ey", "ie", "oa", "oe", "oi", "oo", "ou", "oy", "ui"
+      ]
+    },
+    {
+      "name": "splitConsonants",
+      "tokens": [
+        "b-b", "c-c", "d-d", "f-f", "g-g", "h-h", "j-j", "k-k", "l-l", "m-m", "n-n", "p-p", "q-q", "r-r", "s-s", "t-t", "v-v", "w-w", "x-x", "y-y", "z-z"
+      ]
+    },
+    {
+      "name": "neverSplitConsonantsThatMakeOnlyOneSound",
+      "tokens": [
+        "ch", "sh", "ph", "th", "wh", "gh"
+      ]
+    },
+    {
+      "name": "splitBeforeConsonantWhenLeSyllable",
+      "tokens": [
+        "ck-le", "-ble", "-cle", "-dle", "-fle", "-gle", "-hle", "-jle", "-kle", "-lle", "-mle", "-nle", "-ple", "-qle", "-rle", "-sle", "-tle", "-vle", "-wle", "-xle", "-yle", "-zle"
+      ]
+    }
+  ]
+}

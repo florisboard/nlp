@@ -71,5 +71,9 @@
       "n": [ "j", "b", "m" ],
       "m": [ "k", "n" ]
     }
+  },
+  "syllableMatcher": {
+    "enabled": true,
+    "config": "data/syllable_rules_en.json"
   }
 }

@@ -25,6 +25,7 @@ export module fl.nlp.core.common;
 export import :dictionary;
 export import :key_proximity_checker;
 export import :suggestion;
+export import :syllable_matcher;
 export import :trie_map;
 
 import fl.nlp.string;

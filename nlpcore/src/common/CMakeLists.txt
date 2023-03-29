@@ -5,6 +5,7 @@ target_module_sources(fl_nlp_core_common PUBLIC
         dictionary.cppm
         key_proximity_checker.cppm
         suggestion.cppm
+        syllable_matcher.cppm
         trie_map.cppm
         )
 target_link_libraries(fl_nlp_core_common PUBLIC fl::nlp::string)
