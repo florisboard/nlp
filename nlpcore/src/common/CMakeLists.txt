@@ -8,6 +8,6 @@ target_module_sources(fl_nlp_core_common PUBLIC
         syllable_matcher.cppm
         trie_map.cppm
         )
-target_link_libraries(fl_nlp_core_common PUBLIC fl::nlp::string)
-target_link_libraries(fl_nlp_core_common PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(fl_nlp_core_common PUBLIC fl::nlp::string fl::nlp::utils)
+target_link_libraries(fl_nlp_core_common PUBLIC fmt::fmt nlohmann_json::nlohmann_json)
 target_link_icu4c_libraries(fl_nlp_core_common PUBLIC FlorisICU::uc FlorisICU::data)

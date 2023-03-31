@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schemas.florisboard.org/nlpcore/v0~draft1/syllable-matcher.schema.json",
+  "characterSets": [
+    {
+      "name": "letters",
+      "shorthand": "L",
+      "values": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+    },
+    {
+      "name": "vowels",
+      "shorthand": "V",
+      "values": ["a", "e", "i", "o", "u"]
+    },
+    {
+      "name": "consonants",
+      "shorthand": "C",
+      "values": ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z"]
+    }
+  ],
+  "divisionRules": [
+    {
+      "name": "never-split-silent-e",
+      "tokens": [
+        "<C>e<EOW>"
+      ]
+    },
+    {
+      "name": "never-split-diphthongs",
+      "tokens": [
+        "ai", "ay", "ea", "ee", "ei", "ey", "ie", "oa", "oe", "oi", "oo", "ou", "oy", "ui"
+      ]
+    },
+    {
+      "name": "split-consonants",
+      "tokens": [
+        "<C>-<\\1>"
+      ]
+    }
+  ]
+}

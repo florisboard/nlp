@@ -4,6 +4,11 @@ add_library(fl::nlp::string ALIAS fl_nlp_string)
 target_module_sources(fl_nlp_string PUBLIC string.cppm)
 target_link_icu4c_libraries(fl_nlp_string PUBLIC FlorisICU::uc FlorisICU::data)
 
+# fl::nlp::utils
+add_library(fl_nlp_utils)
+add_library(fl::nlp::utils ALIAS fl_nlp_utils)
+target_module_sources(fl_nlp_utils PUBLIC utils.cppm)
+
 # fl::nlp::core
 add_subdirectory(common)
 add_subdirectory(latin)
