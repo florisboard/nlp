@@ -59,7 +59,7 @@ void initDefaultArgumentsConfig(argparse::ArgumentParser& arg_parser) {
 }
 
 int main(int argc, char** argv) {
-    fl::nlp::SyllableMatcher matcher("data/syllable-matcher-en-GB.json");
+    /*fl::nlp::SyllableMatcher matcher("data/syllable-matcher-en-GB.json");
     std::string word = argv[1];
     std::vector<std::string> syllables;
     matcher.divideWordIntoSyllables(word, syllables);
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
         std::cout << syllable << "-";
     }
     std::cout << std::endl;
-    return 0;
+    return 0;*/
 
     std::vector<std::unique_ptr<fl::nlp::tools::ActionConfig>> actions;
     actions.emplace_back(std::make_unique<fl::nlp::tools::CoreUiActionConfig>());

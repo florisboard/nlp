@@ -35,6 +35,30 @@
       "tokens": [
         "<C>-<\\1>"
       ]
+    },
+    {
+      "name": "split-after-prefixes",
+      "tokens": [
+        "re-", "un-", "pre-"
+      ]
+    },
+    {
+      "name": "split-before-suffixes",
+      "tokens": [
+        "-ent", "-ing", "-less", "-ly", "-ment", "-ness"
+      ]
+    },
+    {
+      "name": "never-split-consonants-that-make-only-one-sound",
+      "tokens": [
+        "ch", "sh", "ph", "th", "wh", "gh"
+      ]
+    },
+    {
+      "name": "split-before-consonant-when-le-syllable",
+      "tokens": [
+        "ck-le", "-ble", "-cle", "-dle", "-fle", "-gle", "-hle", "-jle", "-kle", "-lle", "-mle", "-nle", "-ple", "-qle", "-rle", "-sle", "-tle", "-vle", "-wle", "-xle", "-yle", "-zle"
+      ]
     }
   ]
 }

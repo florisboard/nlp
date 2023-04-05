@@ -38,8 +38,8 @@ struct SyllableCharacterSet {
 };
 
 const auto SYLLABLE_TOKEN_REGEX = std::regex(R"(\\\\[\\\\<-]|<[A-Za-z0-9]+>|<[\\\\][0-9]{1,2}>|[-]+|[^\\\\<]+)");
-const char SYLLABLE_START_OF_WORD = 2; // ASCII value for start of text
-const char SYLLABLE_END_OF_WORD = 3;   // ASCII value for end of text
+const char SYLLABLE_START_OF_WORD = '#';//2; // ASCII value for start of text
+const char SYLLABLE_END_OF_WORD = '#';//3;   // ASCII value for end of text
 const std::vector<SyllableCharacterSet> SYLLABLE_DEFAULT_CHARACTER_SETS = {
     {"start-of-word", "SOW", {std::string(1, SYLLABLE_START_OF_WORD)}},
     {"end-of-word", "EOW", {std::string(1, SYLLABLE_END_OF_WORD)}}};
@@ -53,14 +53,12 @@ struct SyllableDivisionRuleToken {
     std::vector<SyllableDivisionRuleTokenValue> values;
 
     SyllableDivisionRuleToken(const std::string& token_str, const std::vector<SyllableCharacterSet>& character_sets) {
-        fmt::print("{}\n", token_str);
         std::vector<std::string> matches;
         std::size_t expected_match_begin = 0;
         std::sregex_iterator it(token_str.begin(), token_str.end(), SYLLABLE_TOKEN_REGEX);
         std::sregex_iterator end;
         while (it != end) {
             std::string match = (*it).str();
-            fmt::print("  {}\n", match);
             std::size_t match_begin = token_str.find(match, expected_match_begin);
             if (match_begin != expected_match_begin) {
                 throw std::runtime_error(
@@ -79,6 +77,7 @@ struct SyllableDivisionRuleToken {
 
         std::vector<const std::vector<std::string>*> character_set_values;
         std::map<std::string, std::size_t> character_set_shorthands;
+        std::size_t shorthand_index = 0;
         for (auto& match : matches) {
             if (match.starts_with("<") && !match.starts_with("<\\")) {
                 auto shorthand = match.substr(1, match.size() - 2);
@@ -91,6 +90,7 @@ struct SyllableDivisionRuleToken {
                     );
                 }
                 character_set_values.push_back(&(set_it->values));
+                character_set_shorthands[shorthand] = shorthand_index++;
             }
         }
 
@@ -110,7 +110,7 @@ struct SyllableDivisionRuleToken {
                     } else {
                         // generator expression
                         auto shorthand = match.substr(1, match.size() - 2);
-                        auto& text = set[character_set_shorthands[shorthand]];
+                        auto& text = set[character_set_shorthands.at(shorthand)];
                         value.text.append(text);
                     }
                 } else {
@@ -198,8 +198,9 @@ export class SyllableMatcher {
         j.get_to(config);
     }
 
-    void divideWordIntoSyllables(const std::string& word, std::vector<std::string>& syllables) const noexcept {
+    void divideWordIntoSyllables(const std::string& original_word, std::vector<std::string>& syllables) const noexcept {
         syllables.clear();
+        std::string word = fmt::format("{}{}{}", SYLLABLE_START_OF_WORD, original_word, SYLLABLE_END_OF_WORD);
         std::vector<SyllableDivisionState> state(word.size() + 1, SyllableDivisionState::UNDECIDED);
 
         for (const auto& rule : config.division_rules) {
@@ -241,11 +242,11 @@ export class SyllableMatcher {
         }
 
         std::string temp;
-        for (std::size_t i = 0; i < word.size(); i++) {
-            if (i > 0 && state[i] == SyllableDivisionState::SPLIT) {
+        for (std::size_t i = 0; i < original_word.size(); i++) {
+            if (i > 0 && state[i + 1] == SyllableDivisionState::SPLIT) {
                 syllables.push_back(std::move(temp));
             }
-            temp.push_back(word[i]);
+            temp.push_back(original_word[i]);
         }
         syllables.push_back(std::move(temp));
     }
