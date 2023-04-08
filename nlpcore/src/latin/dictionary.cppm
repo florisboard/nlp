@@ -32,8 +32,12 @@ export module fl.nlp.core.latin:dictionary;
 import :entry_properties;
 import fl.nlp.string;
 import fl.nlp.core.common;
+import fl.nlp.utils;
 
 namespace fl::nlp {
+
+export using LatinTrieNode = TrieNode<fl::str::UniChar, EntryProperties>;
+export using LatinDictId = std::uint8_t;
 
 export const auto FLDIC_SECTION_WORDS = "[words]";
 export const auto FLDIC_SECTION_NGRAMS = "[ngrams]";
@@ -58,20 +62,26 @@ export enum class LatinDictionarySection {
 
 export class LatinDictionary : public Dictionary {
   private:
-    using DictIdT = std::uint8_t;
-    using SharedNodeT = TrieNode<fl::str::UniChar, EntryProperties>;
+    using WordActionT =
+        const std::function<void(std::span<const fl::str::UniChar>, LatinTrieNode*, WordEntryProperties*)>;
+    using NgramActionT = const std::function<
+        void(std::span<const fl::str::UniString>, EntryType, LatinTrieNode*, NgramEntryProperties*)>;
+    using ShortcutActionT =
+        const std::function<void(std::span<const fl::str::UniChar>, LatinTrieNode*, ShortcutEntryProperties*)>;
+    using EntryActionT =
+        const std::function<void(std::span<const fl::str::UniString>, int32_t, LatinTrieNode*, EntryProperties*)>;
 
   public:
-    std::size_t dict_id;
-    std::shared_ptr<SharedNodeT> data;
+    std::size_t dict_id_;
+    std::shared_ptr<LatinTrieNode> data_;
 
-    int32_t global_penalty_words = 0;
-    std::map<int32_t, int32_t> global_penalty_ngrams;
-    int32_t global_penalty_shortcuts = 0;
+    std::map<EntryType, int32_t> total_scores_;
+    std::map<EntryType, int32_t> vocab_sizes_;
+    std::map<EntryType, int32_t> global_penalties_;
 
     LatinDictionary() = delete;
-    LatinDictionary(DictIdT id, std::shared_ptr<SharedNodeT> shared_data) : dict_id(id), data(shared_data) {};
-    LatinDictionary(DictIdT id) : dict_id(id), data(std::make_shared<SharedNodeT>()) {};
+    LatinDictionary(LatinDictId id, std::shared_ptr<LatinTrieNode> shared_data) : dict_id_(id), data_(shared_data) {};
+    LatinDictionary(LatinDictId id) : dict_id_(id), data_(std::make_shared<LatinTrieNode>()) {};
     LatinDictionary(const LatinDictionary&) = delete;
     LatinDictionary(LatinDictionary&&) = default;
     virtual ~LatinDictionary() = default;
@@ -80,11 +90,11 @@ export class LatinDictionary : public Dictionary {
     LatinDictionary& operator=(LatinDictionary&&) = default;
 
     TrieNode<fl::str::UniChar, EntryProperties>* insertNgram(std::span<const fl::str::UniString> ngram) {
-        auto ngram_node = data.get();
+        auto ngram_node = data_.get();
         for (int i = 0; i < ngram.size(); i++) {
             auto& word = ngram[i];
             auto word_node = ngram_node->findOrCreate(word);
-            auto word_value = word_node->valueOrCreate(dict_id);
+            auto word_value = word_node->valueOrCreate(dict_id_);
             if (i + 1 != ngram.size()) {
                 ngram_node = word_node->findOrCreate(FLDIC_TOKEN_NGRAM_SEPARATOR);
             } else {
@@ -95,7 +105,152 @@ export class LatinDictionary : public Dictionary {
         return nullptr;
     }
 
+    inline void forEachEntry(EntryActionT& action) {
+        std::vector<fl::str::UniString> buffer;
+        forEachEntryInternal(-1, -1, 1, data_.get(), buffer, action);
+    }
+
+    inline void forEachWord(WordActionT& action) {
+        data_->forEach(FLDIC_SEARCH_TERMINATION_TOKENS, [&](auto word, auto* node) {
+            auto* value = node->valueOrNull(dict_id_);
+            if (value == nullptr) return;
+            auto* properties = value->wordPropertiesOrNull();
+            if (properties == nullptr) return;
+            action(word, node, properties);
+        });
+    }
+
+    inline void forEachNgram(NgramActionT& action) {
+        forEachNgram(-1, -1, action);
+    }
+
+    inline void forEachNgram(int32_t desired_ngram_size, NgramActionT& action) {
+        forEachNgram(desired_ngram_size, desired_ngram_size, action);
+    }
+
+    inline void forEachNgram(int32_t desired_ngram_size_min, int32_t desired_ngram_size_max, NgramActionT& action) {
+        std::vector<fl::str::UniString> buffer;
+        forEachEntryInternal(
+            desired_ngram_size_min, desired_ngram_size_max, 1, data_.get(), buffer,
+            [&](auto ngram, auto ngram_size, auto* node, auto* value) {
+                auto properties = value->ngramPropertiesOrNull();
+                if (properties == nullptr) return;
+                action(ngram, EntryType::ngram(ngram_size), node, properties);
+            }
+        );
+    }
+
+    inline void forEachShortcut(ShortcutActionT& action) {
+        data_->forEach(FLDIC_SEARCH_TERMINATION_TOKENS, [&](auto word, auto* node) {
+            auto* value = node->valueOrNull(dict_id_);
+            if (value == nullptr) return;
+            auto* properties = value->shortcutPropertiesOrNull();
+            if (properties == nullptr) return;
+            action(word, node, properties);
+        });
+    }
+
+    void recalculateAllFrequencyScores() noexcept {
+        std::map<EntryType, int32_t> new_total_scores;
+        std::map<EntryType, int32_t> new_vocab_sizes;
+
+        forEachEntry([&](auto ngram, auto ngram_size, auto* node, auto* value) {
+            if (ngram_size == 1) {
+                // Word
+                if (auto properties = value->wordPropertiesOrNull(); properties != nullptr) {
+                    auto type = EntryType::word();
+                    properties->absolute_score = std::max(0, properties->absolute_score - global_penalties_[type]);
+                    new_total_scores[type] += properties->absolute_score;
+                    new_vocab_sizes[type]++;
+                }
+                // Shortcut
+                if (auto properties = value->shortcutPropertiesOrNull(); properties != nullptr) {
+                    auto type = EntryType::shortcut();
+                    properties->absolute_score = std::max(0, properties->absolute_score - global_penalties_[type]);
+                    new_total_scores[type] += properties->absolute_score;
+                    new_vocab_sizes[type]++;
+                }
+            } else {
+                // Ngram
+                if (auto properties = value->ngramPropertiesOrNull(); properties != nullptr) {
+                    auto type = EntryType::ngram(ngram_size);
+                    properties->absolute_score = std::max(0, properties->absolute_score - global_penalties_[type]);
+                    new_total_scores[type] += properties->absolute_score;
+                    new_vocab_sizes[type]++;
+                }
+            }
+        });
+
+        total_scores_ = new_total_scores;
+        vocab_sizes_ = new_vocab_sizes;
+        global_penalties_.clear();
+    }
+
+    void recalculateFrequencyScores(EntryType type) noexcept {
+        const int32_t penalty = global_penalties_[type];
+        int32_t total_score = 0;
+        int32_t vocab_size = 0;
+
+        if (type.isWord()) {
+            forEachWord([&](auto word, auto* node, auto* properties) {
+                properties->absolute_score = std::max(0, properties->absolute_score - penalty);
+                total_score += properties->absolute_score;
+                vocab_size++;
+            });
+        } else if (type.isNgram()) {
+            forEachNgram(type.ngramSize(), [&](auto ngram, auto type, auto* node, auto* properties) {
+                properties->absolute_score = std::max(0, properties->absolute_score - penalty);
+                total_score += properties->absolute_score;
+                vocab_size++;
+            });
+        } else if (type.isShortcut()) {
+            forEachShortcut([&](auto shortcut, auto* node, auto* properties) {
+                properties->absolute_score = std::max(0, properties->absolute_score - penalty);
+                total_score += properties->absolute_score;
+                vocab_size++;
+            });
+        }
+
+        total_scores_[type] = total_score;
+        vocab_sizes_[type] = vocab_size;
+        global_penalties_[type] = 0;
+    }
+
+    [[nodiscard]]
+    double calculateFrequency(EntryType type, int32_t score, int32_t k_offset) const noexcept {
+        const int32_t N = fl::utils::findOrDefault(total_scores_, type, 0);
+        const int32_t V = fl::utils::findOrDefault(vocab_sizes_, type, 0);
+        return static_cast<double>(score + k_offset) / static_cast<double>(N + k_offset * V);
+    }
+
   private:
+    void forEachEntryInternal(
+        int32_t desired_ngram_size_min,
+        int32_t desired_ngram_size_max,
+        int32_t current_ngram_size,
+        LatinTrieNode* current_ngram_node,
+        std::vector<fl::str::UniString>& buffer,
+        EntryActionT& action
+    ) {
+        if (desired_ngram_size_min == 0 || desired_ngram_size_max == 0) return;
+        current_ngram_node->forEach(FLDIC_SEARCH_TERMINATION_TOKENS, [&](auto word_span, auto* word_node) {
+            auto* value = word_node->valueOrNull(dict_id_);
+            if (value == nullptr) return;
+            buffer.resize(current_ngram_size);
+            buffer[current_ngram_size - 1].assign(word_span.begin(), word_span.end());
+            if (desired_ngram_size_min < 0 || desired_ngram_size_max < 0 ||
+                desired_ngram_size_min <= current_ngram_size && current_ngram_size <= desired_ngram_size_max) {
+                action(buffer, current_ngram_size, word_node, value);
+                if (current_ngram_size == desired_ngram_size_max) return;
+            }
+            auto* next_ngram_node = word_node->findOrNull(FLDIC_TOKEN_NGRAM_SEPARATOR);
+            if (next_ngram_node == nullptr) return;
+            forEachEntryInternal(
+                desired_ngram_size_min, desired_ngram_size_max, current_ngram_size + 1, next_ngram_node, buffer, action
+            );
+        });
+    }
+
     void deserializeContent(std::istream& istream) override {
         auto section = LatinDictionarySection::UNSPECIFIED;
         std::string line;
@@ -130,8 +285,8 @@ export class LatinDictionary : public Dictionary {
                     throw std::runtime_error("Invalid line!");
                 }
                 fl::str::toUniString(line_components[0], word);
-                auto node = data->findOrCreate(word);
-                auto properties = node->valueOrCreate(dict_id)->wordPropertiesOrCreate();
+                auto node = data_->findOrCreate(word);
+                auto properties = node->valueOrCreate(dict_id_)->wordPropertiesOrCreate();
                 // Parse score
                 properties->absolute_score = std::stoi(line_components[1]);
                 // Parse flags
@@ -159,12 +314,15 @@ export class LatinDictionary : public Dictionary {
                     ngram[i] = std::move(word);
                 }
                 auto node = insertNgram(ngram);
-                auto properties = node->value(dict_id)->ngramProperties();
+                auto properties = node->value(dict_id_)->ngramProperties();
                 properties->absolute_score = std::stoi(line_components[1]);
             } else if (section == LatinDictionarySection::SHORTCUTS) {
                 // throw std::runtime_error("TODO: implement shortcuts");
             }
         }
+
+        // TODO: do this directly when reading the words/ngrams and avoid this heavy op
+        recalculateAllFrequencyScores();
     }
 
     void serializeContent(std::ostream& ostream) override {
@@ -177,10 +335,10 @@ export class LatinDictionary : public Dictionary {
         ostream << FLDIC_NEWLINE << FLDIC_SECTION_WORDS << FLDIC_NEWLINE;
         WordIdT current_word_id = 1;
         std::string word;
-        data->forEach(
+        data_->forEach(
             FLDIC_SEARCH_TERMINATION_TOKENS,
             [&](std::span<const fl::str::UniChar> uni_word, TrieNode<fl::str::UniChar, EntryProperties>* node) {
-                auto value = node->valueOrNull(dict_id);
+                auto value = node->valueOrNull(dict_id_);
                 if (value == nullptr) {
                     return;
                 }
@@ -189,7 +347,7 @@ export class LatinDictionary : public Dictionary {
                     return;
                 }
                 fl::str::toStdString(uni_word, word);
-                auto score = word_properties->absolute_score - global_penalty_words;
+                auto score = word_properties->absolute_score - global_penalties_[EntryType::word()];
                 ostream << word << FLDIC_SEPARATOR << score;
                 if (word_properties->is_possibly_offensive || word_properties->is_hidden_by_user) {
                     ostream << FLDIC_SEPARATOR;
@@ -209,7 +367,7 @@ export class LatinDictionary : public Dictionary {
     void serializeNgrams(std::ostream& ostream) noexcept {
         ostream << FLDIC_NEWLINE << FLDIC_SECTION_NGRAMS << FLDIC_NEWLINE;
         std::vector<WordIdT> ngram;
-        serializeNgrams(ostream, ngram, 1, data.get());
+        serializeNgrams(ostream, ngram, 1, data_.get());
     }
 
     void serializeNgrams(
@@ -224,7 +382,7 @@ export class LatinDictionary : public Dictionary {
              this](auto uni_word, TrieNode<fl::str::UniChar, EntryProperties>* node) {
                 ngram.resize(current_ngram_level);
                 ngram[current_ngram_level - 1] = getWordId(uni_word);
-                auto value = node->valueOrNull(dict_id);
+                auto value = node->valueOrNull(dict_id_);
                 if (value != nullptr) {
                     auto ngram_properties = value->ngramPropertiesOrNull();
                     if (ngram_properties != nullptr && current_ngram_level >= 2) {
@@ -236,7 +394,8 @@ export class LatinDictionary : public Dictionary {
                                 }
                             }
                             ostream << FLDIC_SEPARATOR
-                                    << ngram_properties->absolute_score - global_penalty_ngrams[current_ngram_level]
+                                    << ngram_properties->absolute_score -
+                                           global_penalties_[EntryType::ngram(current_ngram_level)]
                                     << FLDIC_NEWLINE;
                         }
                     }
@@ -260,7 +419,7 @@ export class LatinDictionary : public Dictionary {
         if (isSpecialToken(uni_word)) {
             return convertSpecialTokenToId(uni_word);
         } else {
-            auto value = data->find(uni_word)->valueOrNull(dict_id);
+            auto value = data_->find(uni_word)->valueOrNull(dict_id_);
             if (value == nullptr) return -1;
             auto properties = value->wordPropertiesOrNull();
             return properties == nullptr ? -1 : properties->internal_id;

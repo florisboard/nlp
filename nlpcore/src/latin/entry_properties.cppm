@@ -25,6 +25,50 @@ namespace fl::nlp {
 
 export using WordIdT = int32_t;
 
+export struct EntryType {
+  public:
+    using ValueT = int32_t;
+
+    ValueT value_;
+
+    inline constexpr bool isWord() const noexcept {
+        return value_ == 1;
+    }
+
+    inline constexpr bool isNgram() const noexcept {
+        return value_ > 1;
+    }
+
+    inline constexpr bool isNgram(ValueT size) const noexcept {
+        return value_ == size;
+    }
+
+    inline constexpr bool isShortcut() const noexcept {
+        return value_ == -1;
+    }
+
+    inline constexpr ValueT ngramSize() const noexcept {
+        return std::max(1, value_);
+    }
+
+    bool operator==(const EntryType& other) const noexcept {
+        return value_ == other.value_;
+    }
+
+  public:
+    static inline constexpr EntryType word() noexcept {
+        return {1};
+    }
+
+    static inline constexpr EntryType ngram(ValueT size) noexcept {
+        return {std::max(2, size)};
+    }
+
+    static inline constexpr EntryType shortcut() noexcept {
+        return {-1};
+    }
+};
+
 export struct WordEntryProperties {
     WordIdT internal_id = 0;
     int32_t absolute_score = 0;
@@ -109,3 +153,21 @@ export struct EntryProperties {
 };
 
 } // namespace fl::nlp
+
+namespace std {
+
+export template<>
+struct hash<fl::nlp::EntryType> {
+    std::size_t operator()(const fl::nlp::EntryType& entry) const noexcept {
+        return std::hash<fl::nlp::EntryType::ValueT>()(entry.value_);
+    }
+};
+
+template<>
+struct less<fl::nlp::EntryType> {
+    bool operator()(const fl::nlp::EntryType& lhs, const fl::nlp::EntryType& rhs) const noexcept {
+        return lhs.value_ < rhs.value_;
+    }
+};
+
+} // namespace std

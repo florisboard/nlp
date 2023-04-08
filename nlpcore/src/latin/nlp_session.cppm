@@ -29,6 +29,7 @@ module;
 export module fl.nlp.core.latin:nlp_session;
 
 import :dictionary;
+import :entry_properties;
 import :fuzzy_searcher;
 import :nlp_session_config;
 import :nlp_session_state;
@@ -41,8 +42,6 @@ namespace fl::nlp {
 
 export class LatinNlpSession {
   private:
-    using DictId = std::uint8_t;
-
     fl::icuext::BreakIteratorCache iterators;
 
   public:
@@ -67,7 +66,7 @@ export class LatinNlpSession {
         iterators.init(config.primary_locale, status);
     }
 
-    void loadDictionary(DictId id, const std::filesystem::path& dict_path) {
+    void loadDictionary(LatinDictId id, const std::filesystem::path& dict_path) {
         auto dict = std::make_unique<LatinDictionary>(id, state.shared_data);
         dict->loadFromDisk(dict_path);
         state.dictionaries[id] = std::move(dict);
@@ -146,18 +145,19 @@ export class LatinNlpSession {
     ) noexcept {
         if (sentence.empty()) return;
 
-        const auto id = target_dictionary->dict_id;
+        const auto id = target_dictionary->dict_id_;
         std::vector<fl::str::UniString> uni_sentence;
         fl::str::UniString uni_word;
 
         // Read and insert words
         for (auto& word : sentence) {
             fl::str::toUniString(word, uni_word);
-            auto word_node = target_dictionary->data->findOrCreate(uni_word);
+            auto word_node = target_dictionary->data_->findOrCreate(uni_word);
             auto properties = word_node->values[id].wordPropertiesOrCreate();
             properties->absolute_score += config.weights.words.training.usage_bonus;
             properties->absolute_score += config.weights.words.training.usage_reduction_others;
-            target_dictionary->global_penalty_words += config.weights.words.training.usage_reduction_others;
+            target_dictionary->global_penalties_[EntryType::word()] +=
+                config.weights.words.training.usage_reduction_others;
             uni_sentence.push_back(std::move(uni_word));
         }
 
@@ -174,7 +174,7 @@ export class LatinNlpSession {
                 auto properties = ngram_node->values[id].ngramPropertiesOrCreate();
                 properties->absolute_score += config.weights.ngrams.training.usage_bonus;
                 properties->absolute_score += config.weights.ngrams.training.usage_reduction_others;
-                target_dictionary->global_penalty_ngrams[ngram_level] +=
+                target_dictionary->global_penalties_[EntryType::ngram(ngram_level)] +=
                     config.weights.ngrams.training.usage_reduction_others;
             }
         }

@@ -32,6 +32,7 @@ requires std::is_default_constructible_v<ValueT> && std::is_integral_v<ValueIdT>
 struct TrieNode {
   private:
     using NodeT = TrieNode<KeyT, ValueT, ValueIdT>;
+    using NodeActionT = const std::function<void(std::span<const KeyT>, NodeT*)>;
 
   public:
     std::map<ValueIdT, ValueT> values;
@@ -133,26 +134,12 @@ struct TrieNode {
         return values.find(id) != values.end();
     }
 
-    void forEach(
-        std::span<const KeyT> termination_tokens, const std::function<void(std::span<const KeyT>, const NodeT*)>& action
-    ) const noexcept {
+    void forEach(std::span<const KeyT> termination_tokens, NodeActionT& action) noexcept {
         std::vector<KeyT> word_cache;
         forEach(word_cache, 0, termination_tokens, action);
     }
 
-    void forEach(
-        std::span<const KeyT> termination_tokens, const std::function<void(std::span<const KeyT>, NodeT*)>& action
-    ) noexcept {
-        std::vector<KeyT> word_cache;
-        forEach(word_cache, 0, termination_tokens, action);
-    }
-
-    void forEach(const std::function<void(std::span<const KeyT>, const NodeT*)>& action) const noexcept {
-        std::vector<KeyT> word_cache;
-        forEach(word_cache, 0, {}, action);
-    }
-
-    void forEach(const std::function<void(std::span<const KeyT>, NodeT*)>& action) noexcept {
+    void forEach(NodeActionT& action) noexcept {
         std::vector<KeyT> word_cache;
         forEach(word_cache, 0, {}, action);
     }
@@ -162,7 +149,7 @@ struct TrieNode {
         std::vector<KeyT>& word_cache,
         size_t insert_index,
         std::span<const KeyT> termination_tokens,
-        const std::function<void(std::span<const KeyT>, NodeT*)>& action
+        NodeActionT& action
     ) const noexcept {
         for (auto it = children.begin(); it != children.end(); it++) {
             word_cache.resize(insert_index + 1);
