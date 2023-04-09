@@ -134,8 +134,16 @@ class RecursiveDldCache {
 
   private:
     void initOppositeWord() noexcept {
-        // TODO
-        word_opposite_case = word;
+        word_opposite_case.resize(word.size());
+        std::size_t i = 0;
+        for (auto& word_char : word) {
+            auto upper_char = word_char;
+            fl::str::uppercase(upper_char);
+            auto lower_char = word_char;
+            fl::str::uppercase(lower_char);
+            word_opposite_case[i] = word_char != upper_char ? upper_char : lower_char;
+            i++;
+        }
     }
 
     void ensureCapacityFor(std::size_t prefix_index) noexcept {
