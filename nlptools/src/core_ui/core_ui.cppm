@@ -353,7 +353,7 @@ void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexce
     } else {
         bounds.drawTextStart(line++, "Spelling results:");
         for (auto& input_word : state.input_words) {
-            auto result = state.nlp_session.spell(input_word, state.prev_words, state.prev_words, flags);
+            auto result = state.nlp_session.spell(input_word, state.prev_words, flags);
             auto color = attrStatusColor(result.suggestion_attributes);
             std::stringstream ss;
             ss << " " << input_word << "  ->  ";

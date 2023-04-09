@@ -180,7 +180,10 @@ export class LatinFuzzySearcher {
         : session_config_(session_config), session_state_(session_state) {}
 
     void predictWord(
-        std::span<fl::str::UniString> sentence, const SuggestionRequestFlags& flags, SuggestionResults& results
+        std::span<fl::str::UniString> sentence,
+        const SuggestionRequestFlags& flags,
+        FuzzySearchType search_type,
+        SuggestionResults& results
     ) noexcept {
         if (sentence.empty()) {
             return;
@@ -197,7 +200,7 @@ export class LatinFuzzySearcher {
                 if (current_word.empty()) continue;
                 std::string raw_word;
                 fuzzySearchWord(
-                    current_word, FuzzySearchType::ProximityOrPrefix, dict_ids_to_search,
+                    current_word, search_type, dict_ids_to_search,
                     [&](auto word, auto& result_info) {
                         fl::str::toStdString(word, raw_word);
                         // TODO: this is a mess and needs fixing

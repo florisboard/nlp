@@ -73,43 +73,45 @@ export class LatinNlpSession {
     }
 
     SpellingResult spell(
-        const std::string& word,
-        const std::vector<std::string>& prev_words,
-        const std::vector<std::string>& next_words,
+        const std::string& raw_word,
+        const std::vector<std::string>& prev_raw_words,
         const SuggestionRequestFlags& flags
-    ) const noexcept {
-        if (word.empty()) {
+    ) noexcept {
+        if (raw_word.empty()) {
             return SpellingResult::unspecified();
         }
-        fl::str::UniString uni_word;
-        fl::str::toUniString(word, uni_word);
-        auto word_node = state.shared_data->find(uni_word);
+
+        fl::str::UniString word;
+        fl::str::toUniString(raw_word, word);
+        auto word_node = state.shared_data->findOrNull(word);
         if (word_node != nullptr && word_node->isEndNode()) {
             return SpellingResult::validWord();
         }
 
-        /*SuggestionResults results;
-        fuzzySearch<WordProperties>(
-            base_dictionaries[0]->words.rootNode(), FuzzySearchType::ProximityWithoutSelf,
-            config.weights.words.lookup.max_cost, flags, uni_word,
-            [&](fl::str::UniString& uni_suggested_word, const WordTrieNode* node, int cost) {
-                std::string suggested_word;
-                fl::str::toStdString(uni_suggested_word, suggested_word);
-                double confidence = 1.0 - ((cost) / 6.0);
-                //    (static_cast<double>(node->properties.absolute_score) /
-                //    _base_dictionaries[0]->max_unigram_score);
-
-                results.insert({std::move(suggested_word), "", confidence}, flags);
+        std::vector<fl::str::UniString> sentence;
+        auto max_prev_words = static_cast<int>(flags.maxNgramLevel()) - 1;
+        for (int insert_pos = 0; insert_pos < max_prev_words; insert_pos++) {
+            int extract_pos = prev_raw_words.size() - max_prev_words + insert_pos;
+            if (extract_pos < 0) {
+                sentence.push_back({FLDIC_TOKEN_START_OF_SENTENCE});
+            } else {
+                fl::str::toUniString(prev_raw_words[extract_pos], word);
+                sentence.push_back(std::move(word));
             }
-        );
+        }
+        fl::str::toUniString(raw_word, word);
+        sentence.push_back(word);
+
+        LatinFuzzySearcher fuzzy_searcher(&config, &state);
+        SuggestionResults results;
+        fuzzy_searcher.predictWord(sentence, flags, FuzzySearchType::ProximityWithoutSelf, results);
 
         std::vector<std::string> suggested_corrections;
         for (auto& candidate : results.get()) {
             suggested_corrections.push_back(candidate->text);
         }
 
-        return SpellingResult::typo(suggested_corrections);*/
-        return SpellingResult::unspecified();
+        return SpellingResult::typo(suggested_corrections);
     }
 
     void suggest(
@@ -136,7 +138,7 @@ export class LatinNlpSession {
         sentence.push_back(word);
 
         LatinFuzzySearcher fuzzy_searcher(&config, &state);
-        return fuzzy_searcher.predictWord(sentence, flags, results);
+        return fuzzy_searcher.predictWord(sentence, flags, FuzzySearchType::ProximityOrPrefix, results);
     }
 
   public:
