@@ -153,6 +153,7 @@ class BoundedBox {
 
 struct CoreUiState {
     bool is_alive = true;
+    bool persist_on_quit = false;
     bool is_suggestion_mode = true;
     int width = 0;
     int height = 0;
@@ -197,20 +198,20 @@ int mainCoreUi(const std::string& session_config_path) {
 
         // TODO: clean up this hardcoded mess of coords
         if (state.width > 120) {
-            drawHeaderBox(state, BoundedBox(0, 0, 44, 6));
+            drawHeaderBox(state, BoundedBox(0, 0, 44, 7));
             drawSuggestionRequestFlagsBox(state, BoundedBox(state.width - 36, 0, 36, 10));
             drawNlpSessionConfigBox(state, BoundedBox(state.width - 36, 10, 36, 4));
             drawSuggestionInputBox(state, BoundedBox(45, 0, state.width - 45 - 37, state.height));
         } else if (state.width > 80) {
-            drawHeaderBox(state, BoundedBox(0, 0, 44, 6));
+            drawHeaderBox(state, BoundedBox(0, 0, 44, 7));
             drawSuggestionRequestFlagsBox(state, BoundedBox(state.width - 36, 0, 36, 10));
             drawNlpSessionConfigBox(state, BoundedBox(state.width - 36, 10, 36, 4));
             drawSuggestionInputBox(state, BoundedBox(0, 10 + 4, state.width, state.height - 10 - 4));
         } else {
-            drawHeaderBox(state, BoundedBox(0, 0, state.width, 6));
-            drawSuggestionRequestFlagsBox(state, BoundedBox(0, 6, state.width, 10));
-            drawNlpSessionConfigBox(state, BoundedBox(0, 6 + 10, state.width, 4));
-            drawSuggestionInputBox(state, BoundedBox(0, 6 + 10 + 4, state.width, state.height - 5 - 10 - 4));
+            drawHeaderBox(state, BoundedBox(0, 0, state.width, 7));
+            drawSuggestionRequestFlagsBox(state, BoundedBox(0, 7, state.width, 10));
+            drawNlpSessionConfigBox(state, BoundedBox(0, 7 + 10, state.width, 4));
+            drawSuggestionInputBox(state, BoundedBox(0, 7 + 10 + 4, state.width, state.height - 7 - 10 - 4));
         }
 
         tb_present();
@@ -219,7 +220,9 @@ int mainCoreUi(const std::string& session_config_path) {
     }
     tb_shutdown();
 
-    state.nlp_session.state.getUserDictionary()->persistToDisk();
+    if (state.persist_on_quit) {
+        state.nlp_session.state.getUserDictionary()->persistToDisk();
+    }
 
     return 0;
 }
@@ -240,7 +243,11 @@ void handleEvents(CoreUiState& state) noexcept {
                 state.nlp_session.train(state.nlp_session.state.getUserDictionary(), state.input_words, 3);
             }
             state.raw_input_buffer.remove();
+        } else if (ev.key == TB_KEY_CTRL_Q) {
+            state.persist_on_quit = true;
+            state.is_alive = false;
         } else if (ev.key == TB_KEY_CTRL_C) {
+            state.persist_on_quit = false;
             state.is_alive = false;
         } else if (ev.key == TB_KEY_CTRL_D) {
             state.is_suggestion_mode = !state.is_suggestion_mode;
@@ -294,6 +301,7 @@ void handleEvents(CoreUiState& state) noexcept {
 void drawHeaderBox(const CoreUiState& state, const BoundedBox& bounds) noexcept {
     int line = 0;
     bounds.drawOutline("FlorisNLP Core Debug Frontend");
+    bounds.drawTextStart(line++, "CTRL+Q  quit and persist to disk");
     bounds.drawTextStart(line++, "CTRL+C  quit");
     bounds.drawTextStart(line++, "CTRL+D  toggle spell check/suggestion");
     bounds.drawTextStart(line++, "ENTER   train user dictionary with input");
