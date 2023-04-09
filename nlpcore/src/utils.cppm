@@ -18,6 +18,7 @@ module;
 
 #include <functional>
 #include <map>
+#include <span>
 #include <vector>
 
 export module fl.nlp.utils;
@@ -61,6 +62,26 @@ export template<typename K, typename V>
 const V& findOrDefault(const std::map<K, V>& map, const K& key, const V& default_value) noexcept {
     auto it = map.find(key);
     return it != map.end() ? it->second : default_value;
+}
+
+export template<typename T>
+bool equal(std::span<const T> span1, std::span<const T> span2) {
+    return span1.size() == span2.size() && std::equal(span1.begin(), span1.end(), span2.begin());
+}
+
+export template<typename T>
+bool equal(std::span<const T> span1, std::span<T> span2) {
+    return span1.size() == span2.size() && std::equal(span1.begin(), span1.end(), span2.begin());
+}
+
+export template<typename T>
+bool equal(std::span<T> span1, std::span<const T> span2) {
+    return span1.size() == span2.size() && std::equal(span1.begin(), span1.end(), span2.begin());
+}
+
+export template<typename T>
+bool equal(std::span<T> span1, std::span<T> span2) {
+    return span1.size() == span2.size() && std::equal(span1.begin(), span1.end(), span2.begin());
 }
 
 } // namespace fl::utils

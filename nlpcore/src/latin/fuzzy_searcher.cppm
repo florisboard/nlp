@@ -31,6 +31,7 @@ import :nlp_session_config;
 import :nlp_session_state;
 import fl.nlp.core.common;
 import fl.nlp.string;
+import fl.nlp.utils;
 
 namespace fl::nlp {
 
@@ -41,13 +42,12 @@ enum class FuzzySearchType {
 };
 
 class RecursiveDldCache {
-  private:
+  public:
     std::vector<std::vector<int>> distances;
     fl::str::UniString word = {""};
     fl::str::UniString word_opposite_case = {""};
     fl::str::UniString prefix = {""};
 
-  public:
     const LookupWeights* weights_ = nullptr;
     EntryType entry_type_ = EntryType::word();
     FuzzySearchType search_type_ = FuzzySearchType::Proximity;
@@ -88,7 +88,6 @@ class RecursiveDldCache {
 
         int penalty;
         int substitution_cost;
-        int transpose_cost;
 
         for (std::size_t i = 1; i < word.size(); i++) {
             // Calculate penalty
@@ -101,7 +100,7 @@ class RecursiveDldCache {
                 substitution_cost = weights_->cost_is_opposite_case;
             } else if (prefix_index > 1 && i > 1 && prefix[prefix_index - 1] == word[i] && prefix_char == word[i - 1]) {
                 // TODO: investigate if transpose calculation could be incorrect for certain edge cases
-                substitution_cost = weights_->cost_transpose - 1 + penalty;
+                substitution_cost = weights_->cost_transpose + penalty;
             } else {
                 substitution_cost = weights_->cost_substitute + penalty;
             }
@@ -116,14 +115,17 @@ class RecursiveDldCache {
         }
     }
 
+    [[nodiscard]]
     inline std::span<const fl::str::UniChar> prefixSpanAt(std::size_t prefix_index) const {
         return {prefix.begin() + 1, prefix.begin() + prefix_index + 1};
     }
 
+    [[nodiscard]]
     inline int editDistanceAt(std::size_t prefix_index) const {
         return distances[prefix_index][word.size() - 1];
     }
 
+    [[nodiscard]]
     bool isDeadEndAt(std::size_t prefix_index) const noexcept {
         if (prefix_index < word.size() - 1) {
             return distances[prefix_index][prefix_index] >= weights_->max_cost;
@@ -140,7 +142,7 @@ class RecursiveDldCache {
             auto upper_char = word_char;
             fl::str::uppercase(upper_char);
             auto lower_char = word_char;
-            fl::str::uppercase(lower_char);
+            fl::str::lowercase(lower_char);
             word_opposite_case[i] = word_char != upper_char ? upper_char : lower_char;
             i++;
         }
@@ -290,7 +292,12 @@ export class LatinFuzzySearcher {
                 }
             }
             if (is_end_node) {
-                on_result(prefix, result_info);
+                if (state.search_type_ == FuzzySearchType::ProximityWithoutSelf &&
+                    fl::utils::equal(prefix, std::span(state.word))) {
+                    // Do nothing
+                } else {
+                    on_result(prefix, result_info);
+                }
             }
         }
 

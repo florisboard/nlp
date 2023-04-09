@@ -13,7 +13,7 @@
         "costDelete": 2,
         "costSubstitute": 2,
         "costSubstituteInProximity": 1,
-        "costTranspose": 1,
+        "costTranspose": 0,
         "penaltyDefault": 0,
         "penaltyStartOfStr": 2
       },
