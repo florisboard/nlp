@@ -4,6 +4,7 @@ target_module_sources(fl_nlp_core_common PUBLIC
         common.cppm
         dictionary.cppm
         key_proximity_checker.cppm
+        spelling.cppm
         suggestion.cppm
         syllable_matcher.cppm
         trie_map.cppm
