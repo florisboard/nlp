@@ -31,15 +31,12 @@ import fl.nlp.string;
 namespace fl::nlp {
 
 export struct LatinNlpSessionState {
-    using DictIdT = std::uint8_t;
-    using SharedNodeT = TrieNode<fl::str::UniChar, EntryProperties, DictIdT>;
+    static const LatinDictId USER_DICTIONARY_ID = 0;
 
-    static const DictIdT USER_DICTIONARY_ID = 0;
+    std::shared_ptr<LatinTrieNode> shared_data = std::make_shared<LatinTrieNode>();
+    std::map<LatinDictId, std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
 
-    std::shared_ptr<SharedNodeT> shared_data = std::make_shared<SharedNodeT>();
-    std::map<DictIdT, std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
-
-    inline fl::nlp::LatinDictionary* getDictionaryById(DictIdT id) {
+    inline fl::nlp::LatinDictionary* getDictionaryById(LatinDictId id) {
         return dictionaries.at(id).get();
     }
 

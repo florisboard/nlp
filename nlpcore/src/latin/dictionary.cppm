@@ -29,15 +29,14 @@ module;
 
 export module fl.nlp.core.latin:dictionary;
 
+import :algorithms;
+export import :definitions;
 import :entry_properties;
-import fl.nlp.string;
 import fl.nlp.core.common;
+import fl.nlp.string;
 import fl.nlp.utils;
 
 namespace fl::nlp {
-
-export using LatinTrieNode = TrieNode<fl::str::UniChar, EntryProperties>;
-export using LatinDictId = std::uint8_t;
 
 export const auto FLDIC_SECTION_WORDS = "[words]";
 export const auto FLDIC_SECTION_NGRAMS = "[ngrams]";
@@ -45,13 +44,6 @@ export const auto FLDIC_SECTION_SHORTCUTS = "[shortcuts]";
 
 export const char FLDIC_FLAG_IS_POSSIBLY_OFFENSIVE = 'p';
 export const char FLDIC_FLAG_IS_HIDDEN_BY_USER = 'h';
-
-export const char FLDIC_TOKEN_ID_START_OF_SENTENCE = 0x02; // Start of text ASCII CTRL char
-export const char FLDIC_TOKEN_ID_NGRAM_SEPARATOR = 0x1E;   // Record separator ASCII CTRL char
-export const char FLDIC_TOKEN_ID_LIMIT = 0x20;             // Space char
-export const fl::str::UniChar FLDIC_TOKEN_START_OF_SENTENCE = {1, FLDIC_TOKEN_ID_START_OF_SENTENCE};
-export const fl::str::UniChar FLDIC_TOKEN_NGRAM_SEPARATOR = {1, FLDIC_TOKEN_ID_NGRAM_SEPARATOR};
-export const std::vector<fl::str::UniChar> FLDIC_SEARCH_TERMINATION_TOKENS = {FLDIC_TOKEN_NGRAM_SEPARATOR};
 
 export enum class LatinDictionarySection {
     UNSPECIFIED,
@@ -61,18 +53,8 @@ export enum class LatinDictionarySection {
 };
 
 export class LatinDictionary : public Dictionary {
-  private:
-    using WordActionT =
-        const std::function<void(std::span<const fl::str::UniChar>, LatinTrieNode*, WordEntryProperties*)>;
-    using NgramActionT = const std::function<
-        void(std::span<const fl::str::UniString>, EntryType, LatinTrieNode*, NgramEntryProperties*)>;
-    using ShortcutActionT =
-        const std::function<void(std::span<const fl::str::UniChar>, LatinTrieNode*, ShortcutEntryProperties*)>;
-    using EntryActionT =
-        const std::function<void(std::span<const fl::str::UniString>, int32_t, LatinTrieNode*, EntryProperties*)>;
-
   public:
-    std::size_t dict_id_;
+    LatinDictId dict_id_;
     std::shared_ptr<LatinTrieNode> data_;
 
     std::map<EntryType, int32_t> total_scores_;
@@ -89,65 +71,32 @@ export class LatinDictionary : public Dictionary {
     LatinDictionary& operator=(const LatinDictionary&) = delete;
     LatinDictionary& operator=(LatinDictionary&&) = default;
 
-    TrieNode<fl::str::UniChar, EntryProperties>* insertNgram(std::span<const fl::str::UniString> ngram) {
-        auto ngram_node = data_.get();
-        for (int i = 0; i < ngram.size(); i++) {
-            auto& word = ngram[i];
-            auto word_node = ngram_node->findOrCreate(word);
-            auto word_value = word_node->valueOrCreate(dict_id_);
-            if (i + 1 != ngram.size()) {
-                ngram_node = word_node->findOrCreate(FLDIC_TOKEN_NGRAM_SEPARATOR);
-            } else {
-                word_value->ngramPropertiesOrCreate();
-                return word_node;
-            }
-        }
-        return nullptr;
+    inline LatinTrieNode* insertNgram(std::span<const fl::str::UniString> ngram) noexcept {
+        return algorithms::insertNgram(data_.get(), dict_id_, ngram);
     }
 
-    inline void forEachEntry(EntryActionT& action) {
-        std::vector<fl::str::UniString> buffer;
-        forEachEntryInternal(-1, -1, 1, data_.get(), buffer, action);
+    inline void forEachEntry(algorithms::EntryAction& action) {
+        algorithms::forEachEntry(data_.get(), dict_id_, action);
     }
 
-    inline void forEachWord(WordActionT& action) {
-        data_->forEach(FLDIC_SEARCH_TERMINATION_TOKENS, [&](auto word, auto* node) {
-            auto* value = node->valueOrNull(dict_id_);
-            if (value == nullptr) return;
-            auto* properties = value->wordPropertiesOrNull();
-            if (properties == nullptr) return;
-            action(word, node, properties);
-        });
+    inline void forEachWord(algorithms::WordAction& action) {
+        algorithms::forEachWord(data_.get(), dict_id_, action);
     }
 
-    inline void forEachNgram(NgramActionT& action) {
-        forEachNgram(-1, -1, action);
+    inline void forEachNgram(algorithms::NgramAction& action) {
+        algorithms::forEachNgram(data_.get(), dict_id_, action);
     }
 
-    inline void forEachNgram(int32_t desired_ngram_size, NgramActionT& action) {
-        forEachNgram(desired_ngram_size, desired_ngram_size, action);
+    inline void forEachNgram(int32_t ngram_size, algorithms::NgramAction& action) {
+        algorithms::forEachNgram(data_.get(), dict_id_, ngram_size, action);
     }
 
-    inline void forEachNgram(int32_t desired_ngram_size_min, int32_t desired_ngram_size_max, NgramActionT& action) {
-        std::vector<fl::str::UniString> buffer;
-        forEachEntryInternal(
-            desired_ngram_size_min, desired_ngram_size_max, 1, data_.get(), buffer,
-            [&](auto ngram, auto ngram_size, auto* node, auto* value) {
-                auto properties = value->ngramPropertiesOrNull();
-                if (properties == nullptr) return;
-                action(ngram, EntryType::ngram(ngram_size), node, properties);
-            }
-        );
+    inline void forEachNgram(int32_t min_ngram_size, int32_t max_ngram_size, algorithms::NgramAction& action) {
+        algorithms::forEachNgram(data_.get(), dict_id_, min_ngram_size, max_ngram_size, action);
     }
 
-    inline void forEachShortcut(ShortcutActionT& action) {
-        data_->forEach(FLDIC_SEARCH_TERMINATION_TOKENS, [&](auto word, auto* node) {
-            auto* value = node->valueOrNull(dict_id_);
-            if (value == nullptr) return;
-            auto* properties = value->shortcutPropertiesOrNull();
-            if (properties == nullptr) return;
-            action(word, node, properties);
-        });
+    inline void forEachShortcut(algorithms::ShortcutAction& action) {
+        algorithms::forEachShortcut(data_.get(), dict_id_, action);
     }
 
     void recalculateAllFrequencyScores() noexcept {
@@ -224,33 +173,6 @@ export class LatinDictionary : public Dictionary {
     }
 
   private:
-    void forEachEntryInternal(
-        int32_t desired_ngram_size_min,
-        int32_t desired_ngram_size_max,
-        int32_t current_ngram_size,
-        LatinTrieNode* current_ngram_node,
-        std::vector<fl::str::UniString>& buffer,
-        EntryActionT& action
-    ) {
-        if (desired_ngram_size_min == 0 || desired_ngram_size_max == 0) return;
-        current_ngram_node->forEach(FLDIC_SEARCH_TERMINATION_TOKENS, [&](auto word_span, auto* word_node) {
-            auto* value = word_node->valueOrNull(dict_id_);
-            if (value == nullptr) return;
-            buffer.resize(current_ngram_size);
-            buffer[current_ngram_size - 1].assign(word_span.begin(), word_span.end());
-            if (desired_ngram_size_min < 0 || desired_ngram_size_max < 0 ||
-                desired_ngram_size_min <= current_ngram_size && current_ngram_size <= desired_ngram_size_max) {
-                action(buffer, current_ngram_size, word_node, value);
-                if (current_ngram_size == desired_ngram_size_max) return;
-            }
-            auto* next_ngram_node = word_node->findOrNull(FLDIC_TOKEN_NGRAM_SEPARATOR);
-            if (next_ngram_node == nullptr) return;
-            forEachEntryInternal(
-                desired_ngram_size_min, desired_ngram_size_max, current_ngram_size + 1, next_ngram_node, buffer, action
-            );
-        });
-    }
-
     void deserializeContent(std::istream& istream) override {
         auto section = LatinDictionarySection::UNSPECIFIED;
         std::string line;
@@ -336,8 +258,8 @@ export class LatinDictionary : public Dictionary {
         WordIdT current_word_id = 1;
         std::string word;
         data_->forEach(
-            FLDIC_SEARCH_TERMINATION_TOKENS,
-            [&](std::span<const fl::str::UniChar> uni_word, TrieNode<fl::str::UniChar, EntryProperties>* node) {
+            LATIN_SEARCH_TERMINATION_TOKENS,
+            [&](std::span<const fl::str::UniChar> uni_word, LatinTrieNode* node) {
                 auto value = node->valueOrNull(dict_id_);
                 if (value == nullptr) {
                     return;
@@ -374,12 +296,11 @@ export class LatinDictionary : public Dictionary {
         std::ostream& ostream,
         std::vector<WordIdT>& ngram,
         int32_t current_ngram_level,
-        TrieNode<fl::str::UniChar, EntryProperties>* current_root_node
+        LatinTrieNode* current_root_node
     ) noexcept {
         current_root_node->forEach(
-            FLDIC_SEARCH_TERMINATION_TOKENS,
-            [&ostream, &ngram, &current_ngram_level,
-             this](auto uni_word, TrieNode<fl::str::UniChar, EntryProperties>* node) {
+            LATIN_SEARCH_TERMINATION_TOKENS,
+            [&ostream, &ngram, &current_ngram_level, this](auto uni_word, LatinTrieNode* node) {
                 ngram.resize(current_ngram_level);
                 ngram[current_ngram_level - 1] = getWordId(uni_word);
                 auto value = node->valueOrNull(dict_id_);
@@ -401,7 +322,7 @@ export class LatinDictionary : public Dictionary {
                     }
                 }
 
-                auto next_ngram_root_node = node->findOrNull(FLDIC_TOKEN_NGRAM_SEPARATOR);
+                auto next_ngram_root_node = node->findOrNull(LATIN_TOKEN_NGRAM_SEPARATOR);
                 if (next_ngram_root_node != nullptr) {
                     serializeNgrams(ostream, ngram, current_ngram_level + 1, next_ngram_root_node);
                 }
@@ -424,26 +345,6 @@ export class LatinDictionary : public Dictionary {
             auto properties = value->wordPropertiesOrNull();
             return properties == nullptr ? -1 : properties->internal_id;
         }
-    }
-
-    static inline bool isSpecialToken(const fl::str::UniChar& token) noexcept {
-        return token.size() == 1 && token[0] < FLDIC_TOKEN_ID_LIMIT;
-    }
-
-    static inline bool isSpecialToken(std::span<const fl::str::UniChar> token) noexcept {
-        return token.size() == 1 && isSpecialToken(token[0]);
-    }
-
-    static inline bool isSpecialId(int32_t id) noexcept {
-        return id < 0;
-    }
-
-    static inline int32_t convertSpecialTokenToId(std::span<const fl::str::UniChar> token) noexcept {
-        return (-1) * static_cast<int32_t>(token[0][0]);
-    }
-
-    static inline fl::str::UniString convertSpecialIdToToken(int32_t id) noexcept {
-        return {std::string(1, static_cast<char>((-1) * id))};
     }
 };
 

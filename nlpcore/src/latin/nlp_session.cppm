@@ -93,7 +93,7 @@ export class LatinNlpSession {
         for (int insert_pos = 0; insert_pos < max_prev_words; insert_pos++) {
             int extract_pos = prev_raw_words.size() - max_prev_words + insert_pos;
             if (extract_pos < 0) {
-                sentence.push_back({FLDIC_TOKEN_START_OF_SENTENCE});
+                sentence.push_back({LATIN_TOKEN_START_OF_SENTENCE});
             } else {
                 fl::str::toUniString(prev_raw_words[extract_pos], word);
                 sentence.push_back(std::move(word));
@@ -128,7 +128,7 @@ export class LatinNlpSession {
         for (int insert_pos = 0; insert_pos < max_prev_words; insert_pos++) {
             int extract_pos = prev_raw_words.size() - max_prev_words + insert_pos;
             if (extract_pos < 0) {
-                sentence.push_back({FLDIC_TOKEN_START_OF_SENTENCE});
+                sentence.push_back({LATIN_TOKEN_START_OF_SENTENCE});
             } else {
                 fl::str::toUniString(prev_raw_words[extract_pos], word);
                 sentence.push_back(std::move(word));
@@ -165,7 +165,7 @@ export class LatinNlpSession {
 
         // Insert "start of sentence" tokens
         for (int i = 0; i < max_prev_words - 1; i++) {
-            uni_sentence.insert(uni_sentence.begin(), {FLDIC_TOKEN_START_OF_SENTENCE});
+            uni_sentence.insert(uni_sentence.begin(), {LATIN_TOKEN_START_OF_SENTENCE});
         }
 
         // Read and insert ngrams

@@ -27,7 +27,7 @@ export module fl.nlp.core.common:trie_map;
 
 namespace fl::nlp {
 
-export template<typename KeyT, typename ValueT, typename ValueIdT = std::uint8_t>
+export template<typename KeyT, typename ValueT, typename ValueIdT>
 requires std::is_default_constructible_v<ValueT> && std::is_integral_v<ValueIdT>
 struct TrieNode {
   private:

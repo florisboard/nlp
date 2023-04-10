@@ -16,6 +16,8 @@
 
 export module fl.nlp.core.latin;
 
+export import :algorithms;
+export import :definitions;
 export import :dictionary;
 export import :entry_properties;
 export import :fuzzy_searcher;

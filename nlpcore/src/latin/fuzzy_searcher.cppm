@@ -25,6 +25,7 @@ module;
 
 export module fl.nlp.core.latin:fuzzy_searcher;
 
+import :algorithms;
 import :dictionary;
 import :entry_properties;
 import :nlp_session_config;
@@ -35,7 +36,7 @@ import fl.nlp.utils;
 
 namespace fl::nlp {
 
-enum class FuzzySearchType {
+export enum class FuzzySearchType {
     Proximity,
     ProximityWithoutSelf,
     ProximityOrPrefix,
@@ -199,20 +200,26 @@ export class LatinFuzzySearcher {
                 auto current_word = sentence.back();
                 if (current_word.empty()) continue;
                 std::string raw_word;
-                fuzzySearchWord(
-                    current_word, search_type, dict_ids_to_search,
-                    [&](auto word, auto& result_info) {
-                        fl::str::toStdString(word, raw_word);
-                        // TODO: this is a mess and needs fixing
-                        // double confidence =
-                        //     result_info.frequency_ * (0.01 + 0.99 * (1.0 - (result_info.edit_distance_ / 6.0)));
-                        double confidence = (6.0 - result_info.edit_distance_) + result_info.frequency_;
-                        results.insert({std::move(raw_word), "", confidence}, flags);
-                    }
-                );
+                fuzzySearchWord(current_word, search_type, dict_ids_to_search, [&](auto word, auto& result_info) {
+                    fl::str::toStdString(word, raw_word);
+                    // TODO: this is a mess and needs fixing
+                    // double confidence =
+                    //     result_info.frequency_ * (0.01 + 0.99 * (1.0 - (result_info.edit_distance_ / 6.0)));
+                    double confidence = (6.0 - result_info.edit_distance_) + result_info.frequency_;
+                    results.insert({std::move(raw_word), "", confidence}, flags);
+                });
             } else {
                 // We have an n-gram
                 auto ngram = sentence.subspan(sentence.size() - ngram_level, ngram_level);
+                std::string raw_word;
+                fuzzySearchNgram(ngram, search_type, dict_ids_to_search, [&](auto word, auto& result_info) {
+                    fl::str::toStdString(word, raw_word);
+                    // TODO: this is a mess and needs fixing
+                    // double confidence =
+                    //     result_info.frequency_ * (0.01 + 0.99 * (1.0 - (result_info.edit_distance_ / 6.0)));
+                    double confidence = (6.0 - result_info.edit_distance_) + result_info.frequency_;
+                    results.insert({std::move(raw_word), "", confidence}, flags);
+                });
             }
         }
     }
@@ -230,12 +237,22 @@ export class LatinFuzzySearcher {
     }
 
     void fuzzySearchNgram(
-        std::span<const fl::str::UniString> ngram, FuzzySearchType type, OnResultLambda<NgramEntryProperties>& on_result
+        std::span<const fl::str::UniString> ngram,
+        FuzzySearchType search_type,
+        const std::vector<LatinDictId>& dict_ids_to_search,
+        OnResultLambda<NgramEntryProperties>& on_result
     ) noexcept {
         if (ngram.size() < 2) {
             return;
         }
-        /*RecursiveDldCache state;
+        /*auto subgram = ngram.subspan(0, ngram.size() - 1);
+        // TODO: implement findNgram() !!
+        RecursiveDldCache state;
+        state.init(
+            ngram.back(), EntryType::word(), search_type, &session_config_->weights.words.lookup, dict_ids_to_search
+        );
+        fuzzySearchWordRecursiveDld<NgramEntryProperties>(session_state_->shared_data.get(), state, 0, on_result);
+        RecursiveDldCache state;
         auto current_ngram_root_node = session_state->shared_data.get();
         for (const auto& token : ngram) {
             if (LatinDictionary::isSpecialToken(token) || true) {
@@ -257,7 +274,7 @@ export class LatinFuzzySearcher {
 
     template<typename P>
     void fuzzySearchWordRecursiveDld(
-        TrieNode<fl::str::UniChar, EntryProperties>* node,
+        LatinTrieNode* node,
         RecursiveDldCache& state,
         std::size_t prefix_index,
         OnResultLambda<P>& on_result
@@ -310,7 +327,7 @@ export class LatinFuzzySearcher {
         }
 
         for (auto& [child_char, child_node] : node->children) {
-            if (LatinDictionary::isSpecialToken(child_char)) {
+            if (isSpecialToken(child_char)) {
                 continue;
             }
             state.setPrefixCharAt(prefix_index + 1, child_char);
