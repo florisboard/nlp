@@ -32,7 +32,7 @@ import :nlp_session_config;
 import :nlp_session_state;
 import fl.nlp.core.common;
 import fl.string;
-import fl.nlp.utils;
+import fl.utils;
 
 namespace fl::nlp {
 

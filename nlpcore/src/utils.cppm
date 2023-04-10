@@ -21,7 +21,7 @@ module;
 #include <span>
 #include <vector>
 
-export module fl.nlp.utils;
+export module fl.utils;
 
 namespace fl::utils {
 

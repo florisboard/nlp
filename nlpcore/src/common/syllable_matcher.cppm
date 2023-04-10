@@ -27,7 +27,7 @@ module;
 
 export module fl.nlp.core.common:syllable_matcher;
 
-import fl.nlp.utils;
+import fl.utils;
 
 namespace fl::nlp {
 

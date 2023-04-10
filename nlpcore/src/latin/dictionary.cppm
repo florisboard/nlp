@@ -34,7 +34,7 @@ export import :definitions;
 import :entry_properties;
 import fl.nlp.core.common;
 import fl.string;
-import fl.nlp.utils;
+import fl.utils;
 
 namespace fl::nlp {
 
