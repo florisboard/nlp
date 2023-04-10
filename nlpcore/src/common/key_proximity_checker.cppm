@@ -24,7 +24,7 @@ module;
 
 export module fl.nlp.core.common:key_proximity_checker;
 
-import fl.nlp.string;
+import fl.string;
 
 namespace fl::nlp {
 

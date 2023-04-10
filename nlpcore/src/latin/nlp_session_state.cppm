@@ -26,7 +26,7 @@ export module fl.nlp.core.latin:nlp_session_state;
 import :dictionary;
 import :entry_properties;
 import fl.nlp.core.common;
-import fl.nlp.string;
+import fl.string;
 
 namespace fl::nlp {
 

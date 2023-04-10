@@ -25,7 +25,7 @@ module;
 
 export module fl.nlp.tools.common:dictionary_args_utils;
 
-import fl.nlp.string;
+import fl.string;
 
 namespace fl::nlp::tools {
 

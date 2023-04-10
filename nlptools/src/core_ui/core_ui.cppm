@@ -32,7 +32,7 @@ module;
 export module fl.nlp.tools.core_ui;
 
 import fl.icuext;
-import fl.nlp.string;
+import fl.string;
 import fl.nlp.core.common;
 import fl.nlp.core.latin;
 import fl.nlp.tools.common;

@@ -31,7 +31,7 @@ import :entry_properties;
 import :nlp_session_config;
 import :nlp_session_state;
 import fl.nlp.core.common;
-import fl.nlp.string;
+import fl.string;
 import fl.nlp.utils;
 
 namespace fl::nlp {

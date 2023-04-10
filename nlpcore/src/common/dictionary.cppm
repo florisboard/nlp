@@ -26,7 +26,7 @@ module;
 
 export module fl.nlp.core.common:dictionary;
 
-import fl.nlp.string;
+import fl.string;
 
 namespace fl::nlp {
 

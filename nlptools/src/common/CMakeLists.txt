@@ -7,6 +7,6 @@ target_module_sources(fl_nlp_tools_common PUBLIC
         program.cppm
         )
 target_link_libraries(fl_nlp_tools_common PUBLIC
-        fl::nlp::string
+        fl::string
         argparse::argparse
         )

@@ -33,7 +33,7 @@ export module fl.nlp.tools.prep:wiktextract;
 
 import fl.nlp.core.common;
 import fl.nlp.core.latin;
-import fl.nlp.string;
+import fl.string;
 import fl.nlp.tools.common;
 
 namespace fl::nlp::tools {

@@ -7,7 +7,7 @@ target_link_icu4c_libraries(fl_nlp_tools_core_ui PUBLIC FlorisICU::uc)
 target_link_libraries(fl_nlp_tools_core_ui PUBLIC
         fl::icuext
         fl::nlp::core
-        fl::nlp::string
+        fl::string
         fl::nlp::tools::common
         argparse::argparse
         fmt::fmt

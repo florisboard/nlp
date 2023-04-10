@@ -6,7 +6,7 @@ target_module_sources(fl_nlp_tools_prep PUBLIC
         )
 target_link_libraries(fl_nlp_tools_prep PUBLIC
         fl::nlp::core
-        fl::nlp::string
+        fl::string
         fl::nlp::tools::common
         argparse::argparse
         )

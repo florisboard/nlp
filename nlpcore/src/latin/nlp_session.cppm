@@ -36,7 +36,7 @@ import :nlp_session_state;
 import :prediction_weights;
 import fl.icuext;
 import fl.nlp.core.common;
-import fl.nlp.string;
+import fl.string;
 
 namespace fl::nlp {
 

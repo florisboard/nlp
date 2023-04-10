@@ -22,7 +22,7 @@ module;
 export module fl.nlp.core.latin:definitions;
 
 import :entry_properties;
-import fl.nlp.string;
+import fl.string;
 import fl.nlp.core.common;
 
 namespace fl::nlp {

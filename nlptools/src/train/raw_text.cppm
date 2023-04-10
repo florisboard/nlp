@@ -36,7 +36,7 @@ export module fl.nlp.tools.train:raw_text;
 
 import fl.icuext;
 import fl.nlp.core.latin;
-import fl.nlp.string;
+import fl.string;
 import fl.nlp.tools.common;
 
 const auto ARG_TXT_FILE = "--txt-file";

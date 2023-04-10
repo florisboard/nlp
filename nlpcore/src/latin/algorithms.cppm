@@ -24,7 +24,7 @@ export module fl.nlp.core.latin:algorithms;
 
 import :definitions;
 import :entry_properties;
-import fl.nlp.string;
+import fl.string;
 
 namespace fl::nlp::algorithms {
 

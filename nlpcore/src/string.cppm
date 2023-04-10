@@ -27,7 +27,7 @@ module;
 #include <string>
 #include <vector>
 
-export module fl.nlp.string;
+export module fl.string;
 
 namespace fl::str {
 
