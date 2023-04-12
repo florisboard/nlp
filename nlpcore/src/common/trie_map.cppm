@@ -16,12 +16,15 @@
 
 module;
 
+#include <algorithm>
 #include <cstddef>
 #include <functional>
 #include <map>
 #include <memory>
 #include <span>
+#include <stdexcept>
 #include <type_traits>
+#include <vector>
 
 export module fl.nlp.core.common:trie_map;
 
@@ -32,11 +35,14 @@ requires std::is_default_constructible_v<ValueT> && std::is_integral_v<ValueIdT>
 struct TrieNode {
   private:
     using NodeT = TrieNode<KeyT, ValueT, ValueIdT>;
-    using NodeActionT = const std::function<void(std::span<const KeyT>, NodeT*)>;
+    using NodeActionWithoutKeyT = const std::function<void(NodeT*)>;
+    using NodeActionWithKeyT = const std::function<void(std::span<const KeyT>, NodeT*)>;
 
   public:
-    std::map<ValueIdT, ValueT> values;
-    std::map<KeyT, std::unique_ptr<NodeT>> children;
+    KeyT key_;
+    std::map<ValueIdT, ValueT> values_;
+    std::vector<std::unique_ptr<NodeT>> children_;
+    NodeT* parent_ = nullptr;
 
     TrieNode() = default;
     TrieNode(const TrieNode&) = delete;
@@ -48,12 +54,16 @@ struct TrieNode {
 
     [[nodiscard]]
     inline NodeT* find(const KeyT& key) {
-        return children.at(key).get();
+        auto* child = findOrNull(key);
+        if (child != nullptr) {
+            return child;
+        }
+        throw std::out_of_range("No such key");
     }
 
     [[nodiscard]]
     NodeT* find(std::span<const KeyT> key_span) {
-        auto node = this;
+        auto* node = this;
         for (const auto& key : key_span) {
             node = node->find(key);
         }
@@ -62,9 +72,9 @@ struct TrieNode {
 
     [[nodiscard]]
     inline NodeT* findOrNull(const KeyT& key) noexcept {
-        auto it = children.find(key);
-        if (it != children.end()) {
-            return it->second.get();
+        auto it = std::find_if(children_.begin(), children_.end(), [&](auto& node) { return node->key_ == key; });
+        if (it != children_.end()) {
+            return it->get();
         } else {
             return nullptr;
         }
@@ -72,7 +82,7 @@ struct TrieNode {
 
     [[nodiscard]]
     NodeT* findOrNull(std::span<const KeyT> key_span) noexcept {
-        auto node = this;
+        auto* node = this;
         for (const auto& key : key_span) {
             node = node->findOrNull(key);
             if (node == nullptr) {
@@ -84,20 +94,21 @@ struct TrieNode {
 
     [[nodiscard]]
     inline NodeT* findOrCreate(const KeyT& key) {
-        auto it = children.find(key);
-        if (it != children.end()) {
-            return it->second.get();
-        } else {
-            auto new_child = std::make_unique<NodeT>();
-            auto ret_pointer = new_child.get();
-            children.insert({key, std::move(new_child)});
-            return ret_pointer;
+        auto* child = findOrNull(key);
+        if (child != nullptr) {
+            return child;
         }
+        auto new_child = std::make_unique<NodeT>();
+        new_child->key_ = key;
+        new_child->parent_ = this;
+        auto* ret_pointer = new_child.get();
+        children_.push_back(std::move(new_child));
+        return ret_pointer;
     }
 
     [[nodiscard]]
     NodeT* findOrCreate(std::span<const KeyT> key_span) {
-        auto node = this;
+        auto* node = this;
         for (const auto& key : key_span) {
             node = node->findOrCreate(key);
         }
@@ -106,13 +117,13 @@ struct TrieNode {
 
     [[nodiscard]]
     inline ValueT* value(ValueIdT id) {
-        return &values.at(id);
+        return &values_.at(id);
     }
 
     [[nodiscard]]
     inline ValueT* valueOrNull(ValueIdT id) noexcept {
-        auto it = values.find(id);
-        if (it != values.end()) {
+        auto it = values_.find(id);
+        if (it != values_.end()) {
             return &(it->second);
         } else {
             return nullptr;
@@ -121,46 +132,66 @@ struct TrieNode {
 
     [[nodiscard]]
     inline ValueT* valueOrCreate(ValueIdT id) {
-        return &values[id];
+        return &values_[id];
     }
 
     [[nodiscard]]
     inline bool isEndNode() const noexcept {
-        return !values.empty();
+        return !values_.empty();
     }
 
     [[nodiscard]]
     inline bool isEndNode(ValueIdT id) const noexcept {
-        return values.find(id) != values.end();
+        return values_.find(id) != values_.end();
     }
 
-    void forEach(std::span<const KeyT> termination_tokens, NodeActionT& action) noexcept {
+    void forEach(std::span<const KeyT> termination_tokens, NodeActionWithoutKeyT& action) noexcept {
         std::vector<KeyT> word_cache;
         forEach(word_cache, 0, termination_tokens, action);
     }
 
-    void forEach(NodeActionT& action) noexcept {
+    void forEach(std::span<const KeyT> termination_tokens, NodeActionWithKeyT& action) noexcept {
         std::vector<KeyT> word_cache;
-        forEach(word_cache, 0, {}, action);
+        forEach(word_cache, 0, termination_tokens, action);
+    }
+
+    void forEach(NodeActionWithoutKeyT& action) noexcept {
+        forEach({}, action);
+    }
+
+    void forEach(NodeActionWithKeyT& action) noexcept {
+        forEach({}, action);
     }
 
   private:
+    void forEach(std::span<const KeyT> termination_tokens, NodeActionWithoutKeyT& action) const noexcept {
+        for (const auto& child_node : children_) {
+            if (std::find(termination_tokens.begin(), termination_tokens.end(), child_node->key_) !=
+                termination_tokens.end()) {
+                continue;
+            }
+            if (child_node->isEndNode()) {
+                action(child_node.get());
+            }
+            child_node->forEach(termination_tokens, action);
+        }
+    }
+
     void forEach(
         std::vector<KeyT>& word_cache,
         size_t insert_index,
         std::span<const KeyT> termination_tokens,
-        NodeActionT& action
+        NodeActionWithKeyT& action
     ) const noexcept {
-        for (auto it = children.begin(); it != children.end(); it++) {
+        for (const auto& child_node : children_) {
             word_cache.resize(insert_index + 1);
-            auto& key = it->first;
-            if (std::find(termination_tokens.begin(), termination_tokens.end(), key) != termination_tokens.end()) {
+            if (std::find(termination_tokens.begin(), termination_tokens.end(), child_node->key_) !=
+                termination_tokens.end()) {
                 continue;
             }
-            auto* child_node = it->second.get();
-            word_cache[insert_index] = key;
+            word_cache[insert_index] = child_node->key_;
             if (child_node->isEndNode()) {
-                action(word_cache, child_node);
+                action(word_cache, child_node.get());
             }
             child_node->forEach(word_cache, insert_index + 1, termination_tokens, action);
         }

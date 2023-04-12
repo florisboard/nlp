@@ -18,6 +18,7 @@ module;
 
 #include <functional>
 #include <span>
+#include <string>
 #include <vector>
 
 export module fl.nlp.core.latin:algorithms;

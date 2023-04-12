@@ -320,11 +320,11 @@ export class LatinFuzzySearcher {
             return;
         }
 
-        for (auto& [child_char, child_node] : node->children) {
-            if (isSpecialToken(child_char)) {
+        for (auto& child_node : node->children_) {
+            if (isSpecialToken(child_node->key_)) {
                 continue;
             }
-            state.setTokenCharAt(token_index + 1, child_char);
+            state.setTokenCharAt(token_index + 1, child_node->key_);
             fuzzySearchWordRecursiveDld(child_node.get(), state, token_index + 1, on_result);
         }
     }

@@ -34,8 +34,8 @@ export const LatinDictId ANY_DICT = -1;
 export const char LATIN_TOKEN_ID_START_OF_SENTENCE = 0x02; // Start of text ASCII CTRL char
 export const char LATIN_TOKEN_ID_NGRAM_SEPARATOR = 0x1E;   // Record separator ASCII CTRL char
 export const char LATIN_TOKEN_ID_LIMIT = 0x20;             // Space char
-export const fl::str::UniChar LATIN_TOKEN_START_OF_SENTENCE = {LATIN_TOKEN_ID_START_OF_SENTENCE};
-export const fl::str::UniChar LATIN_TOKEN_NGRAM_SEPARATOR = {LATIN_TOKEN_ID_NGRAM_SEPARATOR};
+export const fl::str::UniChar LATIN_TOKEN_START_OF_SENTENCE = fl::str::UniChar(1, LATIN_TOKEN_ID_START_OF_SENTENCE);
+export const fl::str::UniChar LATIN_TOKEN_NGRAM_SEPARATOR = fl::str::UniChar(1, LATIN_TOKEN_ID_NGRAM_SEPARATOR);
 export const std::vector<fl::str::UniChar> LATIN_SEARCH_TERMINATION_TOKENS = {LATIN_TOKEN_NGRAM_SEPARATOR};
 
 export inline bool isSpecialToken(const fl::str::UniChar& token) noexcept {

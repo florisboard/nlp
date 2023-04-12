@@ -155,7 +155,7 @@ export class LatinNlpSession {
         for (auto& word : sentence) {
             fl::str::toUniString(word, uni_word);
             auto word_node = target_dictionary->data_->findOrCreate(uni_word);
-            auto properties = word_node->values[id].wordPropertiesOrCreate();
+            auto properties = word_node->valueOrCreate(id)->wordPropertiesOrCreate();
             properties->absolute_score += config.weights.words.training.usage_bonus;
             properties->absolute_score += config.weights.words.training.usage_reduction_others;
             target_dictionary->global_penalties_[EntryType::word()] +=
@@ -173,7 +173,7 @@ export class LatinNlpSession {
             for (int i = max_prev_words - ngram_level; i < uni_sentence.size() - ngram_level + 1; i++) {
                 auto ngram = std::span(uni_sentence.begin() + i, ngram_level);
                 auto ngram_node = target_dictionary->insertNgram(ngram);
-                auto properties = ngram_node->values[id].ngramPropertiesOrCreate();
+                auto properties = ngram_node->valueOrCreate(id)->ngramPropertiesOrCreate();
                 properties->absolute_score += config.weights.ngrams.training.usage_bonus;
                 properties->absolute_score += config.weights.ngrams.training.usage_reduction_others;
                 target_dictionary->global_penalties_[EntryType::ngram(ngram_level)] +=
