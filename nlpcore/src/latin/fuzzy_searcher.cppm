@@ -46,7 +46,6 @@ export enum class FuzzySearchType {
 
 class RecursiveDldCache {
   public:
-    std::ofstream logfile = std::ofstream {"log.txt", std::ios::app};
     std::vector<std::vector<int>> distances;
     fl::str::UniString word = {""};
     fl::str::UniString word_opposite_case = {""};
@@ -275,7 +274,6 @@ export class LatinFuzzySearcher {
                             token.size() >= (state.word.size() - 1) &&
                             (prefixCost = state.editDistanceAt(state.word.size() - 1)) <= state.weights_->max_cost;
         auto cost = isWordPrefix ? prefixCost : candidateCost;
-        state.logfile << fmt::format("{} cost={} is={}\n", token, cost, isWordPrefix);
 
         if (isWordCandidate || isWordPrefix) {
             bool is_end_node = false;
