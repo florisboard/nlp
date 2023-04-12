@@ -2,7 +2,7 @@
   "primaryLocale": "en-US",
   "secondaryLocales": [],
   "baseDictionaries": ["data/words_en.fldic"],
-  "userDictionary": "data/user_dict_core.fldic",
+  "userDictionary": "data/user_dict_core_new.fldic",
   "predictionWeights": {
     "words": {
       "lookup": {
@@ -24,14 +24,14 @@
     },
     "ngrams": {
       "lookup": {
-        "maxCost": 4,
+        "maxCost": 2,
         "costIsEqual": 0,
         "costIsOppositeCase": 1,
         "costInsert": 2,
         "costDelete": 2,
         "costSubstitute": 2,
         "costSubstituteInProximity": 1,
-        "costTranspose": 1,
+        "costTranspose": 0,
         "penaltyDefault": 0,
         "penaltyStartOfStr": 2
       },

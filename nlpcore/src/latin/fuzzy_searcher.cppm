@@ -16,6 +16,8 @@
 
 module;
 
+#include <fmt/ranges.h>
+
 #include <algorithm>
 #include <functional>
 #include <iterator>
@@ -44,10 +46,11 @@ export enum class FuzzySearchType {
 
 class RecursiveDldCache {
   public:
+    std::ofstream logfile = std::ofstream {"log.txt", std::ios::app};
     std::vector<std::vector<int>> distances;
     fl::str::UniString word = {""};
     fl::str::UniString word_opposite_case = {""};
-    fl::str::UniString prefix = {""};
+    fl::str::UniString token_ = {""};
 
     const LookupWeights* weights_ = nullptr;
     EntryType entry_type_ = EntryType::word();
@@ -70,7 +73,7 @@ class RecursiveDldCache {
             word[i + 1] = uni_word[i];
         }
         initOppositeWord();
-        prefix.resize(1);
+        token_.resize(1);
         distances.clear();
         distances.push_back(std::vector(word.size(), 0));
         for (std::size_t i = 1; i < word.size(); i++) {
@@ -78,60 +81,60 @@ class RecursiveDldCache {
         }
     }
 
-    void setPrefixCharAt(std::size_t prefix_index, const fl::str::UniChar& prefix_char) {
-        if (prefix_index == 0) {
+    void setTokenCharAt(std::size_t token_index, const fl::str::UniChar& token_char) {
+        if (token_index == 0) {
             return;
         }
 
-        ensureCapacityFor(prefix_index);
-        prefix[prefix_index] = prefix_char;
-        distances[prefix_index][0] = prefix_index * weights_->cost_insert;
+        ensureCapacityFor(token_index);
+        token_[token_index] = token_char;
+        distances[token_index][0] = token_index * weights_->cost_insert;
 
         int penalty;
         int substitution_cost;
 
         for (std::size_t i = 1; i < word.size(); i++) {
             // Calculate penalty
-            penalty = (i == 1 && prefix_index == 1) ? weights_->penalty_start_of_str : weights_->penalty_default;
+            penalty = (i == 1 && token_index == 1) ? weights_->penalty_start_of_str : weights_->penalty_default;
 
             // Calculate SUBSTITUTION / IS EQUAL
-            if (prefix_char == word[i]) {
+            if (token_char == word[i]) {
                 substitution_cost = weights_->cost_is_equal;
-            } else if (prefix_char == word_opposite_case[i]) {
+            } else if (token_char == word_opposite_case[i]) {
                 substitution_cost = weights_->cost_is_opposite_case;
-            } else if (prefix_index > 1 && i > 1 && prefix[prefix_index - 1] == word[i] && prefix_char == word[i - 1]) {
+            } else if (token_index > 1 && i > 1 && token_[token_index - 1] == word[i] && token_char == word[i - 1]) {
                 // TODO: investigate if transpose calculation could be incorrect for certain edge cases
                 substitution_cost = weights_->cost_transpose + penalty;
             } else {
                 substitution_cost = weights_->cost_substitute + penalty;
             }
 
-            distances[prefix_index][i] = std::min(
+            distances[token_index][i] = std::min(
                 std::min(
-                    distances[prefix_index - 1][i] + weights_->cost_insert,
-                    distances[prefix_index][i - 1] + weights_->cost_delete
+                    distances[token_index - 1][i] + weights_->cost_insert,
+                    distances[token_index][i - 1] + weights_->cost_delete
                 ),
-                distances[prefix_index - 1][i - 1] + substitution_cost
+                distances[token_index - 1][i - 1] + substitution_cost
             );
         }
     }
 
     [[nodiscard]]
-    inline std::span<const fl::str::UniChar> prefixSpanAt(std::size_t prefix_index) const {
-        return {prefix.begin() + 1, prefix.begin() + prefix_index + 1};
+    inline std::span<const fl::str::UniChar> tokenSpanAt(std::size_t token_index) const {
+        return {token_.begin() + 1, token_.begin() + token_index + 1};
     }
 
     [[nodiscard]]
-    inline int editDistanceAt(std::size_t prefix_index) const {
-        return distances[prefix_index][word.size() - 1];
+    inline int editDistanceAt(std::size_t token_index) const {
+        return distances[token_index][word.size() - 1];
     }
 
     [[nodiscard]]
-    bool isDeadEndAt(std::size_t prefix_index) const noexcept {
-        if (prefix_index < word.size() - 1) {
-            return distances[prefix_index][prefix_index] >= weights_->max_cost;
+    bool isDeadEndAt(std::size_t token_index) const noexcept {
+        if (token_index < word.size() - 1) {
+            return distances[token_index][token_index] >= weights_->max_cost;
         } else {
-            return editDistanceAt(prefix_index) >= weights_->max_cost;
+            return editDistanceAt(token_index) >= weights_->max_cost;
         }
     }
 
@@ -149,11 +152,11 @@ class RecursiveDldCache {
         }
     }
 
-    void ensureCapacityFor(std::size_t prefix_index) noexcept {
-        while (prefix.size() <= prefix_index) {
-            prefix.emplace_back("");
+    void ensureCapacityFor(std::size_t token_index) noexcept {
+        while (token_.size() <= token_index) {
+            token_.emplace_back("");
         }
-        while (distances.size() <= prefix_index) {
+        while (distances.size() <= token_index) {
             distances.emplace_back(word.size(), 0);
         }
     }
@@ -218,7 +221,7 @@ export class LatinFuzzySearcher {
                     // double confidence =
                     //     result_info.frequency_ * (0.01 + 0.99 * (1.0 - (result_info.edit_distance_ / 6.0)));
                     double confidence = (6.0 - result_info.edit_distance_) + result_info.frequency_;
-                    results.insert({std::move(raw_word), "", confidence}, flags);
+                    results.insert({std::move(raw_word), "", confidence * 2}, flags);
                 });
             }
         }
@@ -245,46 +248,39 @@ export class LatinFuzzySearcher {
         if (ngram.size() < 2) {
             return;
         }
-        /*auto subgram = ngram.subspan(0, ngram.size() - 1);
-        // TODO: implement findNgram() !!
+
+        auto subgram = ngram.subspan(0, ngram.size() - 1);
+        auto* subgram_node = algorithms::findNgramOrNull(session_state_->shared_data.get(), ANY_DICT, subgram);
+        if (subgram_node == nullptr) return;
+        auto* subgram_search_node = subgram_node->findOrNull(LATIN_TOKEN_NGRAM_SEPARATOR);
+        if (subgram_search_node == nullptr) return;
+
         RecursiveDldCache state;
         state.init(
-            ngram.back(), EntryType::word(), search_type, &session_config_->weights.words.lookup, dict_ids_to_search
+            ngram.back(), EntryType::ngram(ngram.size()), search_type, &session_config_->weights.ngrams.lookup,
+            dict_ids_to_search
         );
-        fuzzySearchWordRecursiveDld<NgramEntryProperties>(session_state_->shared_data.get(), state, 0, on_result);
-        RecursiveDldCache state;
-        auto current_ngram_root_node = session_state->shared_data.get();
-        for (const auto& token : ngram) {
-            if (LatinDictionary::isSpecialToken(token) || true) {
-                auto node = current_ngram_root_node->findOrNull(token);
-                if (node != nullptr) {
-                    auto it = node->values.find(LatinNlpSessionState::USER_DICTIONARY_ID);
-                    if (it != node->values.end() && it->second.ngramPropertiesOrNull() != nullptr) {
-                        current_ngram_root_node = ;
-                    }
-                } else {
-                    break;
-                }
-            } else {
-                // state.init(token, type, &session_config->weights.ngrams.lookup);
-                // fuzzySearchWordRecursiveDld(current_map->rootNode(), state, 0, on_result);
-            }
-        }*/
+        fuzzySearchWordRecursiveDld<NgramEntryProperties>(subgram_search_node, state, 0, on_result);
     }
 
     template<typename P>
     void fuzzySearchWordRecursiveDld(
-        LatinTrieNode* node,
-        RecursiveDldCache& state,
-        std::size_t prefix_index,
-        OnResultLambda<P>& on_result
+        LatinTrieNode* node, RecursiveDldCache& state, std::size_t token_index, OnResultLambda<P>& on_result
     ) noexcept {
-        auto cost = state.editDistanceAt(prefix_index);
-        auto prefix = state.prefixSpanAt(prefix_index);
-        if (cost <= state.weights_->max_cost && !prefix.empty()) {
+        auto token = state.tokenSpanAt(token_index);
+        auto candidateCost = state.editDistanceAt(token_index);
+        auto isWordCandidate = !token.empty() && candidateCost <= state.weights_->max_cost;
+        auto prefixCost = 0; // Is initialized in next line only if isWordPrefix results in true
+        auto isWordPrefix = state.search_type_ == FuzzySearchType::ProximityOrPrefix &&
+                            token.size() >= (state.word.size() - 1) &&
+                            (prefixCost = state.editDistanceAt(state.word.size() - 1)) <= state.weights_->max_cost;
+        auto cost = isWordPrefix ? prefixCost : candidateCost;
+        state.logfile << fmt::format("{} cost={} is={}\n", token, cost, isWordPrefix);
+
+        if (isWordCandidate || isWordPrefix) {
             bool is_end_node = false;
             P merged_properties;
-            merged_properties.absolute_score = 1;
+            merged_properties.absolute_score = 0;
             ResultInfo<P> result_info {0.0, cost, &merged_properties};
             for (auto& id : state.dict_ids_to_search_) {
                 auto* dict = session_state_->getDictionaryById(id);
@@ -313,16 +309,16 @@ export class LatinFuzzySearcher {
             }
             if (is_end_node) {
                 if (state.search_type_ == FuzzySearchType::ProximityWithoutSelf &&
-                    fl::utils::equal(prefix, std::span(state.word))) {
+                    fl::utils::equal(token, std::span(state.word))) {
                     // Do nothing
                 } else {
-                    on_result(prefix, result_info);
+                    on_result(token, result_info);
                 }
             }
         }
 
         // Exit unnecessary recursive loop
-        if (state.isDeadEndAt(prefix_index)) {
+        if (!isWordPrefix && state.isDeadEndAt(token_index)) {
             return;
         }
 
@@ -330,8 +326,8 @@ export class LatinFuzzySearcher {
             if (isSpecialToken(child_char)) {
                 continue;
             }
-            state.setPrefixCharAt(prefix_index + 1, child_char);
-            fuzzySearchWordRecursiveDld(child_node.get(), state, prefix_index + 1, on_result);
+            state.setTokenCharAt(token_index + 1, child_char);
+            fuzzySearchWordRecursiveDld(child_node.get(), state, token_index + 1, on_result);
         }
     }
 };
