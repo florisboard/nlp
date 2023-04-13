@@ -70,6 +70,9 @@ export class LatinNlpSession {
     void loadDictionary(LatinDictId id, const std::filesystem::path& dict_path) {
         auto dict = std::make_unique<LatinDictionary>(id, state.shared_data);
         dict->loadFromDisk(dict_path);
+        if (id >= state.dictionaries.size()) {
+            state.dictionaries.resize(id + 1);
+        }
         state.dictionaries[id] = std::move(dict);
     }
 

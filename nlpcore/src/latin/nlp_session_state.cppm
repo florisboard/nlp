@@ -34,10 +34,10 @@ export struct LatinNlpSessionState {
     static const LatinDictId USER_DICTIONARY_ID = 0;
 
     std::shared_ptr<LatinTrieNode> shared_data = std::make_shared<LatinTrieNode>();
-    std::map<LatinDictId, std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
+    std::vector<std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
 
     inline fl::nlp::LatinDictionary* getDictionaryById(LatinDictId id) {
-        return dictionaries.at(id).get();
+        return dictionaries[id].get();
     }
 
     inline fl::nlp::LatinDictionary* getUserDictionary() {

@@ -53,13 +53,13 @@ void forEachCombination(const std::vector<const std::vector<T>*>& vectors, Combi
 }
 
 export template<typename K, typename V>
-V& findOrDefault(std::map<K, V>& map, const K& key, V& default_value) noexcept {
+inline V& findOrDefault(std::map<K, V>& map, const K& key, V& default_value) noexcept {
     auto it = map.find(key);
     return it != map.end() ? it->second : default_value;
 }
 
 export template<typename K, typename V>
-const V& findOrDefault(const std::map<K, V>& map, const K& key, const V& default_value) noexcept {
+inline const V& findOrDefault(const std::map<K, V>& map, const K& key, const V& default_value) noexcept {
     auto it = map.find(key);
     return it != map.end() ? it->second : default_value;
 }

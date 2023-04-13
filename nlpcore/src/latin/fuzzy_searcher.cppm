@@ -38,6 +38,8 @@ import fl.utils;
 
 namespace fl::nlp {
 
+using cost_t = int;
+
 export enum class FuzzySearchType {
     Proximity,
     ProximityWithoutSelf,
@@ -46,7 +48,7 @@ export enum class FuzzySearchType {
 
 class RecursiveDldCache {
   public:
-    std::vector<std::vector<int>> distances;
+    std::vector<std::vector<cost_t>> distances_;
     fl::str::UniString word = {""};
     fl::str::UniString word_opposite_case = {""};
     fl::str::UniString token_ = {""};
@@ -54,29 +56,29 @@ class RecursiveDldCache {
     const LookupWeights* weights_ = nullptr;
     EntryType entry_type_ = EntryType::word();
     FuzzySearchType search_type_ = FuzzySearchType::Proximity;
-    std::vector<LatinDictId> dict_ids_to_search_;
+    std::vector<const LatinDictionary*> dicts_to_search_;
 
     void init(
         std::span<const fl::str::UniChar> uni_word,
         EntryType entry_type,
         FuzzySearchType search_type,
         const LookupWeights* weights,
-        const std::vector<LatinDictId>& dict_ids_to_search
+        const std::vector<const LatinDictionary*>& dicts_to_search
     ) noexcept {
         entry_type_ = entry_type;
         search_type_ = search_type;
         weights_ = weights;
-        dict_ids_to_search_ = dict_ids_to_search;
+        dicts_to_search_ = dicts_to_search;
         word.resize(uni_word.size() + 1);
         for (std::size_t i = 0; i < uni_word.size(); i++) {
             word[i + 1] = uni_word[i];
         }
         initOppositeWord();
         token_.resize(1);
-        distances.clear();
-        distances.push_back(std::vector(word.size(), 0));
+        distances_.clear();
+        distances_.push_back(std::vector(word.size(), 0));
         for (std::size_t i = 1; i < word.size(); i++) {
-            distances[0][i] = i * weights_->cost_insert;
+            distances_[0][i] = i * weights_->cost_insert;
         }
     }
 
@@ -87,7 +89,7 @@ class RecursiveDldCache {
 
         ensureCapacityFor(token_index);
         token_[token_index] = token_char;
-        distances[token_index][0] = token_index * weights_->cost_insert;
+        distances_[token_index][0] = token_index * weights_->cost_insert;
 
         int penalty;
         int substitution_cost;
@@ -108,12 +110,12 @@ class RecursiveDldCache {
                 substitution_cost = weights_->cost_substitute + penalty;
             }
 
-            distances[token_index][i] = std::min(
+            distances_[token_index][i] = std::min(
                 std::min(
-                    distances[token_index - 1][i] + weights_->cost_insert,
-                    distances[token_index][i - 1] + weights_->cost_delete
+                    distances_[token_index - 1][i] + weights_->cost_insert,
+                    distances_[token_index][i - 1] + weights_->cost_delete
                 ),
-                distances[token_index - 1][i - 1] + substitution_cost
+                distances_[token_index - 1][i - 1] + substitution_cost
             );
         }
     }
@@ -125,13 +127,13 @@ class RecursiveDldCache {
 
     [[nodiscard]]
     inline int editDistanceAt(std::size_t token_index) const {
-        return distances[token_index][word.size() - 1];
+        return distances_[token_index][word.size() - 1];
     }
 
     [[nodiscard]]
-    bool isDeadEndAt(std::size_t token_index) const noexcept {
+    inline bool isDeadEndAt(std::size_t token_index) const noexcept {
         if (token_index < word.size() - 1) {
-            return distances[token_index][token_index] >= weights_->max_cost;
+            return distances_[token_index][token_index] >= weights_->max_cost;
         } else {
             return editDistanceAt(token_index) >= weights_->max_cost;
         }
@@ -155,8 +157,8 @@ class RecursiveDldCache {
         while (token_.size() <= token_index) {
             token_.emplace_back("");
         }
-        while (distances.size() <= token_index) {
-            distances.emplace_back(word.size(), 0);
+        while (distances_.size() <= token_index) {
+            distances_.emplace_back(word.size(), 0);
         }
     }
 };
@@ -193,7 +195,8 @@ export class LatinFuzzySearcher {
         }
 
         // TODO: this is hard-coded
-        static std::vector<LatinDictId> dict_ids_to_search = {0, 1};
+        std::vector<const LatinDictionary*> dicts_to_search = {
+            session_state_->getDictionaryById(0), session_state_->getDictionaryById(1)};
 
         auto max_ngram_level = std::max(1, std::min(flags.maxNgramLevel(), static_cast<int>(sentence.size())));
         for (int ngram_level = 1; ngram_level <= max_ngram_level; ngram_level++) {
@@ -201,20 +204,17 @@ export class LatinFuzzySearcher {
                 // We have a uni-gram and only search for proximate words
                 auto current_word = sentence.back();
                 if (current_word.empty()) continue;
-                fuzzySearchWord(
-                    current_word, search_type, dict_ids_to_search,
-                    [&](auto* node, auto& result_info) {
-                        // TODO: this is a mess and needs fixing
-                        // double confidence =
-                        //     result_info.frequency_ * (0.01 + 0.99 * (1.0 - (result_info.edit_distance_ / 6.0)));
-                        double confidence = (6.0 - result_info.edit_distance_) + result_info.frequency_;
-                        results.insert({node, confidence}, flags);
-                    }
-                );
+                fuzzySearchWord(current_word, search_type, dicts_to_search, [&](auto* node, auto& result_info) {
+                    // TODO: this is a mess and needs fixing
+                    // double confidence =
+                    //     result_info.frequency_ * (0.01 + 0.99 * (1.0 - (result_info.edit_distance_ / 6.0)));
+                    double confidence = (6.0 - result_info.edit_distance_) + result_info.frequency_;
+                    results.insert({node, confidence}, flags);
+                });
             } else {
                 // We have an n-gram
                 auto ngram = sentence.subspan(sentence.size() - ngram_level, ngram_level);
-                fuzzySearchNgram(ngram, search_type, dict_ids_to_search, [&](auto* node, auto& result_info) {
+                fuzzySearchNgram(ngram, search_type, dicts_to_search, [&](auto* node, auto& result_info) {
                     // TODO: this is a mess and needs fixing
                     // double confidence =
                     //     result_info.frequency_ * (0.01 + 0.99 * (1.0 - (result_info.edit_distance_ / 6.0)));
@@ -229,18 +229,18 @@ export class LatinFuzzySearcher {
     void fuzzySearchWord(
         const fl::str::UniString& word,
         FuzzySearchType search_type,
-        const std::vector<LatinDictId>& dict_ids_to_search,
+        const std::vector<const LatinDictionary*>& dicts_to_search,
         OnResultLambda<WordEntryProperties>& on_result
     ) noexcept {
         RecursiveDldCache state;
-        state.init(word, EntryType::word(), search_type, &session_config_->weights.words.lookup, dict_ids_to_search);
+        state.init(word, EntryType::word(), search_type, &session_config_->weights.words.lookup, dicts_to_search);
         fuzzySearchWordRecursiveDld<WordEntryProperties>(session_state_->shared_data.get(), state, 0, on_result);
     }
 
     void fuzzySearchNgram(
         std::span<const fl::str::UniString> ngram,
         FuzzySearchType search_type,
-        const std::vector<LatinDictId>& dict_ids_to_search,
+        const std::vector<const LatinDictionary*>& dicts_to_search,
         OnResultLambda<NgramEntryProperties>& on_result
     ) noexcept {
         if (ngram.size() < 2) {
@@ -256,7 +256,7 @@ export class LatinFuzzySearcher {
         RecursiveDldCache state;
         state.init(
             ngram.back(), EntryType::ngram(ngram.size()), search_type, &session_config_->weights.ngrams.lookup,
-            dict_ids_to_search
+            dicts_to_search
         );
         fuzzySearchWordRecursiveDld<NgramEntryProperties>(subgram_search_node, state, 0, on_result);
     }
@@ -279,9 +279,8 @@ export class LatinFuzzySearcher {
             P merged_properties;
             merged_properties.absolute_score = 0;
             ResultInfo<P> result_info {0.0, cost, &merged_properties};
-            for (auto& id : state.dict_ids_to_search_) {
-                auto* dict = session_state_->getDictionaryById(id);
-                auto* value = node->valueOrNull(id);
+            for (const auto* dict : state.dicts_to_search_) {
+                auto* value = node->valueOrNull(dict->dict_id_);
                 if (value == nullptr) continue;
                 is_end_node = true;
                 if constexpr (std::is_same_v<P, WordEntryProperties>) {
