@@ -353,7 +353,7 @@ void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexce
         bounds.drawTextStart(
             line++, fmt::format("Suggested words ({}, {}ms):", state.suggestion_results.size(), duration.count())
         );
-        for (auto& result : state.suggestion_results.get()) {
+        for (auto& result : state.suggestion_results) {
             bounds.drawTextStart(
                 line++, fmt::format("{} | c={}", result->text.c_str(), result->confidence)
             );

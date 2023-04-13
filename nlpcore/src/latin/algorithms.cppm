@@ -25,6 +25,7 @@ export module fl.nlp.core.latin:algorithms;
 
 import :definitions;
 import :entry_properties;
+import fl.nlp.core.common;
 import fl.string;
 
 namespace fl::nlp::algorithms {
@@ -172,5 +173,41 @@ export inline void forEachShortcut(LatinTrieNode* data, LatinDictId id, Shortcut
 }
 
 } // namespace shortcuts
+
+inline namespace other {
+
+export fl::str::UniString wordAt(const LatinTrieNode* end_node) {
+    fl::str::UniString word;
+    if (end_node == nullptr) {
+        return word;
+    }
+
+    auto* node = end_node;
+    while (node->parent_ != nullptr) {
+        if (isSpecialToken(node->key_)) {
+            break;
+        }
+        word.insert(word.begin(), node->key_);
+        node = node->parent_;
+    }
+    return word;
+}
+
+export void writeSuggestionResults(
+    const TransientSuggestionResults<LatinTrieNode>& transient_results, SuggestionResults& results
+) {
+    std::string raw_text;
+    for (const auto& candidate : transient_results.get()) {
+        auto text = wordAt(candidate->node_);
+        fl::str::toStdString(text, raw_text);
+        auto result = std::make_unique<SuggestionCandidate>(
+            raw_text, "", candidate->confidence_, candidate->is_eligible_for_auto_commit_,
+            candidate->is_eligible_for_user_removal_
+        );
+        results.push_back(std::move(result));
+    }
+}
+
+} // namespace other
 
 } // namespace fl::nlp::algorithms

@@ -171,7 +171,7 @@ struct ResultInfo {
 export class LatinFuzzySearcher {
   private:
     template<typename P>
-    using OnResultLambda = const std::function<void(std::span<const fl::str::UniChar>, ResultInfo<P>&)>;
+    using OnResultLambda = const std::function<void(LatinTrieNode*, ResultInfo<P>&)>;
 
   private:
     const LatinNlpSessionConfig* session_config_;
@@ -186,7 +186,7 @@ export class LatinFuzzySearcher {
         std::span<fl::str::UniString> sentence,
         const SuggestionRequestFlags& flags,
         FuzzySearchType search_type,
-        SuggestionResults& results
+        TransientSuggestionResults<LatinTrieNode>& results
     ) noexcept {
         if (sentence.empty()) {
             return;
@@ -201,26 +201,25 @@ export class LatinFuzzySearcher {
                 // We have a uni-gram and only search for proximate words
                 auto current_word = sentence.back();
                 if (current_word.empty()) continue;
-                std::string raw_word;
-                fuzzySearchWord(current_word, search_type, dict_ids_to_search, [&](auto word, auto& result_info) {
-                    fl::str::toStdString(word, raw_word);
-                    // TODO: this is a mess and needs fixing
-                    // double confidence =
-                    //     result_info.frequency_ * (0.01 + 0.99 * (1.0 - (result_info.edit_distance_ / 6.0)));
-                    double confidence = (6.0 - result_info.edit_distance_) + result_info.frequency_;
-                    results.insert({std::move(raw_word), "", confidence}, flags);
-                });
+                fuzzySearchWord(
+                    current_word, search_type, dict_ids_to_search,
+                    [&](auto* node, auto& result_info) {
+                        // TODO: this is a mess and needs fixing
+                        // double confidence =
+                        //     result_info.frequency_ * (0.01 + 0.99 * (1.0 - (result_info.edit_distance_ / 6.0)));
+                        double confidence = (6.0 - result_info.edit_distance_) + result_info.frequency_;
+                        results.insert({node, confidence}, flags);
+                    }
+                );
             } else {
                 // We have an n-gram
                 auto ngram = sentence.subspan(sentence.size() - ngram_level, ngram_level);
-                std::string raw_word;
-                fuzzySearchNgram(ngram, search_type, dict_ids_to_search, [&](auto word, auto& result_info) {
-                    fl::str::toStdString(word, raw_word);
+                fuzzySearchNgram(ngram, search_type, dict_ids_to_search, [&](auto* node, auto& result_info) {
                     // TODO: this is a mess and needs fixing
                     // double confidence =
                     //     result_info.frequency_ * (0.01 + 0.99 * (1.0 - (result_info.edit_distance_ / 6.0)));
                     double confidence = (6.0 - result_info.edit_distance_) + result_info.frequency_;
-                    results.insert({std::move(raw_word), "", confidence * 2}, flags);
+                    results.insert({node, confidence * 2}, flags);
                 });
             }
         }
@@ -310,7 +309,7 @@ export class LatinFuzzySearcher {
                     fl::utils::equal(token, std::span(state.word))) {
                     // Do nothing
                 } else {
-                    on_result(token, result_info);
+                    on_result(node, result_info);
                 }
             }
         }

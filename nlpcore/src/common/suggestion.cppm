@@ -19,6 +19,7 @@ module;
 #include <bit>
 #include <cstdint>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -138,28 +139,46 @@ export struct SuggestionCandidate {
     bool is_eligible_for_user_removal = true;
 };
 
-export class SuggestionResults {
+export using SuggestionResults = std::vector<std::unique_ptr<SuggestionCandidate>>;
+
+export template<typename NodeT>
+struct TransientSuggestionCandidate {
+    constexpr static const double MIN_CONFIDENCE = 0.0;
+    // Everything above 0.9 to 1.0 is reserved for special suggestions such as contacts, clipboard, etc., which is not
+    // handled in the native implementation
+    constexpr static const double MAX_CONFIDENCE = 0.9;
+
+    NodeT* node_;
+    double confidence_ = MIN_CONFIDENCE;
+    bool is_eligible_for_auto_commit_ = false;
+    bool is_eligible_for_user_removal_ = true;
+};
+
+export template<typename NodeT>
+class TransientSuggestionResults {
   private:
-    using CandidatesListT = std::vector<std::unique_ptr<SuggestionCandidate>>;
+    using CandidateT = TransientSuggestionCandidate<NodeT>;
+    using CandidatesListT = std::vector<std::unique_ptr<TransientSuggestionCandidate<NodeT>>>;
 
   public:
-    void insert(SuggestionCandidate&& candidate, const SuggestionRequestFlags& flags) noexcept {
-        auto existing_candidate =
-            std::find_if(candidates_.begin(), candidates_.end(), [&](auto& it) { return it->text == candidate.text; });
+    void insert(CandidateT&& candidate, const SuggestionRequestFlags& flags) noexcept {
+        auto existing_candidate = std::find_if(candidates_.begin(), candidates_.end(), [&](auto& it) {
+            return it->node_ == candidate.node_;
+        });
         if (existing_candidate != candidates_.end()) {
-            auto new_confidence = (candidate.confidence + (*existing_candidate)->confidence) / 2.0;
-            (*existing_candidate)->confidence = new_confidence;
-        } else if (candidate.confidence < min_inserted_confidence && candidates_.size() > flags.maxSuggestionCount()) {
+            auto new_confidence = std::midpoint(candidate.confidence_, (*existing_candidate)->confidence_);
+            (*existing_candidate)->confidence_ = new_confidence;
+        } else if (candidate.confidence_ < min_inserted_confidence_ && candidates_.size() > flags.maxSuggestionCount()) {
             return;
         } else {
-            auto candidate_ptr = std::make_unique<SuggestionCandidate>(candidate);
+            auto candidate_ptr = std::make_unique<CandidateT>(candidate);
             candidates_.push_back(std::move(candidate_ptr));
         }
         std::sort(candidates_.begin(), candidates_.end(), suggestions_sorter);
         if (candidates_.size() > flags.maxSuggestionCount()) {
             candidates_.erase(candidates_.end() - 1);
         }
-        min_inserted_confidence = candidates_.back()->confidence;
+        min_inserted_confidence_ = candidates_.back()->confidence_;
     }
 
     void clear() noexcept {
@@ -176,16 +195,17 @@ export class SuggestionResults {
 
   private:
     CandidatesListT candidates_;
-    double min_inserted_confidence = 0.0;
+    double min_inserted_confidence_ = 0.0;
 
     static bool suggestions_sorter(
-        const std::unique_ptr<fl::nlp::SuggestionCandidate>& a, const std::unique_ptr<fl::nlp::SuggestionCandidate>& b
+        const std::unique_ptr<TransientSuggestionCandidate<NodeT>>& a,
+        const std::unique_ptr<TransientSuggestionCandidate<NodeT>>& b
     ) {
         /*if (a->edit_distance == b->edit_distance) {
             return a->confidence > b->confidence;
         }
         return a->edit_distance < b->edit_distance && a->confidence * 100.0 > b->confidence;*/
-        return a->confidence > b->confidence;
+        return a->confidence_ > b->confidence_;
     }
 };
 

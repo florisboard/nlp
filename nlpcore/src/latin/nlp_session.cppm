@@ -28,6 +28,7 @@ module;
 
 export module fl.nlp.core.latin:nlp_session;
 
+import :algorithms;
 import :dictionary;
 import :entry_properties;
 import :fuzzy_searcher;
@@ -73,9 +74,7 @@ export class LatinNlpSession {
     }
 
     SpellingResult spell(
-        const std::string& raw_word,
-        const std::vector<std::string>& prev_raw_words,
-        const SuggestionRequestFlags& flags
+        const std::string& raw_word, const std::vector<std::string>& prev_raw_words, const SuggestionRequestFlags& flags
     ) noexcept {
         if (raw_word.empty()) {
             return SpellingResult::unspecified();
@@ -103,11 +102,13 @@ export class LatinNlpSession {
         sentence.push_back(word);
 
         LatinFuzzySearcher fuzzy_searcher(&config, &state);
+        TransientSuggestionResults<LatinTrieNode> transient_results;
         SuggestionResults results;
-        fuzzy_searcher.predictWord(sentence, flags, FuzzySearchType::ProximityWithoutSelf, results);
+        fuzzy_searcher.predictWord(sentence, flags, FuzzySearchType::ProximityWithoutSelf, transient_results);
+        algorithms::writeSuggestionResults(transient_results, results);
 
         std::vector<std::string> suggested_corrections;
-        for (auto& candidate : results.get()) {
+        for (auto& candidate : results) {
             suggested_corrections.push_back(candidate->text);
         }
 
@@ -138,7 +139,9 @@ export class LatinNlpSession {
         sentence.push_back(word);
 
         LatinFuzzySearcher fuzzy_searcher(&config, &state);
-        return fuzzy_searcher.predictWord(sentence, flags, FuzzySearchType::ProximityOrPrefix, results);
+        TransientSuggestionResults<LatinTrieNode> transient_results;
+        fuzzy_searcher.predictWord(sentence, flags, FuzzySearchType::ProximityOrPrefix, transient_results);
+        algorithms::writeSuggestionResults(transient_results, results);
     }
 
   public:
