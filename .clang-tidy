@@ -1,5 +1,6 @@
 ---
-Checks: "clang-analyzer-*,cppcoreguidelines-*,-cppcoreguidelines-owning-memory,
+Checks: "clang-analyzer-*,cppcoreguidelines-*,-cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-init-variables,-cppcoreguidelines-avoid-capture-default-when-capturing-this,
   -cppcoreguidelines-narrowing-conversions,modernize-*,-cppcoreguidelines-pro-type-member-init,
   -cppcoreguidelines-pro-type-vararg,-modernize-use-trailing-return-type,performance-*,-readability-*"
