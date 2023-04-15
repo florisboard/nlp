@@ -158,7 +158,8 @@ export template<typename NodeT>
 class TransientSuggestionResults {
   private:
     using CandidateT = TransientSuggestionCandidate<NodeT>;
-    using CandidatesListT = std::vector<std::unique_ptr<TransientSuggestionCandidate<NodeT>>>;
+    using CandidatePtrT = std::unique_ptr<TransientSuggestionCandidate<NodeT>>;
+    using CandidatesListT = std::vector<CandidatePtrT>;
 
   public:
     void insert(CandidateT&& candidate, const SuggestionRequestFlags& flags) noexcept {
@@ -188,6 +189,10 @@ class TransientSuggestionResults {
 
     inline const CandidatesListT& get() const noexcept {
         return candidates_;
+    }
+
+    inline const CandidatePtrT& top() const {
+        return candidates_[0];
     }
 
     inline std::size_t size() const noexcept {

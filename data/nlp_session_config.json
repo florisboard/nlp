@@ -4,41 +4,22 @@
   "baseDictionaries": ["data/words_en.fldic"],
   "userDictionary": "data/user_dict_core_new.fldic",
   "predictionWeights": {
-    "words": {
-      "lookup": {
-        "maxCost": 6,
-        "costIsEqual": 0,
-        "costIsOppositeCase": 1,
-        "costInsert": 2,
-        "costDelete": 2,
-        "costSubstitute": 2,
-        "costSubstituteInProximity": 1,
-        "costTranspose": 0,
-        "penaltyDefault": 0,
-        "penaltyStartOfStr": 2
-      },
-      "training": {
-        "usageBonus": 128,
-        "usageReductionOthers": 1
-      }
+    "lookup": {
+      "maxCostSum": 1.5,
+      "costIsEqual": 0.0,
+      "costIsEqualIgnoringCase": 0.25,
+      "costInsert": 0.5,
+      "costInsertStartOfStr": 1.0,
+      "costDelete": 0.5,
+      "costDeleteStartOfStr": 1.0,
+      "costSubstitute": 0.5,
+      "costSubstituteInProximity": 0.25,
+      "costSubstituteStartOfStr": 1.0,
+      "costTranspose": 0.0
     },
-    "ngrams": {
-      "lookup": {
-        "maxCost": 2,
-        "costIsEqual": 0,
-        "costIsOppositeCase": 1,
-        "costInsert": 2,
-        "costDelete": 2,
-        "costSubstitute": 2,
-        "costSubstituteInProximity": 1,
-        "costTranspose": 0,
-        "penaltyDefault": 0,
-        "penaltyStartOfStr": 2
-      },
-      "training": {
-        "usageBonus": 128,
-        "usageReductionOthers": 1
-      }
+    "training": {
+      "usageBonus": 128,
+      "usageReductionOthers": 1
     }
   },
   "keyProximityChecker": {

@@ -31,9 +31,9 @@ export module fl.nlp.core.latin:nlp_session;
 import :algorithms;
 import :dictionary;
 import :entry_properties;
-import :fuzzy_searcher;
 import :nlp_session_config;
 import :nlp_session_state;
+import :prediction;
 import :prediction_weights;
 import fl.icuext;
 import fl.nlp.core.common;
@@ -104,10 +104,15 @@ export class LatinNlpSession {
         fl::str::toUniString(raw_word, word);
         sentence.push_back(word);
 
-        LatinFuzzySearcher fuzzy_searcher(&config, &state);
+        /*LatinFuzzySearcher fuzzy_searcher(&config, &state);
         TransientSuggestionResults<LatinTrieNode> transient_results;
         SuggestionResults results;
         fuzzy_searcher.predictWord(sentence, flags, FuzzySearchType::ProximityWithoutSelf, transient_results);
+        algorithms::writeSuggestionResults(transient_results, results);*/
+        LatinPredictionWrapper prediction_wrapper(config, state);
+        TransientSuggestionResults<LatinTrieNode> transient_results;
+        SuggestionResults results;
+        prediction_wrapper.predictWord(sentence, flags, LatinFuzzySearchType::ProximityWithoutSelf, transient_results);
         algorithms::writeSuggestionResults(transient_results, results);
 
         std::vector<std::string> suggested_corrections;
@@ -141,9 +146,13 @@ export class LatinNlpSession {
         fl::str::toUniString(raw_word, word);
         sentence.push_back(word);
 
-        LatinFuzzySearcher fuzzy_searcher(&config, &state);
+        /*LatinFuzzySearcher fuzzy_searcher(&config, &state);
         TransientSuggestionResults<LatinTrieNode> transient_results;
         fuzzy_searcher.predictWord(sentence, flags, FuzzySearchType::ProximityOrPrefix, transient_results);
+        algorithms::writeSuggestionResults(transient_results, results);*/
+        LatinPredictionWrapper prediction_wrapper(config, state);
+        TransientSuggestionResults<LatinTrieNode> transient_results;
+        prediction_wrapper.predictWord(sentence, flags, LatinFuzzySearchType::ProximityOrPrefix, transient_results);
         algorithms::writeSuggestionResults(transient_results, results);
     }
 
@@ -162,10 +171,10 @@ export class LatinNlpSession {
             fl::str::toUniString(word, uni_word);
             auto word_node = target_dictionary->data_->findOrCreate(uni_word);
             auto properties = word_node->valueOrCreate(id)->wordPropertiesOrCreate();
-            properties->absolute_score += config.weights.words.training.usage_bonus;
-            properties->absolute_score += config.weights.words.training.usage_reduction_others;
+            properties->absolute_score += config.weights_.training_.usage_bonus_;
+            properties->absolute_score += config.weights_.training_.usage_reduction_others_;
             target_dictionary->global_penalties_[EntryType::word()] +=
-                config.weights.words.training.usage_reduction_others;
+                config.weights_.training_.usage_reduction_others_;
             uni_sentence.push_back(std::move(uni_word));
         }
 
@@ -180,10 +189,10 @@ export class LatinNlpSession {
                 auto ngram = std::span(uni_sentence.begin() + i, ngram_level);
                 auto ngram_node = target_dictionary->insertNgram(ngram);
                 auto properties = ngram_node->valueOrCreate(id)->ngramPropertiesOrCreate();
-                properties->absolute_score += config.weights.ngrams.training.usage_bonus;
-                properties->absolute_score += config.weights.ngrams.training.usage_reduction_others;
+                properties->absolute_score += config.weights_.training_.usage_bonus_;
+                properties->absolute_score += config.weights_.training_.usage_reduction_others_;
                 target_dictionary->global_penalties_[EntryType::ngram(ngram_level)] +=
-                    config.weights.ngrams.training.usage_reduction_others;
+                    config.weights_.training_.usage_reduction_others_;
             }
         }
     }

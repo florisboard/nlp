@@ -17,8 +17,8 @@
 module;
 
 #include <functional>
-#include <memory>
 #include <map>
+#include <memory>
 #include <type_traits>
 
 export module fl.nlp.core.latin:nlp_session_state;
@@ -36,8 +36,16 @@ export struct LatinNlpSessionState {
     std::shared_ptr<LatinTrieNode> shared_data = std::make_shared<LatinTrieNode>();
     std::vector<std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
 
+    inline const fl::nlp::LatinDictionary* getDictionaryById(LatinDictId id) const {
+        return dictionaries[id].get();
+    }
+
     inline fl::nlp::LatinDictionary* getDictionaryById(LatinDictId id) {
         return dictionaries[id].get();
+    }
+
+    inline const fl::nlp::LatinDictionary* getUserDictionary() const {
+        return getDictionaryById(USER_DICTIONARY_ID);
     }
 
     inline fl::nlp::LatinDictionary* getUserDictionary() {
