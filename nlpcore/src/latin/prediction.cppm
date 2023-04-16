@@ -204,6 +204,11 @@ class RecursiveFuzzySearchState {
         }
     }
 
+    [[nodiscard]]
+    inline bool isPrefixAt(std::size_t token_index) const {
+        return token_index > 0 && token_index > (cached_word_.size() - 1) && distances_[1][1].is_equal_ignoring_case_;
+    }
+
     void setTokenCharAt(std::size_t token_index, const fl::str::UniChar& token_char) {
         if (token_index == 0) return;
 
@@ -211,7 +216,7 @@ class RecursiveFuzzySearchState {
         cached_token_[token_index] = token_char;
         distances_[token_index][0].cost_ = token_index * insertCostFor(token_index);
 
-        double substitution_cost = 0.0;
+        double substitution_cost;
         bool is_equal = false;
         bool is_equal_ignoring_case = false;
 
@@ -261,9 +266,9 @@ void fuzzySearchRecursive(
     auto candidateCost = state.editDistanceAt(token_index);
     auto isWordCandidate = token_index > 0 && candidateCost <= state.weights_.max_cost_sum_;
     auto prefixCost = 0.0; // Is initialized in next line only if isWordPrefix results in true
-    // TODO: rethink prefix searching (performance)
-    auto isWordPrefix = false && params.search_type_ == LatinFuzzySearchType::ProximityOrPrefix &&
-                        token_index >= word.size() &&
+    // TODO: improve prefix searching performance (run time and stop detection)
+    auto isWordPrefix = params.search_type_ == LatinFuzzySearchType::ProximityOrPrefix &&
+                        state.isPrefixAt(token_index) &&
                         (prefixCost = state.editDistanceAt(word.size())) <= state.weights_.max_cost_sum_;
     auto cost = isWordPrefix ? prefixCost : candidateCost;
 
@@ -274,8 +279,18 @@ void fuzzySearchRecursive(
             if (params.search_type_ == LatinFuzzySearchType::ProximityWithoutSelf && fl::utils::equal(token, word)) {
                 // Do nothing
             } else {
-                auto similarity = 1.0 - (cost / std::min(token.size(), word.size()));
-                params.results_.insert({node, similarity}, params.flags_);
+                // TODO: reevaluate the weighting and calculation
+                double confidence;
+                if (isWordPrefix) {
+                    auto similarity = 1.0 - (cost / word.size());
+                    auto normfreq = 0.125 * std::log10(frequency) + 1.0;
+                    confidence = (0.9 + 0.09 * normfreq) * similarity;
+                } else {
+                    auto similarity = 1.0 - (cost / std::max(token.size(), word.size()));
+                    // TODO: Maybe we need to account for freq also when its not a prefix??
+                    confidence = similarity;
+                }
+                params.results_.insert({node, confidence}, params.flags_);
             }
         }
     }
