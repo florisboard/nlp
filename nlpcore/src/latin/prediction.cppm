@@ -88,6 +88,7 @@ struct RecursiveFuzzySearchParams {
     std::vector<const LatinDictionary*> dicts_to_search_;
     LatinTrieNode* shared_data_;
     const LookupWeights& weights_;
+    const KeyProximityChecker& key_proximity_checker_;
     TransientSuggestionResults<LatinTrieNode>& results_;
 };
 
@@ -100,6 +101,7 @@ struct RecursiveFuzzySearchDistanceCell {
 class RecursiveFuzzySearchState {
   public:
     const LookupWeights& weights_;
+    const KeyProximityChecker& key_proximity_checker_;
     EntryType entry_type_;
     fl::str::UniString cached_word_ = {""};
     std::span<const fl::str::UniChar> cached_word_span_;
@@ -110,7 +112,7 @@ class RecursiveFuzzySearchState {
     RecursiveFuzzySearchState(
         const RecursiveFuzzySearchParams& params, EntryType entry_type, const fl::str::UniString& word
     )
-        : weights_(params.weights_), entry_type_(entry_type) {
+        : weights_(params.weights_), key_proximity_checker_(params.key_proximity_checker_), entry_type_(entry_type) {
         initCachedWord(word);
         initCachedWordOppositeCase(word);
         initCachedToken();
@@ -226,6 +228,9 @@ class RecursiveFuzzySearchState {
             } else if (token_index > 1 && i > 1 && cached_token_[token_index - 1] == cached_word_[i] && token_char == cached_word_[i - 1]) {
                 // TRANSPOSE
                 substitution_cost = weights_.cost_transpose_;
+            } else if (key_proximity_checker_.isInProximity(token_char, cached_word_[i])) {
+                // SUBSTITUTE (in proximity)
+                substitution_cost = weights_.cost_substitute_in_proximity_;
             } else {
                 // SUBSTITUTE
                 substitution_cost = substitutionCostFor(token_index);
@@ -269,7 +274,7 @@ void fuzzySearchRecursive(
             if (params.search_type_ == LatinFuzzySearchType::ProximityWithoutSelf && fl::utils::equal(token, word)) {
                 // Do nothing
             } else {
-                auto similarity = 1.0 - (cost / std::max(token.size(), word.size()));
+                auto similarity = 1.0 - (cost / std::min(token.size(), word.size()));
                 params.results_.insert({node, similarity}, params.flags_);
             }
         }
@@ -330,7 +335,12 @@ export class LatinPredictionWrapper {
             session_state_.getDictionaryById(0), session_state_.getDictionaryById(1)};
 
         RecursiveFuzzySearchParams params = {
-            flags,  search_type, dicts_to_search, session_state_.shared_data.get(), session_config_.weights_.lookup_,
+            flags,
+            search_type,
+            dicts_to_search,
+            session_state_.shared_data.get(),
+            session_config_.weights_.lookup_,
+            session_config_.key_proximity_checker_,
             results};
         predictWordInternal(sentence, params);
     }

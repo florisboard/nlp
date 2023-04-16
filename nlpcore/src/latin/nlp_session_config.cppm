@@ -38,7 +38,7 @@ export struct LatinNlpSessionConfig {
     std::vector<std::string> base_dictionary_paths;
     std::string user_dictionary_path;
     LatinPredictionWeights weights_;
-    KeyProximityChecker key_proximity_checker;
+    KeyProximityChecker key_proximity_checker_;
 };
 
 export void to_json(json& j, const LatinNlpSessionConfig& config) {
@@ -48,7 +48,7 @@ export void to_json(json& j, const LatinNlpSessionConfig& config) {
         {"baseDictionaries", config.base_dictionary_paths},
         {"userDictionary", config.user_dictionary_path},
         {"predictionWeights", config.weights_},
-        {"keyProximityChecker", config.key_proximity_checker}};
+        {"keyProximityChecker", config.key_proximity_checker_}};
 }
 
 export void from_json(const json& j, LatinNlpSessionConfig& config) {
@@ -57,7 +57,7 @@ export void from_json(const json& j, LatinNlpSessionConfig& config) {
     j.at("baseDictionaries").get_to(config.base_dictionary_paths);
     j.at("userDictionary").get_to(config.user_dictionary_path);
     j.at("predictionWeights").get_to(config.weights_);
-    j.at("keyProximityChecker").get_to(config.key_proximity_checker);
+    j.at("keyProximityChecker").get_to(config.key_proximity_checker_);
 }
 
 } // namespace fl::nlp

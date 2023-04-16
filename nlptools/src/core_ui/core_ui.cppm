@@ -290,8 +290,8 @@ void handleEvents(CoreUiState& state) noexcept {
         } else if (ev.key == TB_KEY_F7) {
             state.srf_input.is_private_session = !state.srf_input.is_private_session;
         } else if (ev.key == TB_KEY_F12) {
-            state.nlp_session.config.key_proximity_checker.enabled =
-                !state.nlp_session.config.key_proximity_checker.enabled;
+            state.nlp_session.config.key_proximity_checker_.enabled_ =
+                !state.nlp_session.config.key_proximity_checker_.enabled_;
         } else if (ev.ch != 0x0) {
             state.raw_input_buffer.append(static_cast<UChar32>(ev.ch));
         }
@@ -330,7 +330,9 @@ void drawNlpSessionConfigBox(const CoreUiState& state, const BoundedBox& bounds)
     int line = 0;
     bounds.drawOutline("NlpSessionConfig");
     bounds.drawTextStart(line, "F12  keyProximityChecker");
-    bounds.drawTextEnd(line++, fmt::format("= {}", state.nlp_session.config.key_proximity_checker.enabled ? 'Y' : 'N'));
+    bounds.drawTextEnd(
+        line++, fmt::format("= {}", state.nlp_session.config.key_proximity_checker_.enabled_ ? 'Y' : 'N')
+    );
 }
 
 void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexcept {
@@ -354,9 +356,7 @@ void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexce
             line++, fmt::format("Suggested words ({}, {}ms):", state.suggestion_results.size(), duration.count())
         );
         for (auto& result : state.suggestion_results) {
-            bounds.drawTextStart(
-                line++, fmt::format("{} | c={}", result->text.c_str(), result->confidence)
-            );
+            bounds.drawTextStart(line++, fmt::format("{} | c={}", result->text.c_str(), result->confidence));
         }
     } else {
         bounds.drawTextStart(line++, "Spelling results:");

@@ -34,28 +34,28 @@ export class KeyProximityChecker {
   public:
     using MappingT = std::unordered_map<fl::str::UniChar, std::vector<fl::str::UniChar>>;
 
-    bool enabled = false;
-    MappingT mapping;
+    bool enabled_ = false;
+    MappingT mapping_;
 
     KeyProximityChecker() = default;
     ~KeyProximityChecker() = default;
 
     [[nodiscard]]
     inline bool isInProximity(const fl::str::UniChar& assumed, const fl::str::UniChar& actual) const noexcept {
-        if (!enabled) return false;
+        if (!enabled_) return false;
         return isInProximityInternal(assumed, actual);
     }
 
     void reset() noexcept {
-        enabled = false;
-        mapping.clear();
+        enabled_ = false;
+        mapping_.clear();
     }
 
   private:
     [[nodiscard]]
     bool isInProximityInternal(const fl::str::UniChar& assumed, const fl::str::UniChar& actual) const noexcept {
-        auto it = mapping.find(assumed);
-        if (it != mapping.end()) {
+        auto it = mapping_.find(assumed);
+        if (it != mapping_.end()) {
             auto& vec = it->second;
             return std::find(vec.begin(), vec.end(), actual) != vec.end();
         } else {
@@ -65,12 +65,12 @@ export class KeyProximityChecker {
 };
 
 export void to_json(json& j, const KeyProximityChecker& checker) {
-    j = json {{"enabled", checker.enabled}, {"mapping", checker.mapping}};
+    j = json {{"enabled", checker.enabled_}, {"mapping", checker.mapping_}};
 }
 
 export void from_json(const json& j, KeyProximityChecker& checker) {
-    checker.enabled = j.value("enabled", false);
-    checker.mapping = j.value("mapping", KeyProximityChecker::MappingT());
+    checker.enabled_ = j.value("enabled", false);
+    checker.mapping_ = j.value("mapping", KeyProximityChecker::MappingT());
 };
 
 } // namespace fl::nlp
