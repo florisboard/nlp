@@ -15,63 +15,137 @@
 # limitations under the License.
 
 import gzip
+import json
 import os
+import re
 import sys
-from typing import Tuple
+import time
+from concurrent.futures import ProcessPoolExecutor
+from typing import Pattern, Tuple
+
 
 def print_usage() -> None:
     print(f"""
 Utility which reads unigram partition files from a Google Ngram Viewer export and generates a wordlist from the data.
 
-Usage: ./{__file__} [--help] <UNIGRAM_DIR_PATH> <WORDLIST_PATH>
+Usage: ./{__file__} [--help] <UNIGRAM_DIR> <WORDLIST> [<WIKTEXTRACT_CONFIG>] [<FILTER_NAME>]
 
 Arguments:
-  <UNIGRAM_DIR_PATH>    The path of the directory where unigram partitions should be read.
+  <UNIGRAM_DIR>         The path of the directory where unigram partitions should be read.
   <WORDLIST_PATH>       The path of the wordlist file. If a file at this location exists it will be overwritten.
+  <WIKTEXTRACT_CONFIG>  The path of a wiktextract config file. Optional.
+  <FILTER_NAME>         The name of a wiktextract config exclude filter to use. Optional. Default=root
   --help                Prints this help message and quits.
 
 ---
 See https://storage.googleapis.com/books/ngrams/books/datasetsv3.html for an overview of Google Ngram data.
 """.strip())
 
+
 def parse_line(line: str) -> Tuple[str, int]:
     line_components = line.split("\t")
-    word = "".join(line_components[0].split("_")[:-1])
-    if len(line_components) == 0:
-        return (word, 0)
+    if len(line_components) <= 1:
+        return (line, 0)
+
+    word = line_components[0].rsplit("_", 1)[0]
     word_count: int = 0
+
     for data_point in line_components[1:]:
         data_point_components = data_point.split(",")
         if len(data_point_components) != 3:
             continue
         word_count += int(data_point_components[1])
+
     return (word, word_count)
 
-def generate_wordlist(unigram_dir: str, wordlist_path: str) -> None:
-    if not os.path.exists(unigram_dir):
-        print(f"FATAL: Given unigram directory path '{unigram_dir}' does not exist! Aborting.")
-    if not os.path.isdir(unigram_dir):
-        print(f"FATAL: Given unigram directory path '{unigram_dir}' is a file! Aborting.")
 
-    for partition_file_name in os.listdir(unigram_dir):
-        if partition_file_name.startswith("1-") and partition_file_name.endswith(".gz"):
-            print(f"Parse {partition_file_name}")
-            with gzip.open(f"{unigram_dir}/{partition_file_name}", "rt") as partition_file:
-                with open(wordlist_path, "w") as wordlist_file:
-                    for line in partition_file:
-                        [word, word_count] = parse_line(line)
-                        if len(word) > 0:
-                            wordlist_file.write(f"{word}\t{word_count}\n")
+def parse_partition_file(partition_file_path: str, exclude_filters: list[Pattern[str]]) -> dict[str, int]:
+    print(f"Parse {partition_file_path}")
+    words = dict()
+    with gzip.open(partition_file_path, "rt") as partition_file:
+        for line in partition_file:
+            [word, word_count] = parse_line(line)
+            if is_excluded(word, exclude_filters):
+                continue
+            words[word] = words.get(word, 0) + word_count
+    return words
+
+
+def parse_partition_file_wrapper(args) -> dict[str, int]:
+    return parse_partition_file(*args)
+
+
+def is_excluded(word: str, exclude_filters: list[Pattern[str]]) -> bool:
+    return next(filter(lambda f: f.match(word), exclude_filters), None) is not None
+
+
+def merge_dicts(dict1: dict[str, int], dict2: dict[str, int]) -> dict[str, int]:
+    for key, value in dict2.items():
+        dict1[key] = dict1.get(key, 0) + value
+    return dict1
+
+
+def generate_wordlist(unigram_dir: str, wordlist_path: str, exclude_filters: list[Pattern[str]]) -> None:
+    if not os.path.exists(unigram_dir):
+        print(
+            f"FATAL: Given unigram directory path '{unigram_dir}' does not exist! Aborting.")
+    if not os.path.isdir(unigram_dir):
+        print(
+            f"FATAL: Given unigram directory path '{unigram_dir}' is a file! Aborting.")
+
+    partition_files = []
+    for file_name in os.listdir(unigram_dir):
+        file_path = f"{unigram_dir}/{file_name}"
+        if file_name.startswith("1-") and file_name.endswith(".gz"):
+            print(f"Queue {file_path}")
+            partition_files.append((file_path, exclude_filters))
         else:
-            print(f"Skip {partition_file_name}")
-    print(f"Written result to {wordlist_path}")
+            print(f"Skip {file_path}")
+
+    with ProcessPoolExecutor() as executor:
+        results = executor.map(parse_partition_file_wrapper, partition_files)
+
+    words = dict()
+    for result in results:
+        words = merge_dicts(words, result)
+
+    print(f"Write result to {wordlist_path}")
+    with open(wordlist_path, "w") as wordlist_file:
+        for word, word_count in words.items():
+            wordlist_file.write(word)
+            wordlist_file.write("\t")
+            wordlist_file.write(str(word_count))
+            wordlist_file.write("\n")
+
+
+def parse_exclude_filters(wiktextract_config_path: str, filter_name: str) -> list[Pattern[str]]:
+    if len(wiktextract_config_path) == 0 or not os.path.isfile(wiktextract_config_path):
+        return list()
+    with open(wiktextract_config_path, "r") as wiktextract_config_file:
+        wiktextract_config = json.loads(wiktextract_config_file.read())
+        for filter_config in wiktextract_config["filters"]:
+            if filter_config["name"] == filter_name:
+                excluded_filters = list()
+                for pattern in filter_config["excluded"]["words"]:
+                    excluded_filters.append(re.compile(pattern))
+        return excluded_filters
 
 
 def main() -> None:
     if sys.argv.count("--help") > 0:
         print_usage()
     else:
-        generate_wordlist(sys.argv[1], sys.argv[2])
+        exclude_filters = parse_exclude_filters(
+            sys.argv[3] if len(sys.argv) > 3 else "",
+            sys.argv[4] if len(sys.argv) > 4 else "root"
+        )
+
+        start_time = time.time()
+        generate_wordlist(sys.argv[1], sys.argv[2], exclude_filters)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"Finished in {elapsed_time:.2f}s")
+
 
 if __name__ == "__main__":
     main()
