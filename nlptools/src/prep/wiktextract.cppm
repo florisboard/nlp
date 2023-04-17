@@ -162,7 +162,7 @@ class WiktextractPreprocessor {
         for (auto& word : config.project_specific_words) {
             fl::str::toUniString(word, uni_word);
             auto node = dict.data_->findOrCreate(uni_word);
-            node->valueOrCreate(dict.dict_id_)->wordPropertiesOrCreate()->absolute_score++;
+            node->valueOrCreate(dict.dict_id_)->wordPropertiesOrCreate()->absolute_score = 1;
         }
     }
 
@@ -316,7 +316,7 @@ class WiktextractPreprocessor {
                     fl::str::toUniString(word, uni_word);
                     auto node = dict.data_->findOrCreate(uni_word);
                     auto properties = node->valueOrCreate(dict.dict_id_)->wordPropertiesOrCreate();
-                    properties->absolute_score += evaluator_with_fo.offensive_count;
+                    properties->absolute_score = 1;
                     properties->is_possibly_offensive = true;
                 } else {
                     total_words_normal++;
@@ -324,7 +324,7 @@ class WiktextractPreprocessor {
                     fl::str::toUniString(word, uni_word);
                     auto node = dict.data_->findOrCreate(uni_word);
                     auto properties = node->valueOrCreate(dict.dict_id_)->wordPropertiesOrCreate();
-                    properties->absolute_score += evaluator_with_fo.normal_count;
+                    properties->absolute_score = 1;
                 }
             }
         }
