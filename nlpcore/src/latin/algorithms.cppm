@@ -194,12 +194,25 @@ export fl::str::UniString wordAt(const LatinTrieNode* end_node) {
 }
 
 export void writeSuggestionResults(
-    const TransientSuggestionResults<LatinTrieNode>& transient_results, SuggestionResults& results
+    const TransientSuggestionResults<LatinTrieNode>& transient_results,
+    SuggestionResults& results,
+    const SuggestionRequestFlags& flags
 ) {
     std::string raw_text;
     for (const auto& candidate : transient_results.get()) {
         auto text = wordAt(candidate->node_);
         fl::str::toStdString(text, raw_text);
+        // TODO: evaluate if it is better if this post-casemapping is better done in Kotlin
+        auto iss_start = flags.inputShiftStateStart();
+        auto iss_curr = flags.inputShiftStateCurrent();
+        bool is_caps = iss_curr == InputShiftState::CAPS_LOCK;
+        bool is_shifted = iss_start != InputShiftState::UNSHIFTED;
+        if (is_caps) {
+            fl::str::uppercase(raw_text);
+        } else if (is_shifted) {
+            // TODO: is titlecase correct here?? (edge cases like custom words that look like this: LaTeX or ePaper)
+            fl::str::titlecase(raw_text);
+        }
         auto result = std::make_unique<SuggestionCandidate>(
             raw_text, "", candidate->confidence_, candidate->is_eligible_for_auto_commit_,
             candidate->is_eligible_for_user_removal_

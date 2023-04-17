@@ -113,7 +113,7 @@ export class LatinNlpSession {
         TransientSuggestionResults<LatinTrieNode> transient_results;
         SuggestionResults results;
         prediction_wrapper.predictWord(sentence, flags, LatinFuzzySearchType::ProximityWithoutSelf, transient_results);
-        algorithms::writeSuggestionResults(transient_results, results);
+        algorithms::writeSuggestionResults(transient_results, results, flags);
 
         std::vector<std::string> suggested_corrections;
         for (auto& candidate : results) {
@@ -146,14 +146,10 @@ export class LatinNlpSession {
         fl::str::toUniString(raw_word, word);
         sentence.push_back(word);
 
-        /*LatinFuzzySearcher fuzzy_searcher(&config, &state);
-        TransientSuggestionResults<LatinTrieNode> transient_results;
-        fuzzy_searcher.predictWord(sentence, flags, FuzzySearchType::ProximityOrPrefix, transient_results);
-        algorithms::writeSuggestionResults(transient_results, results);*/
         LatinPredictionWrapper prediction_wrapper(config, state);
         TransientSuggestionResults<LatinTrieNode> transient_results;
         prediction_wrapper.predictWord(sentence, flags, LatinFuzzySearchType::ProximityOrPrefix, transient_results);
-        algorithms::writeSuggestionResults(transient_results, results);
+        algorithms::writeSuggestionResults(transient_results, results, flags);
     }
 
   public:
