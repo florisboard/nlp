@@ -276,7 +276,18 @@ void fuzzySearchRecursive(
         auto [merged_properties, frequency] = mergeProperties<P>(node, state.entry_type_, params.dicts_to_search_);
         if (frequency > 0.0) {
             auto token = state.tokenSpanAt(token_index);
-            if (params.search_type_ == LatinFuzzySearchType::ProximityWithoutSelf && fl::utils::equal(token, word)) {
+            auto is_same_but_should_not =
+                params.search_type_ == LatinFuzzySearchType::ProximityWithoutSelf && fl::utils::equal(token, word);
+            bool is_offensive;
+            bool is_hidden;
+            if constexpr (std::is_same_v<P, WordEntryProperties> || std::is_same_v<P, ShortcutEntryProperties>) {
+                is_offensive = !params.flags_.allowPossiblyOffensive() && merged_properties.is_possibly_offensive;
+                is_hidden = !params.flags_.overrideHiddenFlag() && merged_properties.is_hidden_by_user;
+            } else {
+                is_offensive = false;
+                is_hidden = false;
+            }
+            if (is_same_but_should_not || is_offensive || is_hidden) {
                 // Do nothing
             } else {
                 // TODO: reevaluate the weighting and calculation
