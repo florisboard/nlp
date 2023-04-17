@@ -5,6 +5,7 @@ target_module_sources(fl_nlp_tools_common PUBLIC
         action_config.cppm
         dictionary_args_utils.cppm
         program.cppm
+        stopwatch.cppm
         )
 target_link_libraries(fl_nlp_tools_common PUBLIC
         fl::string
