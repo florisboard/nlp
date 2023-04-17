@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
     actions.emplace_back(std::make_unique<fl::nlp::tools::CoreUiActionConfig>());
     actions.emplace_back(std::make_unique<fl::nlp::tools::PrepWiktextractActionConfig>());
     actions.emplace_back(std::make_unique<fl::nlp::tools::TrainRawTextActionConfig>());
+    actions.emplace_back(std::make_unique<fl::nlp::tools::TrainWordScoresActionConfig>());
 
     fl::nlp::tools::Program program(PROGRAM_NAME, PROGRAM_VERSION, argc, argv);
     for (auto& action : actions) {

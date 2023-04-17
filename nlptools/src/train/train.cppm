@@ -17,3 +17,4 @@
 export module fl.nlp.tools.train;
 
 export import :raw_text;
+export import :word_scores;
