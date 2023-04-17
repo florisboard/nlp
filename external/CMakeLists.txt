@@ -5,7 +5,7 @@ add_subdirectory(argparse)
 add_subdirectory(fmt)
 
 # External library: "google/googletest"
-add_subdirectory(googletest)
+# add_subdirectory(googletest)
 
 # External library: "nlohmann/json"
 add_subdirectory(nlohmann-json)
