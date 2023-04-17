@@ -23,11 +23,12 @@ export module fl.nlp.core.latin:entry_properties;
 
 namespace fl::nlp {
 
-export using WordIdT = int32_t;
+export using WordIdT = std::int32_t;
+export using ScoreT = std::int64_t;
 
 export struct EntryType {
   public:
-    using ValueT = int32_t;
+    using ValueT = std::int32_t;
 
     ValueT value_;
 
@@ -71,18 +72,18 @@ export struct EntryType {
 
 export struct WordEntryProperties {
     WordIdT internal_id = 0;
-    int32_t absolute_score = 0;
+    ScoreT absolute_score = 0;
     bool is_possibly_offensive = false;
     bool is_hidden_by_user = false;
 };
 
 export struct NgramEntryProperties {
-    int32_t absolute_score = 0;
+    ScoreT absolute_score = 0;
 };
 
 export struct ShortcutEntryProperties {
     std::string shortcut_phrase;
-    int32_t absolute_score;
+    ScoreT absolute_score = 0;
     bool is_possibly_offensive = false;
     bool is_hidden_by_user = false;
 };
@@ -113,6 +114,10 @@ export struct EntryProperties {
         return word_properties.get();
     }
 
+    void removeWordProperties() noexcept {
+        word_properties = nullptr;
+    }
+
     NgramEntryProperties* ngramProperties() {
         auto p = ngram_properties.get();
         if (p == nullptr) {
@@ -132,6 +137,10 @@ export struct EntryProperties {
         return ngram_properties.get();
     }
 
+    void removeNgramProperties() noexcept {
+        ngram_properties = nullptr;
+    }
+
     ShortcutEntryProperties* shortcutProperties() {
         auto p = shortcut_properties.get();
         if (p == nullptr) {
@@ -149,6 +158,10 @@ export struct EntryProperties {
             shortcut_properties = std::make_unique<ShortcutEntryProperties>();
         }
         return shortcut_properties.get();
+    }
+
+    void removeShortcutProperties() noexcept {
+        shortcut_properties = nullptr;
     }
 };
 
