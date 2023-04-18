@@ -198,10 +198,8 @@ export void writeSuggestionResults(
     SuggestionResults& results,
     const SuggestionRequestFlags& flags
 ) {
-    std::string raw_text;
     for (const auto& candidate : transient_results.get()) {
-        auto text = wordAt(candidate->node_);
-        fl::str::toStdString(text, raw_text);
+        auto& raw_text = candidate->text_;
         // TODO: evaluate if it is better if this post-casemapping is better done in Kotlin
         auto iss_start = flags.inputShiftStateStart();
         auto iss_curr = flags.inputShiftStateCurrent();

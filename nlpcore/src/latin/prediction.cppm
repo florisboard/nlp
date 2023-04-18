@@ -300,7 +300,9 @@ void fuzzySearchRecursive(
                     similarity = 1.0 - (cost / std::max(token.size(), word.size()));
                 }
                 double confidence = (w1 * similarity + w2 * frequency) / (w1 + w2);
-                params.results_.insert({node, confidence}, params.flags_);
+                std::string raw_word;
+                fl::str::toStdString(token, raw_word);
+                params.results_.insert({raw_word, confidence}, params.flags_);
             }
         }
     }
@@ -326,8 +328,19 @@ void predictWordInternal(std::span<const fl::str::UniString> sentence, const Rec
             // We have a uni-gram and only search for proximate words
             auto current_word = sentence.back();
             if (current_word.empty()) continue;
+            // Word fuzzy matching
             RecursiveFuzzySearchState state = {params, EntryType::word(), current_word};
             fuzzySearchRecursive<WordEntryProperties>(params.shared_data_, params, state, 0);
+            // Shortcut exact matching
+            for (auto* dict : params.dicts_to_search_) {
+                auto* shortcut_node = params.shared_data_->findOrNull(current_word);
+                if (shortcut_node == nullptr) continue;
+                auto* value = shortcut_node->valueOrNull(dict->dict_id_);
+                if (value == nullptr) continue;
+                auto* properties = value->shortcutPropertiesOrNull();
+                if (properties == nullptr) continue;
+                params.results_.insert({properties->shortcut_phrase, 1.0}, params.flags_);
+            }
         } else {
             // We have an n-gram
             // TODO

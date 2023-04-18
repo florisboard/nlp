@@ -141,15 +141,9 @@ export struct SuggestionCandidate {
 
 export using SuggestionResults = std::vector<std::unique_ptr<SuggestionCandidate>>;
 
-export template<typename NodeT>
 struct TransientSuggestionCandidate {
-    constexpr static const double MIN_CONFIDENCE = 0.0;
-    // Everything above 0.9 to 1.0 is reserved for special suggestions such as contacts, clipboard, etc., which is not
-    // handled in the native implementation
-    constexpr static const double MAX_CONFIDENCE = 0.9;
-
-    NodeT* node_;
-    double confidence_ = MIN_CONFIDENCE;
+    std::string text_;
+    double confidence_ = SuggestionCandidate::MIN_CONFIDENCE;
     bool is_eligible_for_auto_commit_ = false;
     bool is_eligible_for_user_removal_ = true;
 };
@@ -157,8 +151,8 @@ struct TransientSuggestionCandidate {
 export template<typename NodeT>
 class TransientSuggestionResults {
   private:
-    using CandidateT = TransientSuggestionCandidate<NodeT>;
-    using CandidatePtrT = std::unique_ptr<TransientSuggestionCandidate<NodeT>>;
+    using CandidateT = TransientSuggestionCandidate;
+    using CandidatePtrT = std::unique_ptr<TransientSuggestionCandidate>;
     using CandidatesListT = std::vector<CandidatePtrT>;
 
   public:
@@ -204,8 +198,8 @@ class TransientSuggestionResults {
     double min_inserted_confidence_ = 0.0;
 
     static bool suggestions_sorter(
-        const std::unique_ptr<TransientSuggestionCandidate<NodeT>>& a,
-        const std::unique_ptr<TransientSuggestionCandidate<NodeT>>& b
+        const std::unique_ptr<TransientSuggestionCandidate>& a,
+        const std::unique_ptr<TransientSuggestionCandidate>& b
     ) {
         /*if (a->edit_distance == b->edit_distance) {
             return a->confidence > b->confidence;

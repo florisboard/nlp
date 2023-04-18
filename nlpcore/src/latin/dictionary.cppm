@@ -239,7 +239,15 @@ export class LatinDictionary : public Dictionary {
                 auto properties = node->value(dict_id_)->ngramProperties();
                 properties->absolute_score = std::stoll(line_components[1]);
             } else if (section == LatinDictionarySection::SHORTCUTS) {
-                // throw std::runtime_error("TODO: implement shortcuts");
+                fl::str::split(line, FLDIC_SEPARATOR, line_components);
+                if (line_components.size() < 2) {
+                    throw std::runtime_error("Invalid line!");
+                }
+                fl::str::toUniString(line_components[0], word);
+                auto node = data_->findOrCreate(word);
+                auto properties = node->valueOrCreate(dict_id_)->shortcutPropertiesOrCreate();
+                properties->absolute_score = 1;
+                properties->shortcut_phrase = line_components[1];
             }
         }
 
@@ -332,6 +340,11 @@ export class LatinDictionary : public Dictionary {
 
     void serializeShortcuts(std::ostream& ostream) noexcept {
         ostream << FLDIC_NEWLINE << FLDIC_SECTION_SHORTCUTS << FLDIC_NEWLINE;
+        std::string raw_shortcut;
+        algorithms::forEachShortcut(data_.get(), dict_id_, [&](auto shortcut, auto* node, auto* properties) {
+            fl::str::toStdString(shortcut, raw_shortcut);
+            ostream << raw_shortcut << FLDIC_SEPARATOR << properties->shortcut_phrase << FLDIC_NEWLINE;
+        });
     }
 
   public:
