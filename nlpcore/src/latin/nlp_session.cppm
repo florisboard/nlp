@@ -104,11 +104,6 @@ export class LatinNlpSession {
         fl::str::toUniString(raw_word, word);
         sentence.push_back(word);
 
-        /*LatinFuzzySearcher fuzzy_searcher(&config, &state);
-        TransientSuggestionResults<LatinTrieNode> transient_results;
-        SuggestionResults results;
-        fuzzy_searcher.predictWord(sentence, flags, FuzzySearchType::ProximityWithoutSelf, transient_results);
-        algorithms::writeSuggestionResults(transient_results, results);*/
         LatinPredictionWrapper prediction_wrapper(config, state);
         TransientSuggestionResults<LatinTrieNode> transient_results;
         SuggestionResults results;

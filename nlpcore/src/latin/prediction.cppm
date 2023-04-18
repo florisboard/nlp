@@ -291,16 +291,15 @@ void fuzzySearchRecursive(
                 // Do nothing
             } else {
                 // TODO: reevaluate the weighting and calculation
-                double confidence;
+                double w1 = 1.0;
+                double w2 = 0.1;
+                double similarity;
                 if (isWordPrefix) {
-                    auto similarity = 1.0 - (cost / word.size());
-                    auto normfreq = 0.125 * std::log10(frequency) + 1.0;
-                    confidence = (0.9 + 0.09 * normfreq) * similarity;
+                    similarity = 1.0 - (cost / word.size());
                 } else {
-                    auto similarity = 1.0 - (cost / std::max(token.size(), word.size()));
-                    // TODO: Maybe we need to account for freq also when its not a prefix??
-                    confidence = similarity;
+                    similarity = 1.0 - (cost / std::max(token.size(), word.size()));
                 }
+                double confidence = (w1 * similarity + w2 * frequency) / (w1 + w2);
                 params.results_.insert({node, confidence}, params.flags_);
             }
         }
