@@ -35,7 +35,11 @@
         "categories": []
       },
       "offensive": {
-        "words": ["^.*[Nn](?:eger|igg(?:er|a)).*$"],
+        "words": [
+          "^.*[Nn](?:eger|igg(?:er|a)).*$", "^[Aa]rsch.*$", "^.*[Ff]ick.*$", "^.*[Ff]otze.*$", "^([Mm]aul)?[Hh]ure.*$",
+          "^[Mm]ist(?:kerl|stück).*$", "^[Mm]uschi.*$", "^.*[Ss]chei(?:ss|ß).*$", "^[Ss]chlampe(?!r)n?.*$",
+          "^[Ss]past.*$"
+        ],
         "tags": ["offensive", "vulgar"],
         "categories": ["German ethnic slurs", "German religious slurs"]
       }
