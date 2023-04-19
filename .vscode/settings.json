@@ -1,6 +1,6 @@
 {
   "editor.formatOnSave": true,
-  "editor.formatOnSaveMode": "modifications",
+  "editor.formatOnSaveMode": "file",
   "editor.rulers": [
     120
   ],
@@ -12,5 +12,9 @@
   "json.format.keepLines": true,
   "C_Cpp.autoAddFileAssociations": false,
   "cmake.configureOnOpen": true,
-  "cmake.cmakePath": "/home/patrick/cmake-3.26.0-rc6-linux-x86_64/bin/cmake"
+  "cmake.cmakePath": "/home/patrick/cmake-3.26.0-rc6-linux-x86_64/bin/cmake",
+  "python.formatting.blackArgs": [
+    "--line-length", "120"
+  ],
+  "python.formatting.provider": "black"
 }
