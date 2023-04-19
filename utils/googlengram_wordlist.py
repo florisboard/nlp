@@ -20,6 +20,7 @@ import gzip
 import json
 import os
 import re
+import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
 from typing import Pattern, Tuple
@@ -68,15 +69,13 @@ def merge_dicts(dict1: dict[str, int], dict2: dict[str, int]) -> dict[str, int]:
     return dict1
 
 
-def generate_wordlist(unigram_dir: str, wordlist_path: str, exclude_filters: list[Pattern[str]]) -> None:
+def generate_wordlist(unigram_dir: str, wordlist_path: str, exclude_filters: list[Pattern[str]]) -> int:
     if not os.path.exists(unigram_dir):
         print(f"FATAL: Given unigram directory path '{unigram_dir}' does not exist! Aborting.")
-        flutils.print_separator()
-        return
+        return os.EX_USAGE
     if not os.path.isdir(unigram_dir):
         print(f"FATAL: Given unigram directory path '{unigram_dir}' is a file! Aborting.")
-        flutils.print_separator()
-        return
+        return os.EX_USAGE
 
     partition_files = []
     for file_name in os.listdir(unigram_dir):
@@ -102,7 +101,8 @@ def generate_wordlist(unigram_dir: str, wordlist_path: str, exclude_filters: lis
             wordlist_file.write("\t")
             wordlist_file.write(str(word_count))
             wordlist_file.write("\n")
-    flutils.print_separator()
+
+    return os.EX_OK
 
 
 def parse_exclude_filters(wiktextract_config_path: str, filter_name: str) -> list[Pattern[str]]:
@@ -151,10 +151,14 @@ def main() -> None:
 
     start_time = time.time()
     exclude_filters = parse_exclude_filters(args.wiktextract_config, args.wiktextract_filter)
-    generate_wordlist(args.src_dir, args.dst_wordlist, exclude_filters)
+    ret_code = generate_wordlist(args.src_dir, args.dst_wordlist, exclude_filters)
+    if ret_code != os.EX_OK:
+        sys.exit(ret_code)
     end_time = time.time()
     elapsed_time = end_time - start_time
+    flutils.print_separator()
     print(f"Finished in {elapsed_time:.2f}s")
+    sys.exit(os.EX_OK)
 
 
 if __name__ == "__main__":

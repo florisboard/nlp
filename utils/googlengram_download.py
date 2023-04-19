@@ -18,15 +18,16 @@ import argparse
 import flutils
 import os
 import re
+import sys
 import time
 
 HTML_LINK_SCRAPING_REGEX = r"<li><a href=\"(.*?)\">.*<\/a><\/li>"
 
 
-def download_ngram_data(index_file_url: str, dst_dir: str) -> None:
+def download_ngram_data(index_file_url: str, dst_dir: str) -> int:
     if os.path.isfile(dst_dir):
         print(f"FATAL: Given output directory path '{dst_dir}' is a file! Aborting.")
-        return
+        return os.EX_USAGE
     os.makedirs(dst_dir, exist_ok=True)
 
     index_name = index_file_url.split("/")[-1]
@@ -34,10 +35,10 @@ def download_ngram_data(index_file_url: str, dst_dir: str) -> None:
     indexed_links: list[str] = []
 
     print(f"Download ngram index")
-    result = flutils.download(url=index_file_url, to_file=index_file_path)
-    if result.returncode != 0:
-        print(f"Index file download failed with error code {result.returncode}!")
-        return
+    ret_code = flutils.download(url=index_file_url, to_file=index_file_path)
+    if ret_code != os.EX_OK:
+        print(f"FATAL: Index file download failed with error code {ret_code}! Aborting.")
+        return ret_code
 
     with open(index_file_path, "r") as index_file:
         for line in index_file:
@@ -56,10 +57,11 @@ def download_ngram_data(index_file_url: str, dst_dir: str) -> None:
             print(f"Skip {partition_name} (already exists)")
             continue
         print(f"Download {partition_name}")
-        result = flutils.download(url=link, to_file=partition_path)
-        if result.returncode != 0:
-            print(f"Failed to complete download (error code {result.returncode})")
-    flutils.print_separator()
+        ret_code = flutils.download(url=link, to_file=partition_path)
+        if ret_code != 0:
+            print(f"WARN: Failed to complete download (error code {ret_code})")
+
+    return os.EX_OK
 
 
 def main() -> None:
@@ -82,10 +84,14 @@ def main() -> None:
     args = parser.parse_args()
 
     start_time = time.time()
-    download_ngram_data(args.url, args.dst_dir)
+    ret_code = download_ngram_data(args.url, args.dst_dir)
+    if ret_code != os.EX_OK:
+        sys.exit(ret_code)
     end_time = time.time()
     elapsed_time = end_time - start_time
+    flutils.print_separator()
     print(f"Finished in {elapsed_time:.2f}s")
+    sys.exit(os.EX_OK)
 
 
 if __name__ == "__main__":

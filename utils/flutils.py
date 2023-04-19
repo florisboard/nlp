@@ -14,15 +14,60 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import subprocess
 
 
-def download(url: str, to_file: str | None = None) -> subprocess.CompletedProcess[bytes]:
+def dir_of(path: str) -> str:
+    return os.path.dirname(os.path.abspath(path))
+
+
+def download(url: str, to_file: str | None = None) -> int:
     if to_file is None:
-        return subprocess.run(["wget", url, "-q", "--show-progress"])
+        return subprocess.run(["wget", url, "-q", "--show-progress"]).returncode
     else:
-        return subprocess.run(["wget", "-O", to_file, url, "-q", "--show-progress"])
+        return subprocess.run(["wget", "-O", to_file, url, "-q", "--show-progress"]).returncode
+
+
+def prep_wiktextract(wiktextract_path: str, dict_path: str, config_path: str, filter_name: str, stats_path: str) -> int:
+    nlptools_executable = os.path.join(dir_of(__file__), "../build/debug/bin/nlptools")
+    return subprocess.run(
+        [
+            nlptools_executable,
+            "prep-wiktextract",
+            "--src",
+            wiktextract_path,
+            "--dst",
+            dict_path,
+            "--config",
+            config_path,
+            "--filter",
+            filter_name,
+            "--stats",
+            stats_path,
+        ]
+    ).returncode
+
+
+def train_wordscores(dict_path: str, wordlist_path: str, score_threshold: str) -> int:
+    nlptools_executable = os.path.join(dir_of(__file__), "../build/debug/bin/nlptools")
+    return subprocess.run(
+        [
+            nlptools_executable,
+            "train-word-scores",
+            "--dictionary",
+            dict_path,
+            "--wordlist",
+            wordlist_path,
+            "--score-threshold",
+            score_threshold,
+        ]
+    ).returncode
 
 
 def print_separator() -> None:
     print("-----")
+
+
+def print_large_separator() -> None:
+    print("\n=====")
