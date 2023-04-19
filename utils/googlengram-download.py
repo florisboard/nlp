@@ -14,42 +14,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import flutils
 import os
 import re
-import subprocess
-import sys
+import time
 
 HTML_LINK_SCRAPING_REGEX = r"<li><a href=\"(.*?)\">.*<\/a><\/li>"
 
-def print_usage() -> None:
-    print(f"""
-Utility which downloads unigram/ngram partition files from a Google Ngram Viewer export and stores them in given path.
 
-Usage: ./{__file__} [--help] <GOOGLE_NGRAM_PATH> <OUTPUT_DIRECTORY_PATH>
-
-Arguments:
-  <GOOGLE_NGRAM_URL>    The URL of the Google Ngram data HTML page.
-                        e.g.: https://storage.googleapis.com/books/ngrams/books/20200217/eng/eng-1-ngrams_exports.html
-  <OUTPUT_DIR_PATH>     The output directory path. If it does not exist it will be created.
-  --help                Prints this help message and quits.
-
----
-See https://storage.googleapis.com/books/ngrams/books/datasetsv3.html for an overview of Google Ngram data.
-""".strip())
-
-def download_with_wget(index_file_url: str, dst_dir: str) -> None:
+def download_ngram_data(index_file_url: str, dst_dir: str) -> None:
     if os.path.isfile(dst_dir):
         print(f"FATAL: Given output directory path '{dst_dir}' is a file! Aborting.")
         return
-    os.makedirs(dst_dir)
+    os.makedirs(dst_dir, exist_ok=True)
 
     index_name = index_file_url.split("/")[-1]
-    index_file_path = f"{dst_dir}/{index_name}"
+    index_file_path = os.path.join(dst_dir, index_name)
     indexed_links: list[str] = []
 
-    wget = subprocess.run(["wget", "-O", index_file_path, index_file_url])
-    if wget.returncode != 0:
-        print(f"Index file download failed with error code {wget.returncode}!")
+    print(f"Download ngram index")
+    result = flutils.download(url=index_file_url, to_file=index_file_path)
+    if result.returncode != 0:
+        print(f"Index file download failed with error code {result.returncode}!")
         return
 
     with open(index_file_path, "r") as index_file:
@@ -59,18 +46,47 @@ def download_with_wget(index_file_url: str, dst_dir: str) -> None:
                 link = link_match.group(1)
                 indexed_links.append(link)
     os.remove(index_file_path)
+    print(f"Discovered and queued {len(indexed_links)} partition files to be downloaded")
+    flutils.print_separator()
 
     for link in indexed_links:
         partition_name = link.split("/")[-1]
-        partition_path = f"{dst_dir}/{partition_name}"
-        wget = subprocess.run(["wget", "-O", partition_path, link])
+        partition_path = os.path.join(dst_dir, partition_name)
+        if os.path.exists(partition_path):
+            print(f"Skip {partition_name} (already exists)")
+            continue
+        print(f"Download {partition_name}")
+        result = flutils.download(url=link, to_file=partition_path)
+        if result.returncode != 0:
+            print(f"Failed to complete download (error code {result.returncode})")
+    flutils.print_separator()
 
 
 def main() -> None:
-    if sys.argv.count("--help") > 0:
-        print_usage()
-    else:
-        download_with_wget(sys.argv[1], sys.argv[2])
+    parser = argparse.ArgumentParser(
+        description="Utility which downloads unigram/ngram partition files from a Google Ngram Viewer export and stores them in given path.",
+        epilog="See https://storage.googleapis.com/books/ngrams/books/datasetsv3.html for an overview of Google Ngram data.",
+    )
+    parser.add_argument(
+        "--url",
+        type=str,
+        required=True,
+        help="the URL of the Google Ngram data HTML page, e.g.: https://storage.googleapis.com/books/ngrams/books/20200217/eng/eng-1-ngrams_exports.html",
+    )
+    parser.add_argument(
+        "--dst-dir",
+        type=str,
+        required=True,
+        help="the output directory path, will be created if it does not exist",
+    )
+    args = parser.parse_args()
+
+    start_time = time.time()
+    download_ngram_data(args.url, args.dst_dir)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Finished in {elapsed_time:.2f}s")
+
 
 if __name__ == "__main__":
     main()

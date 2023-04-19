@@ -14,32 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import flutils
 import gzip
 import json
 import os
 import re
-import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
 from typing import Pattern, Tuple
-
-
-def print_usage() -> None:
-    print(f"""
-Utility which reads unigram partition files from a Google Ngram Viewer export and generates a wordlist from the data.
-
-Usage: ./{__file__} [--help] <UNIGRAM_DIR> <WORDLIST> [<WIKTEXTRACT_CONFIG>] [<FILTER_NAME>]
-
-Arguments:
-  <UNIGRAM_DIR>         The path of the directory where unigram partitions should be read.
-  <WORDLIST_PATH>       The path of the wordlist file. If a file at this location exists it will be overwritten.
-  <WIKTEXTRACT_CONFIG>  The path of a wiktextract config file. Optional.
-  <FILTER_NAME>         The name of a wiktextract config exclude filter to use. Optional. Default=root
-  --help                Prints this help message and quits.
-
----
-See https://storage.googleapis.com/books/ngrams/books/datasetsv3.html for an overview of Google Ngram data.
-""".strip())
 
 
 def parse_line(line: str) -> Tuple[str, int]:
@@ -87,20 +70,23 @@ def merge_dicts(dict1: dict[str, int], dict2: dict[str, int]) -> dict[str, int]:
 
 def generate_wordlist(unigram_dir: str, wordlist_path: str, exclude_filters: list[Pattern[str]]) -> None:
     if not os.path.exists(unigram_dir):
-        print(
-            f"FATAL: Given unigram directory path '{unigram_dir}' does not exist! Aborting.")
+        print(f"FATAL: Given unigram directory path '{unigram_dir}' does not exist! Aborting.")
+        flutils.print_separator()
+        return
     if not os.path.isdir(unigram_dir):
-        print(
-            f"FATAL: Given unigram directory path '{unigram_dir}' is a file! Aborting.")
+        print(f"FATAL: Given unigram directory path '{unigram_dir}' is a file! Aborting.")
+        flutils.print_separator()
+        return
 
     partition_files = []
     for file_name in os.listdir(unigram_dir):
-        file_path = f"{unigram_dir}/{file_name}"
+        file_path = os.path.join(unigram_dir, file_name)
         if file_name.startswith("1-") and file_name.endswith(".gz"):
             print(f"Queue {file_path}")
             partition_files.append((file_path, exclude_filters))
         else:
             print(f"Skip {file_path}")
+    flutils.print_separator()
 
     with ProcessPoolExecutor() as executor:
         results = executor.map(parse_partition_file_wrapper, partition_files)
@@ -116,6 +102,7 @@ def generate_wordlist(unigram_dir: str, wordlist_path: str, exclude_filters: lis
             wordlist_file.write("\t")
             wordlist_file.write(str(word_count))
             wordlist_file.write("\n")
+    flutils.print_separator()
 
 
 def parse_exclude_filters(wiktextract_config_path: str, filter_name: str) -> list[Pattern[str]]:
@@ -132,19 +119,42 @@ def parse_exclude_filters(wiktextract_config_path: str, filter_name: str) -> lis
 
 
 def main() -> None:
-    if sys.argv.count("--help") > 0:
-        print_usage()
-    else:
-        exclude_filters = parse_exclude_filters(
-            sys.argv[3] if len(sys.argv) > 3 else "",
-            sys.argv[4] if len(sys.argv) > 4 else "root"
-        )
+    parser = argparse.ArgumentParser(
+        description="Utility which reads unigram partition files from a Google Ngram Viewer export and generates a wordlist from the data.",
+        epilog="See https://storage.googleapis.com/books/ngrams/books/datasetsv3.html for an overview of Google Ngram data.",
+    )
+    parser.add_argument(
+        "--src-dir",
+        type=str,
+        required=True,
+        help="the path of the directory where unigram partitions should be read",
+    )
+    parser.add_argument(
+        "--dst-wordlist",
+        type=str,
+        required=True,
+        help="the path of the wordlist file; if a file at this location exists it will be overwritten",
+    )
+    parser.add_argument(
+        "--wiktextract-config",
+        type=str,
+        default="",
+        help="the path of a wiktextract config file; default: %(default)s",
+    )
+    parser.add_argument(
+        "--wiktextract-filter",
+        type=str,
+        default="root",
+        help="the name of a wiktextract config exclude filter to use; default: %(default)s",
+    )
+    args = parser.parse_args()
 
-        start_time = time.time()
-        generate_wordlist(sys.argv[1], sys.argv[2], exclude_filters)
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        print(f"Finished in {elapsed_time:.2f}s")
+    start_time = time.time()
+    exclude_filters = parse_exclude_filters(args.wiktextract_config, args.wiktextract_filter)
+    generate_wordlist(args.src_dir, args.dst_wordlist, exclude_filters)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Finished in {elapsed_time:.2f}s")
 
 
 if __name__ == "__main__":

@@ -46,3 +46,7 @@ CTestTestfile.cmake
 _deps
 .idea
 CMakeUserPresets.json
+
+# Python
+*.pyc
+__pycache__
