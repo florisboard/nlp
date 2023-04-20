@@ -69,7 +69,7 @@ LANGUAGE_MAPPING = {
 }
 
 
-def generate_dictionary(language_code: str) -> int:
+def build_dictionary(language_code: str) -> int:
     tmp_dir = TMP_DIR.format(lang=language_code)
     if os.path.isfile(tmp_dir):
         print(f"FATAL: Given temporary directory path '{tmp_dir}' is a file! Aborting.")
@@ -146,7 +146,7 @@ def main() -> None:
     args = parser.parse_args()
 
     start_time = time.time()
-    ret_code = generate_dictionary(args.lang)
+    ret_code = build_dictionary(args.lang)
     if ret_code != os.EX_OK:
         sys.exit(ret_code)
     end_time = time.time()
