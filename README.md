@@ -119,6 +119,19 @@ data sources into dictionary files.
 
 TODO: documentation
 
+## Known issues
+
+- Memory usage of the NLP core trie map is high:
+  - This is indeed a big issue right now, but unlike with the previous NLP attempt we are not restricted by Java's heap space restrictions anymore, only by natively available RAM, so for now we have to bite the bullet (or reduce the entries in the preprocessed dictionaries). If you think you have an idea on how to decrease the memory usage significantly (without overcomplicating the codebase) I am all ears!
+- Size of preprocessed dictionaries is quite large:
+  - While this is also true for now this poses less of an issue as these preprocessed dictionaries are not included in the APK and thus do not contribute towards the strict max size of the FlorisBoard APK.
+- The suggestion ranking is weird for some inputs
+  - The weighting system of the suggestions needs a lot of refinement - If you have expertise in this field and want to help I would gladly appreciate it :)
+- There's little documentation for parts of this code base
+  - I am aware and will work on this bit by bit in the future.
+- There aren't schemas available for all json files in this project / schemas.florisboard.org does not work yet
+  - I am aware and will work on this in the near future.
+
 ## External libraries used
 
 - [bshoshany/thread-pool](https://github.com/bshoshany/thread-pool)
