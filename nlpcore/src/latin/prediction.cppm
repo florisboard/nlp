@@ -344,13 +344,14 @@ void predictWordInternal(std::span<const fl::str::UniString> sentence, const Rec
             // We have an n-gram
             auto* dict = params.dicts_to_search_[0];
             auto subngram = ngram.subspan(0, ngram.size() - 1);
-            auto* subngram_node = algorithms::findNgramOrNull(dict->data_.get(), dict->dict_id_, subngram);
-            if (subngram_node == nullptr) continue;
-            auto* word_node = subngram_node->findOrNull(LATIN_TOKEN_NGRAM_SEPARATOR);
-            if (word_node == nullptr) continue;
-            auto current_word = ngram.back();
-            RecursiveFuzzySearchState state = {params, EntryType::ngram(ngram_level), current_word};
-            fuzzySearchRecursive<NgramEntryProperties>(word_node, params, state, 0);
+            auto subngram_nodes = algorithms::findNgramIgnoringCase(dict->data_.get(), dict->dict_id_, subngram);
+            for (auto* subngram_node : subngram_nodes) {
+                auto* word_node = subngram_node->findOrNull(LATIN_TOKEN_NGRAM_SEPARATOR);
+                if (word_node == nullptr) continue;
+                auto current_word = ngram.back();
+                RecursiveFuzzySearchState state = {params, EntryType::ngram(ngram_level), current_word};
+                fuzzySearchRecursive<NgramEntryProperties>(word_node, params, state, 0);
+            }
         }
     }
 }

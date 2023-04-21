@@ -88,6 +88,37 @@ export inline void forEachWord(LatinTrieNode* data, LatinDictId id, WordAction& 
     });
 }
 
+void findWordIgnoringCase(
+    LatinTrieNode* data,
+    LatinDictId id,
+    std::span<const fl::str::UniChar> word,
+    std::size_t word_index,
+    std::vector<LatinTrieNode*>& result_nodes
+) {
+    if (word_index >= word.size()) {
+        result_nodes.push_back(data);
+        return;
+    }
+
+    for (const auto& child_node : data->children_) {
+        auto ch_lower = word[word_index];
+        auto ch_upper = word[word_index];
+        fl::str::lowercase(ch_lower);
+        fl::str::uppercase(ch_upper);
+        if (child_node->key_ == ch_lower || child_node->key_ == ch_upper) {
+            findWordIgnoringCase(child_node.get(), id, word, word_index + 1, result_nodes);
+        }
+    }
+}
+
+export std::vector<LatinTrieNode*> findWordIgnoringCase(
+    LatinTrieNode* data, LatinDictId id, std::span<const fl::str::UniChar> word
+) {
+    std::vector<LatinTrieNode*> result_nodes;
+    findWordIgnoringCase(data, id, word, 0, result_nodes);
+    return result_nodes;
+}
+
 } // namespace words
 
 inline namespace ngrams {
@@ -148,6 +179,31 @@ export LatinTrieNode* findNgramOrNull(
         }
     }
     return nullptr;
+}
+
+export std::vector<LatinTrieNode*> findNgramIgnoringCase(
+    LatinTrieNode* data, LatinDictId id, std::span<const fl::str::UniString> ngram
+) noexcept {
+    std::vector<LatinTrieNode*> result_nodes;
+    std::vector<LatinTrieNode*> ngram_nodes(1, data);
+    for (int i = 0; i < ngram.size(); i++) {
+        std::vector<LatinTrieNode*> new_ngram_nodes;
+        auto& word = ngram[i];
+        for (auto* ngram_node : ngram_nodes) {
+            auto word_nodes = findWordIgnoringCase(ngram_node, id, word);
+            for (auto* word_node : word_nodes) {
+                if (i + 1 != ngram.size()) {
+                    ngram_node = word_node->findOrNull(LATIN_TOKEN_NGRAM_SEPARATOR);
+                    if (ngram_node == nullptr) continue;
+                    new_ngram_nodes.push_back(ngram_node);
+                } else if (id < 0 || word_node->valueOrNull(id) != nullptr) {
+                    result_nodes.push_back(word_node);
+                }
+            }
+        }
+        ngram_nodes = new_ngram_nodes;
+    }
+    return result_nodes;
 }
 
 export LatinTrieNode* findNgram(LatinTrieNode* data, LatinDictId id, std::span<const fl::str::UniString> ngram) {
