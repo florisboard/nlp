@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schemas.florisboard.org/nlpcore/v0~draft1/syllable-matcher.schema.json",
+  "$schema": "https://schemas.florisboard.org/nlp/v0~draft1/syllable-matcher.schema.json",
   "characterSets": [
     {
       "name": "letters",
