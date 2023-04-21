@@ -102,10 +102,10 @@ not be needed to be adjusted anymore.
 
 ```shell
 # Initialize CMake
-cmake --preset=debug .
+cmake --preset=release .
 
 # Build the project
-cmake --build --preset=debug
+cmake --build --preset=release
 ```
 
 ### Running the NLP tools binary
@@ -114,7 +114,7 @@ The NLP tools binary is intended to run on a desktop PC for debugging the core l
 data sources into dictionary files.
 
 ```shell
-./build/debug/bin/nlptools
+./build/release/bin/nlptools
 ```
 
 TODO: documentation

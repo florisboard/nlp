@@ -19,7 +19,7 @@ add_compile_options(-stdlib=libc++)
 link_libraries(c++)
 
 # Uncomment below line if Valgrind needs to be used
-add_compile_options(-gdwarf-4)
+# add_compile_options(-gdwarf-4)
 
 # Set up static/shared library vars
 if (BUILD_SHARED_LIBS)
