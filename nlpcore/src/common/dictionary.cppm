@@ -54,6 +54,7 @@ export const auto FLDIC_GLOBAL_ENCODING = "#~encoding:";
 export const auto FLDIC_META_NAME = "name";
 export const auto FLDIC_META_DISPLAY_NAME = "display_name";
 export const auto FLDIC_META_LOCALES = "locales";
+export const auto FLDIC_META_GENERATED_AT = "generated_at";
 export const auto FLDIC_META_GENERATED_BY = "generated_by";
 export const auto FLDIC_META_AUTHORS = "authors";
 export const auto FLDIC_META_LICENSE = "license";
@@ -108,6 +109,7 @@ export class DictionaryMeta {
     std::string name;
     std::string display_name;
     std::vector<icu::Locale> locales; // in serialization use BCP 47 tags!
+    std::string generated_at;
     std::string generated_by;
     std::vector<std::string> authors;
     std::string license;
@@ -136,6 +138,8 @@ export class DictionaryMeta {
                 UErrorCode status = U_ZERO_ERROR;
                 locales.push_back(icu::Locale::forLanguageTag(locale_tag, status));
             }
+        } else if (key == FLDIC_META_GENERATED_AT) {
+            generated_at = decodeString(value);
         } else if (key == FLDIC_META_GENERATED_BY) {
             generated_by = decodeString(value);
         } else if (key == FLDIC_META_AUTHORS) {
@@ -157,6 +161,7 @@ export class DictionaryMeta {
         ostream << FLDIC_META_NAME << FLDIC_ASSIGNMENT << encodeString(name) << FLDIC_NEWLINE;
         ostream << FLDIC_META_DISPLAY_NAME << FLDIC_ASSIGNMENT << encodeString(display_name) << FLDIC_NEWLINE;
         ostream << FLDIC_META_LOCALES << FLDIC_ASSIGNMENT << encodeList(locale_tags) << FLDIC_NEWLINE;
+        ostream << FLDIC_META_GENERATED_AT << FLDIC_ASSIGNMENT << encodeString(generated_at) << FLDIC_NEWLINE;
         ostream << FLDIC_META_GENERATED_BY << FLDIC_ASSIGNMENT << encodeString(generated_by) << FLDIC_NEWLINE;
         ostream << FLDIC_META_AUTHORS << FLDIC_ASSIGNMENT << encodeList(authors) << FLDIC_NEWLINE;
         ostream << FLDIC_META_LICENSE << FLDIC_ASSIGNMENT << encodeString(license) << FLDIC_NEWLINE;
@@ -166,6 +171,7 @@ export class DictionaryMeta {
         name.clear();
         display_name.clear();
         locales.clear();
+        generated_at.clear();
         generated_by.clear();
         authors.clear();
         license.clear();
