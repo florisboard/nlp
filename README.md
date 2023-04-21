@@ -11,6 +11,8 @@ consists mainly of 2 major components:
 
 This repository is currently in alpha and will move along with the 0.4.0 FlorisBoard development cycle.
 
+If you want to contribute to this repository please see [CONTRIBUTING](CONTRIBUTING.md)!
+
 ## Building the project
 
 ### Requirements
@@ -21,7 +23,7 @@ This repository is currently in alpha and will move along with the 0.4.0 FlorisB
 - GNU make 3.80+
     - MUST be GNU make and not some other variation of make or the ICU build will fail!!
 - Clang 16.x+ (see below if your distro does not have version 16 yet)
-- Package `libc++-dev` and `libc++abi-dev` (version 15.x+)
+- Package `libc++-dev` and `libc++abi-dev` (version 16.x+)
 - Git (only to clone and to initialize the submodules)
 
 Note for Windows 10/11 users: Native Windows compilation is not supported and probably will never be, however you can
