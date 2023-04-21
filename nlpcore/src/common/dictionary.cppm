@@ -187,8 +187,8 @@ enum class DictionarySection {
 export class Dictionary {
   public:
     std::filesystem::path file_path;
-    std::string schema = "(not specified)";
-    std::string encoding = "(not specified)";
+    std::string schema = FLDIC_SCHEMA_V0_DRAFT1;
+    std::string encoding = FLDIC_ENCODING_UTF_8;
     DictionaryMeta meta;
 
     void loadFromDisk(const std::filesystem::path& path) {
@@ -226,6 +226,9 @@ export class Dictionary {
     }
 
     void deserialize(std::istream& istream) {
+        schema = "(not specified)";
+        encoding = "(not specified)";
+
         auto section = DictionarySection::GLOBAL;
         auto prev_pos = istream.tellg();
         std::string line;
