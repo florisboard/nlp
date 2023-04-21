@@ -19,7 +19,6 @@ module;
 #include <fmt/ranges.h>
 
 #include <algorithm>
-#include <functional>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -206,7 +205,7 @@ class RecursiveFuzzySearchState {
 
     [[nodiscard]]
     inline bool isPrefixAt(std::size_t token_index) const {
-        return token_index > 0 && token_index > (cached_word_.size() - 1) && distances_[1][1].is_equal_ignoring_case_;
+        return token_index > (cached_word_.size() - 1) && (cached_word_.size() == 1 || distances_[1][1].is_equal_ignoring_case_);
     }
 
     void setTokenCharAt(std::size_t token_index, const fl::str::UniChar& token_char) {
@@ -295,7 +294,7 @@ void fuzzySearchRecursive(
                 double w2 = 0.1;
                 double similarity;
                 if (isWordPrefix) {
-                    similarity = 1.0 - (cost / word.size());
+                    similarity = 1.0 - (cost / std::max(1uL, word.size()));
                 } else {
                     similarity = 1.0 - (cost / std::max(token.size(), word.size()));
                 }
@@ -343,7 +342,15 @@ void predictWordInternal(std::span<const fl::str::UniString> sentence, const Rec
             }
         } else {
             // We have an n-gram
-            // TODO
+            auto* dict = params.dicts_to_search_[0];
+            auto subngram = ngram.subspan(0, ngram.size() - 1);
+            auto* subngram_node = algorithms::findNgramOrNull(dict->data_.get(), dict->dict_id_, subngram);
+            if (subngram_node == nullptr) continue;
+            auto* word_node = subngram_node->findOrNull(LATIN_TOKEN_NGRAM_SEPARATOR);
+            if (word_node == nullptr) continue;
+            auto current_word = ngram.back();
+            RecursiveFuzzySearchState state = {params, EntryType::ngram(ngram_level), current_word};
+            fuzzySearchRecursive<NgramEntryProperties>(word_node, params, state, 0);
         }
     }
 }

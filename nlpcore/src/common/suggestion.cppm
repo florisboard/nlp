@@ -157,14 +157,13 @@ class TransientSuggestionResults {
 
   public:
     void insert(CandidateT&& candidate, const SuggestionRequestFlags& flags) noexcept {
-        /*auto existing_candidate = std::find_if(candidates_.begin(), candidates_.end(), [&](auto& it) {
-            return it->node_ == candidate.node_;
+        auto existing_candidate = std::find_if(candidates_.begin(), candidates_.end(), [&](auto& it) {
+            return it->text_ == candidate.text_;
         });
         if (existing_candidate != candidates_.end()) {
-            auto new_confidence = std::midpoint(candidate.confidence_, (*existing_candidate)->confidence_);
+            auto new_confidence = std::max(candidate.confidence_, (*existing_candidate)->confidence_);
             (*existing_candidate)->confidence_ = new_confidence;
-        } else*/
-        if (candidate.confidence_ < min_inserted_confidence_ && candidates_.size() > flags.maxSuggestionCount()) {
+        } else if (candidate.confidence_ < min_inserted_confidence_ && candidates_.size() > flags.maxSuggestionCount()) {
             return;
         } else {
             auto candidate_ptr = std::make_unique<CandidateT>(candidate);
