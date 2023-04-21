@@ -16,6 +16,7 @@
 
 module;
 
+#include <fmt/core.h>
 #include <unicode/locid.h>
 
 #include <filesystem>
@@ -32,7 +33,7 @@ namespace fl::nlp {
 
 // Atm the schema URL is only used as a long version string, however for the future it enables us to define and support
 // different schemas.
-export const auto FLDIC_SCHEMA_V0_DRAFT1 = "https://florisboard.org/schemas/fldic/v0~draft1/dictionary.txt";
+export const auto FLDIC_SCHEMA_V0_DRAFT1 = "https://schemas.florisboard.org/nlp/v0~draft1/fldic.txt";
 
 // The only allowed value for encoding
 export const auto FLDIC_ENCODING_UTF_8 = "utf-8";
@@ -186,8 +187,8 @@ enum class DictionarySection {
 export class Dictionary {
   public:
     std::filesystem::path file_path;
-    std::string schema = FLDIC_SCHEMA_V0_DRAFT1;
-    std::string encoding = FLDIC_ENCODING_UTF_8;
+    std::string schema = "(not specified)";
+    std::string encoding = "(not specified)";
     DictionaryMeta meta;
 
     void loadFromDisk(const std::filesystem::path& path) {
@@ -216,6 +217,14 @@ export class Dictionary {
     virtual void serializeContent(std::ostream& ostream) = 0;
 
   private:
+    static bool isValidSchema(const std::string& schema) noexcept {
+        return schema == FLDIC_SCHEMA_V0_DRAFT1;
+    }
+
+    static bool isValidEncoding(const std::string& encoding) noexcept {
+        return encoding == FLDIC_ENCODING_UTF_8;
+    }
+
     void deserialize(std::istream& istream) {
         auto section = DictionarySection::GLOBAL;
         auto prev_pos = istream.tellg();
@@ -234,6 +243,12 @@ export class Dictionary {
             if (line.starts_with(FLDIC_SECTION_META[0])) {
                 if (line == FLDIC_SECTION_META) {
                     section = DictionarySection::META;
+                    if (!isValidSchema(schema)) {
+                        throw std::runtime_error(fmt::format("Invalid or unsupported schema: '{}'", schema));
+                    }
+                    if (!isValidEncoding(encoding)) {
+                        throw std::runtime_error(fmt::format("Invalid or unsupported encoding: '{}'", encoding));
+                    }
                 } else {
                     break;
                 }
