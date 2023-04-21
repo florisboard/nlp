@@ -1,8 +1,8 @@
 {
   "primaryLocale": "en-US",
-  "secondaryLocales": [],
-  "baseDictionaries": ["data/words_en.fldic"],
-  "userDictionary": "data/user_dict_core_new.fldic",
+  "secondaryLocales": [ ],
+  "baseDictionaries": [ "data/dicts/v0~draft1/words_en-US.fldic" ],
+  "userDictionary": "data/dicts/v0~draft1/user_dict.fldic",
   "predictionWeights": {
     "lookup": {
       "maxCostSum": 1.5,
@@ -54,7 +54,7 @@
     }
   },
   "syllableMatcher": {
-    "enabled": true,
+    "enabled": false,
     "config": "data/syllable_rules_en.json"
   }
 }
