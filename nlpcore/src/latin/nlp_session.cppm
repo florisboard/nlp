@@ -21,7 +21,6 @@ module;
 #include <unicode/utext.h>
 
 #include <filesystem>
-#include <functional>
 #include <span>
 #include <utility>
 #include <vector>
@@ -159,12 +158,18 @@ export class LatinNlpSession {
 
         // Read and insert words
         for (auto& word : sentence) {
+            auto type = EntryType::word();
             fl::str::toUniString(word, uni_word);
             auto word_node = target_dictionary->data_->findOrCreate(uni_word);
             auto properties = word_node->valueOrCreate(id)->wordPropertiesOrCreate();
-            properties->absolute_score += config.weights_.training_.usage_bonus_;
-            properties->absolute_score += config.weights_.training_.usage_reduction_others_;
-            target_dictionary->global_penalties_[EntryType::word()] +=
+            if (properties->absolute_score == 0) {
+                target_dictionary->vocab_sizes_[type]++;
+            }
+            auto score_increase =
+                config.weights_.training_.usage_bonus_ + config.weights_.training_.usage_reduction_others_;
+            properties->absolute_score += score_increase;
+            target_dictionary->total_scores_[type] += score_increase;
+            target_dictionary->global_penalties_[type] +=
                 config.weights_.training_.usage_reduction_others_;
             uni_sentence.push_back(std::move(uni_word));
         }
@@ -177,12 +182,18 @@ export class LatinNlpSession {
         // Read and insert ngrams
         for (int ngram_level = 2; ngram_level <= max_prev_words; ngram_level++) {
             for (int i = max_prev_words - ngram_level; i < uni_sentence.size() - ngram_level + 1; i++) {
+                auto type = EntryType::ngram(ngram_level);
                 auto ngram = std::span(uni_sentence.begin() + i, ngram_level);
                 auto ngram_node = target_dictionary->insertNgram(ngram);
                 auto properties = ngram_node->valueOrCreate(id)->ngramPropertiesOrCreate();
-                properties->absolute_score += config.weights_.training_.usage_bonus_;
-                properties->absolute_score += config.weights_.training_.usage_reduction_others_;
-                target_dictionary->global_penalties_[EntryType::ngram(ngram_level)] +=
+                if (properties->absolute_score == 0) {
+                    target_dictionary->vocab_sizes_[type]++;
+                }
+                auto score_increase =
+                    config.weights_.training_.usage_bonus_ + config.weights_.training_.usage_reduction_others_;
+                properties->absolute_score += score_increase;
+                target_dictionary->total_scores_[type] += score_increase;
+                target_dictionary->global_penalties_[type] +=
                     config.weights_.training_.usage_reduction_others_;
             }
         }
