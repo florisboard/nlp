@@ -10,6 +10,8 @@ find_program(GNU_MAKE_PROGRAM gmake REQUIRED)
 
 set(ICU_VERSION_MAJOR 72)
 set(ICU_VERSION_MINOR 1)
+# TODO: can we find this dynamically??
+set(ICU_HOST_TARGET "x86_64-pc-linux-gnu")
 
 add_library(icu4c INTERFACE)
 
@@ -59,12 +61,17 @@ file(MAKE_DIRECTORY ${ICU_HOST_BUILD_DIR}) # Need to make build directory as ICU
 set(ICU_HOST_ENV_CMAKE
     ${CMAKE_COMMAND} -E env ICU_SOURCES="${ICU_SRC_DIR}" ICU_DATA_FILTER_FILE="${ICU_DATA_FILTER_FILE}"
         CC="${CMAKE_C_COMPILER}" CXX="${CMAKE_CXX_COMPILER}" CFLAGS="${ICU_C_FLAGS}" CXXFLAGS="${ICU_CXX_FLAGS}"
-        CPPFLAGS="${ICU_CPP_FLAGS}" LDFLAGS="${ICU_LDFLAGS}")
+        CPPFLAGS="${ICU_CPP_FLAGS}" LDFLAGS="${ICU_LDFLAGS}" TARGET="${ICU_HOST_TARGET}")
 set(ICU_HOST_INSTALL_BYPRODUCTS)
 foreach(lib ${ICU_LIBS})
-    list(APPEND ICU_HOST_INSTALL_BYPRODUCTS
-        ${ICU_HOST_INSTALL_DIR}/lib/${ICU_LIB_PREFIX}icu${lib}${ICU_LIB_SUFFIX}
-        ${FLORIS_LIBRARY_OUTPUT_DIRECTORY}/${ICU_LIB_PREFIX}icu${lib}${ICU_LIB_SUFFIX})
+    if(NOT ANDROID)
+        list(APPEND ICU_HOST_INSTALL_BYPRODUCTS
+            ${ICU_HOST_INSTALL_DIR}/lib/${ICU_LIB_PREFIX}icu${lib}${ICU_LIB_SUFFIX}
+            ${FLORIS_LIBRARY_OUTPUT_DIRECTORY}/${ICU_LIB_PREFIX}icu${lib}${ICU_LIB_SUFFIX})
+    else()
+        list(APPEND ICU_HOST_INSTALL_BYPRODUCTS
+        ${ICU_HOST_INSTALL_DIR}/lib/${ICU_LIB_PREFIX}icu${lib}${ICU_LIB_SUFFIX})
+    endif()
 endforeach()
 
 add_custom_target(
@@ -72,14 +79,14 @@ add_custom_target(
     COMMAND ${ICU_HOST_ENV_CMAKE} ${ICU_SRC_DIR}/source/configure --prefix=${ICU_HOST_INSTALL_DIR} ${ICU_CONFIGURE_ARGS}
     WORKING_DIRECTORY ${ICU_HOST_BUILD_DIR})
 add_custom_target(
-    icu4c_host
-    ALL
+    icu4c_host_build
     COMMAND ${ICU_HOST_ENV_CMAKE} ${GNU_MAKE_PROGRAM} -j ${NUM_JOBS}
     DEPENDS icu4c_host_configure
     WORKING_DIRECTORY ${ICU_HOST_BUILD_DIR})
-add_custom_command(
-    TARGET icu4c_host POST_BUILD
+add_custom_target(
+    icu4c_host
     COMMAND ${ICU_HOST_ENV_CMAKE} ${GNU_MAKE_PROGRAM} install
+    DEPENDS icu4c_host_build
     BYPRODUCTS ${ICU_HOST_INSTALL_BYPRODUCTS}
     WORKING_DIRECTORY ${ICU_HOST_BUILD_DIR})
 add_dependencies(icu4c icu4c_host)
@@ -91,7 +98,54 @@ set(ICU_TARGET icu4c_host)
 # ----- CROSS-COMPILE TO ANDROID ----- #
 
 if(ANDROID)
-    message(FATAL_ERROR "TODO: Introduce Android cross-compiling support")
+    if(CMAKE_ANDROID_ARCH_ABI STREQUAL "armeabi-v7a")
+        set(ICU_ANDROID_TARGET "armv7a-linux-androideabi")
+    elseif(CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a")
+        set(ICU_ANDROID_TARGET "aarch64-linux-android")
+    elseif(CMAKE_ANDROID_ARCH_ABI STREQUAL "x86")
+        set(ICU_ANDROID_TARGET "i686-linux-android")
+    elseif(CMAKE_ANDROID_ARCH_ABI STREQUAL "x86_64")
+        set(ICU_ANDROID_TARGET "x86_64-linux-android")
+    else()
+        message(FATAL_ERROR "Unsupported ABI: ${CMAKE_ANDROID_ARCH_ABI}")
+    endif()
+
+    set(ICU_ANDROID_BUILD_DIR ${ICU_BUILD_DIR}/.intermediate/android/${CMAKE_ANDROID_ARCH_ABI})
+    set(ICU_ANDROID_INSTALL_DIR ${ICU_BUILD_DIR}/android/${CMAKE_ANDROID_ARCH_ABI})
+    file(MAKE_DIRECTORY ${ICU_ANDROID_BUILD_DIR}) # Need to make build directory as ICU script requires this
+    set(ICU_ANDROID_ENV_CMAKE
+        ${CMAKE_COMMAND} -E env ICU_SOURCES="${ICU_SRC_DIR}" ICU_DATA_FILTER_FILE="${ICU_DATA_FILTER_FILE}"
+        CC="${CMAKE_C_COMPILER}" CXX="${CMAKE_CXX_COMPILER}" CFLAGS="${ICU_C_FLAGS}" CXXFLAGS="${ICU_CXX_FLAGS}"
+        CPPFLAGS="${ICU_CPP_FLAGS}" LDFLAGS="${ICU_LDFLAGS}" TARGET="${ICU_ANDROID_TARGET}")
+    set(ICU_ANDROID_INSTALL_BYPRODUCTS)
+    foreach(lib ${ICU_LIBS})
+        list(APPEND ICU_ANDROID_INSTALL_BYPRODUCTS
+            ${ICU_ANDROID_INSTALL_DIR}/lib/${ICU_LIB_PREFIX}icu${lib}${ICU_LIB_SUFFIX}
+            ${FLORIS_LIBRARY_OUTPUT_DIRECTORY}/${ICU_LIB_PREFIX}icu${lib}${ICU_LIB_SUFFIX})
+    endforeach()
+
+    add_custom_target(
+        icu4c_android_configure
+        COMMAND ${ICU_ANDROID_ENV_CMAKE} ${ICU_SRC_DIR}/source/configure --with-cross-build=${ICU_HOST_BUILD_DIR}
+            --prefix=${ICU_ANDROID_INSTALL_DIR} ${ICU_CONFIGURE_ARGS}
+        DEPENDS icu4c_host
+        WORKING_DIRECTORY ${ICU_ANDROID_BUILD_DIR})
+    add_custom_target(
+        icu4c_android_build
+        COMMAND ${ICU_ANDROID_ENV_CMAKE} ${GNU_MAKE_PROGRAM} -j ${NUM_JOBS}
+        DEPENDS icu4c_android_configure
+        WORKING_DIRECTORY ${ICU_ANDROID_BUILD_DIR})
+    add_custom_target(
+        icu4c_android
+        COMMAND ${ICU_ANDROID_ENV_CMAKE} ${GNU_MAKE_PROGRAM} install
+        DEPENDS icu4c_android_build
+        BYPRODUCTS ${ICU_ANDROID_INSTALL_BYPRODUCTS}
+        WORKING_DIRECTORY ${ICU_ANDROID_BUILD_DIR})
+    add_dependencies(icu4c icu4c_android)
+
+    set(ICU_LIB_DIR ${ICU_ANDROID_INSTALL_DIR}/lib)
+    set(ICU_INCLUDE_DIR ${ICU_ANDROID_INSTALL_DIR}/include)
+    set(ICU_TARGET icu4c_android)
 endif()
 
 # ----- FINALIZE ----- #
