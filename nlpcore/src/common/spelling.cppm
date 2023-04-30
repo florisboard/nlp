@@ -38,9 +38,9 @@ export class SpellingResult {
 
   public:
     SpellingResult() : suggestion_attributes(RESULT_UNSPECIFIED) {}
-    explicit SpellingResult(const int32_t suggestion_attributes) : suggestion_attributes(suggestion_attributes) {}
-    SpellingResult(const int32_t suggestion_attributes, const std::vector<std::string>& suggestions)
-        : suggestion_attributes(suggestion_attributes), suggestions(suggestions) {}
+    explicit SpellingResult(const int32_t suggestion_attributes_) : suggestion_attributes(suggestion_attributes_) {}
+    SpellingResult(const int32_t suggestion_attributes_, const std::vector<std::string>& suggestions_)
+        : suggestion_attributes(suggestion_attributes_), suggestions(suggestions_) {}
     ~SpellingResult() = default;
 
     static SpellingResult unspecified() noexcept {
