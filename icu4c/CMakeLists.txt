@@ -189,6 +189,19 @@ foreach(lib ${ICU_LIBS})
         INTERFACE_INCLUDE_DIRECTORIES ${ICU_INCLUDE_DIR})
 endforeach()
 
+if(ICU_ASSET_EXPORT_DIR)
+    set(src_asset_dir ${ICU_HOST_INSTALL_DIR}/share/icu${ICU_LIB_NAME_SUFFIX}/${ICU_VERSION_MAJOR}.${ICU_VERSION_MINOR})
+    set(dst_asset_dir ${ICU_ASSET_EXPORT_DIR})
+    add_custom_command(TARGET ${ICU_TARGET} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${src_asset_dir}/icudt${ICU_VERSION_MAJOR}l.dat
+            ${dst_asset_dir}/icudt.dat)
+    add_custom_command(TARGET ${ICU_TARGET} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${src_asset_dir}/LICENSE
+            ${dst_asset_dir}/LICENSE)
+endif()
+
 # Add function and cache for compiler definitions
 # This is vital or any target which links against any ICU lib will not compile!!
 set_property(GLOBAL PROPERTY __icu_cpp_flags ${ICU_CPP_FLAGS})
