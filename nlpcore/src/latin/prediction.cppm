@@ -126,7 +126,7 @@ class RecursiveFuzzySearchState {
         for (std::size_t i = 0; i < word.size(); i++) {
             cached_word_[i + 1] = word[i];
         }
-        cached_word_span_ = std::span(cached_word_.begin() + 1, cached_word_.end());
+        cached_word_span_ = fl::utils::make_span(cached_word_.begin() + 1, cached_word_.end());
     }
 
     void initCachedWordOppositeCase(const fl::str::UniString& word) noexcept {
@@ -186,7 +186,7 @@ class RecursiveFuzzySearchState {
 
     [[nodiscard]]
     inline std::span<const fl::str::UniChar> tokenSpanAt(std::size_t token_index) const {
-        return std::span(cached_token_.begin() + 1, cached_token_.begin() + token_index + 1);
+        return fl::utils::make_span(cached_token_.begin() + 1, cached_token_.begin() + token_index + 1);
     }
 
     [[nodiscard]]
@@ -294,7 +294,7 @@ void fuzzySearchRecursive(
                 double w2 = 0.1;
                 double similarity;
                 if (isWordPrefix) {
-                    similarity = 1.0 - (cost / std::max(1uL, word.size()));
+                    similarity = 1.0 - (cost / std::max(static_cast<std::size_t>(1), word.size()));
                 } else {
                     similarity = 1.0 - (cost / std::max(token.size(), word.size()));
                 }

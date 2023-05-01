@@ -132,7 +132,7 @@ class WiktextractPreprocessor {
 
   public:
     WiktextractConfig config;
-    fl::nlp::LatinDictionary dict{DICT_ID};
+    fl::nlp::LatinDictionary dict = fl::nlp::LatinDictionary(DICT_ID);
 
     WiktextractPreprocessor() = default;
     WiktextractPreprocessor(const WiktextractPreprocessor&) = delete;

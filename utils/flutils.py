@@ -71,3 +71,14 @@ def print_separator() -> None:
 
 def print_large_separator() -> None:
     print("\n=====")
+
+
+def ask_yes_no_question(question) -> bool:
+    while True:
+        response = input(f"{question} (yes/no): ").lower()
+        if response == "yes" or response == "y":
+            return True
+        elif response == "no" or response == "n":
+            return False
+        else:
+            print("Invalid response. Please enter 'yes' or 'no'.")

@@ -137,6 +137,20 @@ export struct SuggestionCandidate {
     double confidence = MIN_CONFIDENCE;
     bool is_eligible_for_auto_commit = false;
     bool is_eligible_for_user_removal = true;
+
+    // Contructor only needed as clang-14 in Android NDK isn't capabple of auto-generating a constructor for this POD
+    // object.
+    // TODO: remove once we upgrade to NDK r26 with clang-16
+    SuggestionCandidate(
+        const std::string& text_,
+        const std::string& secondary_text_,
+        double confidence_,
+        bool is_eligible_for_auto_commit_ = false,
+        bool is_eligible_for_user_removal_ = false
+    )
+        : text(text_), secondary_text(secondary_text_), confidence(confidence_),
+          is_eligible_for_auto_commit(is_eligible_for_auto_commit_),
+          is_eligible_for_user_removal(is_eligible_for_user_removal_) {}
 };
 
 export using SuggestionResults = std::vector<std::unique_ptr<SuggestionCandidate>>;

@@ -13,26 +13,40 @@ This repository is currently in alpha and will move along with the 0.4.0 FlorisB
 
 If you want to contribute to this repository please see [CONTRIBUTING](CONTRIBUTING.md)!
 
-## Building the project
+## Building & Running the project
 
-### Requirements
+### General requirements
 
-- Host system: UNIX-like
+To be able to successfully build this project a host machine with a UNIX-like system (e.g. Ubuntu) must be installed. If
+you are on Windows 10/11 you can compile this project using WSL2 (Windows Subsystem for Linux 2), native Windows
+compilation is not supported.
+
+Additionally you need to have `git` installed for cloning and initializing the submodules.
+
+### Initializing the local source repository
+
+```shell
+# One-time setup
+git clone https://github.com/florisboard/nlp.git
+cd nlp
+git submodule update --init --recursive
+```
+
+### Building for Desktop targets (`nlpcore` & `nlptools`)
+
+#### Requirements
+
 - CMake 3.26+
 - Ninja 1.11+
 - GNU make 3.80+
     - MUST be GNU make and not some other variation of make or the ICU build will fail!!
 - Clang 16.x+ (see below if your distro does not have version 16 yet)
 - Package `libc++-dev` and `libc++abi-dev` (version 16.x+)
-- Git (only to clone and to initialize the submodules)
 
-Note for Windows 10/11 users: Native Windows compilation is not supported and probably will never be, however you can
-fully compile this project using WSL2 (Windows Subsystem for Linux 2). It has been tested with an Ubuntu 22.10 instance
-and everything compiled fine. See the [official docs](https://learn.microsoft.com/en-us/windows/wsl/) for more info.
+#### Set up clang compiler
 
-### Set up clang compiler
-
-Before you can build this project you need to set up the clang compiler. First check which version you have installed:
+Before you can build this project for Desktop targets you need to set up the clang compiler. First check which version
+you have installed:
 
 ```shell
 clang -v
@@ -81,16 +95,7 @@ Then we need to change the compiler path to the custom compiled one, else the bu
 
 </details>
 
-### Initializing the local source repository
-
-```shell
-# One-time setup
-git clone https://github.com/florisboard/nlp.git
-cd nlp
-git submodule update --init --recursive
-```
-
-### Adjusting the `CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API` UUID
+#### Adjusting the `CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API` UUID
 
 Atm we need to adjust the `CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API` UUID right below the compiler path fields in
 [CMakePresets.json](CMakePresets.json), depending on the CMake version you use (UUID committed in this branch is for
@@ -98,7 +103,7 @@ CMake 3.26.x). See https://github.com/Kitware/CMake/blob/v3.26.0-rc6/Help/dev/ex
 in the URL) for the correct UUID. This step is also temporary and once C++ module support is stable in CMake this will
 not be needed to be adjusted anymore.
 
-### Building the project
+#### Building
 
 ```shell
 # Initialize CMake
@@ -108,7 +113,7 @@ cmake --preset=release .
 cmake --build --preset=release
 ```
 
-### Running the NLP tools binary
+#### Running the NLP tools binary
 
 The NLP tools binary is intended to run on a desktop PC for debugging the core library and for preprocessing various
 data sources into dictionary files.
@@ -118,6 +123,22 @@ data sources into dictionary files.
 ```
 
 TODO: documentation
+
+### Building for Android targets (`nlpcore` only)
+
+#### Requirements
+
+- Android NDK r25
+- CMake 3.22+
+- Ninja 1.10+
+- GNU make 3.80+
+    - MUST be GNU make and not some other variation of make or the ICU build will fail!!
+- Clang 14.x+ & libc++ (bundled with Android NDK)
+- Python 3.10+
+
+#### Building
+
+TODO: currently standalone Android build not possible, only works if integrated into main project
 
 ## Known issues
 

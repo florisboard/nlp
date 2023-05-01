@@ -19,6 +19,8 @@ module;
 #include <unicode/brkiter.h>
 #include <unicode/locid.h>
 
+#include <functional>
+
 export module fl.icuext:brkiter;
 
 namespace fl::icuext {
