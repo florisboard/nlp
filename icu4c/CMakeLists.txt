@@ -8,7 +8,7 @@ find_program(GNU_MAKE_PROGRAM gmake REQUIRED)
 
 # ----- SETUP LIBRARIES, HELPER FUNCTIONS AND FLAGS ----- #
 
-set(ICU_VERSION_MAJOR 72)
+set(ICU_VERSION_MAJOR 73)
 set(ICU_VERSION_MINOR 1)
 # TODO: can we find this dynamically??
 set(ICU_HOST_TARGET "x86_64-unknown-linux-gnu")
