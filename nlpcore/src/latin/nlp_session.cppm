@@ -37,6 +37,7 @@ import :prediction_weights;
 import fl.icuext;
 import fl.nlp.core.common;
 import fl.string;
+import fl.utils;
 
 namespace fl::nlp {
 
@@ -183,7 +184,7 @@ export class LatinNlpSession {
         for (int ngram_level = 2; ngram_level <= max_prev_words; ngram_level++) {
             for (int i = max_prev_words - ngram_level; i < uni_sentence.size() - ngram_level + 1; i++) {
                 auto type = EntryType::ngram(ngram_level);
-                auto ngram = std::span(uni_sentence.begin() + i, ngram_level);
+                auto ngram = fl::utils::make_span(uni_sentence.begin() + i, ngram_level);
                 auto ngram_node = target_dictionary->insertNgram(ngram);
                 auto properties = ngram_node->valueOrCreate(id)->ngramPropertiesOrCreate();
                 if (properties->absolute_score == 0) {

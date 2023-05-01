@@ -108,14 +108,14 @@ export class LatinDictionary : public Dictionary {
                 // Word
                 if (auto properties = value->wordPropertiesOrNull(); properties != nullptr) {
                     auto type = EntryType::word();
-                    properties->absolute_score = std::max(0l, properties->absolute_score - global_penalties_[type]);
+                    properties->absolute_score = std::max(static_cast<ScoreT>(0), properties->absolute_score - global_penalties_[type]);
                     new_total_scores[type] += properties->absolute_score;
                     new_vocab_sizes[type]++;
                 }
                 // Shortcut
                 if (auto properties = value->shortcutPropertiesOrNull(); properties != nullptr) {
                     auto type = EntryType::shortcut();
-                    properties->absolute_score = std::max(0l, properties->absolute_score - global_penalties_[type]);
+                    properties->absolute_score = std::max(static_cast<ScoreT>(0), properties->absolute_score - global_penalties_[type]);
                     new_total_scores[type] += properties->absolute_score;
                     new_vocab_sizes[type]++;
                 }
@@ -123,7 +123,7 @@ export class LatinDictionary : public Dictionary {
                 // Ngram
                 if (auto properties = value->ngramPropertiesOrNull(); properties != nullptr) {
                     auto type = EntryType::ngram(ngram_size);
-                    properties->absolute_score = std::max(0l, properties->absolute_score - global_penalties_[type]);
+                    properties->absolute_score = std::max(static_cast<ScoreT>(0), properties->absolute_score - global_penalties_[type]);
                     new_total_scores[type] += properties->absolute_score;
                     new_vocab_sizes[type]++;
                 }
@@ -142,19 +142,19 @@ export class LatinDictionary : public Dictionary {
 
         if (type.isWord()) {
             forEachWord([&](auto word, auto* node, auto* properties) {
-                properties->absolute_score = std::max(0l, properties->absolute_score - penalty);
+                properties->absolute_score = std::max(static_cast<ScoreT>(0), properties->absolute_score - penalty);
                 total_score += properties->absolute_score;
                 vocab_size++;
             });
         } else if (type.isNgram()) {
             forEachNgram(type.ngramSize(), [&](auto ngram, auto type, auto* node, auto* properties) {
-                properties->absolute_score = std::max(0l, properties->absolute_score - penalty);
+                properties->absolute_score = std::max(static_cast<ScoreT>(0), properties->absolute_score - penalty);
                 total_score += properties->absolute_score;
                 vocab_size++;
             });
         } else if (type.isShortcut()) {
             forEachShortcut([&](auto shortcut, auto* node, auto* properties) {
-                properties->absolute_score = std::max(0l, properties->absolute_score - penalty);
+                properties->absolute_score = std::max(static_cast<ScoreT>(0), properties->absolute_score - penalty);
                 total_score += properties->absolute_score;
                 vocab_size++;
             });
@@ -162,13 +162,13 @@ export class LatinDictionary : public Dictionary {
 
         total_scores_[type] = total_score;
         vocab_sizes_[type] = vocab_size;
-        global_penalties_[type] = 0l;
+        global_penalties_[type] = 0;
     }
 
     [[nodiscard]]
     double calculateFrequency(EntryType type, ScoreT score, ScoreT k_offset) const noexcept {
-        const ScoreT N = fl::utils::findOrDefault(total_scores_, type, 0l);
-        const ScoreT V = fl::utils::findOrDefault(vocab_sizes_, type, 0l);
+        const ScoreT N = fl::utils::findOrDefault(total_scores_, type, static_cast<ScoreT>(0));
+        const ScoreT V = fl::utils::findOrDefault(vocab_sizes_, type, static_cast<ScoreT>(0));
         return static_cast<double>(score + k_offset) / static_cast<double>(N + k_offset * V);
     }
 
