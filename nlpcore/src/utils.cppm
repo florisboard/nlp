@@ -86,7 +86,7 @@ bool equal(std::span<T> span1, std::span<T> span2) {
 }
 
 // TODO: remove this once we upgrade Android NDK to r26
-template<typename It>
+export template<typename It>
 std::span<typename std::iterator_traits<It>::value_type> make_span(It begin, It end) {
     using value_type = typename std::iterator_traits<It>::value_type;
     std::vector<value_type> temp(begin, end);
@@ -94,7 +94,7 @@ std::span<typename std::iterator_traits<It>::value_type> make_span(It begin, It 
 }
 
 // TODO: remove this once we upgrade Android NDK to r26
-template<typename It>
+export template<typename It>
 std::span<typename std::iterator_traits<It>::value_type> make_span(It begin, std::size_t count) {
     using value_type = typename std::iterator_traits<It>::value_type;
     return { &(*begin), count };

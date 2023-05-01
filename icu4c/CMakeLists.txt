@@ -78,16 +78,17 @@ endforeach()
 
 add_custom_target(
     icu4c_host_configure
-    COMMAND ${ICU_HOST_ENV_CMAKE} ${ICU_SRC_DIR}/source/configure --prefix=${ICU_HOST_INSTALL_DIR} ${ICU_CONFIGURE_ARGS}
+    COMMAND ${ICU_HOST_ENV_CMAKE} ${ICU_SRC_DIR}/source/configure
+      -q --prefix=${ICU_HOST_INSTALL_DIR} ${ICU_CONFIGURE_ARGS}
     WORKING_DIRECTORY ${ICU_HOST_BUILD_DIR})
 add_custom_target(
     icu4c_host_build
-    COMMAND ${ICU_HOST_ENV_CMAKE} ${GNU_MAKE_PROGRAM} -j ${NUM_JOBS}
+    COMMAND ${ICU_HOST_ENV_CMAKE} ${GNU_MAKE_PROGRAM} -j ${NUM_JOBS} >/dev/null
     DEPENDS icu4c_host_configure
     WORKING_DIRECTORY ${ICU_HOST_BUILD_DIR})
 add_custom_target(
     icu4c_host
-    COMMAND ${ICU_HOST_ENV_CMAKE} ${GNU_MAKE_PROGRAM} install
+    COMMAND ${ICU_HOST_ENV_CMAKE} ${GNU_MAKE_PROGRAM} install >/dev/null
     DEPENDS icu4c_host_build
     BYPRODUCTS ${ICU_HOST_INSTALL_BYPRODUCTS}
     WORKING_DIRECTORY ${ICU_HOST_BUILD_DIR})
