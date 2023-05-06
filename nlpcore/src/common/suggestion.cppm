@@ -16,6 +16,7 @@
 
 module;
 
+#include <algorithm>
 #include <bit>
 #include <cstdint>
 #include <memory>

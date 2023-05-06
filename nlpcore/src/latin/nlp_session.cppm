@@ -170,8 +170,7 @@ export class LatinNlpSession {
                 config.weights_.training_.usage_bonus_ + config.weights_.training_.usage_reduction_others_;
             properties->absolute_score += score_increase;
             target_dictionary->total_scores_[type] += score_increase;
-            target_dictionary->global_penalties_[type] +=
-                config.weights_.training_.usage_reduction_others_;
+            target_dictionary->global_penalties_[type] += config.weights_.training_.usage_reduction_others_;
             uni_sentence.push_back(std::move(uni_word));
         }
 
@@ -184,7 +183,11 @@ export class LatinNlpSession {
         for (int ngram_level = 2; ngram_level <= max_prev_words; ngram_level++) {
             for (int i = max_prev_words - ngram_level; i < uni_sentence.size() - ngram_level + 1; i++) {
                 auto type = EntryType::ngram(ngram_level);
+#ifdef ANDROID
                 auto ngram = fl::utils::make_span(uni_sentence.begin() + i, ngram_level);
+#else
+                auto ngram = std::span(uni_sentence.begin() + i, ngram_level);
+#endif
                 auto ngram_node = target_dictionary->insertNgram(ngram);
                 auto properties = ngram_node->valueOrCreate(id)->ngramPropertiesOrCreate();
                 if (properties->absolute_score == 0) {
@@ -194,8 +197,7 @@ export class LatinNlpSession {
                     config.weights_.training_.usage_bonus_ + config.weights_.training_.usage_reduction_others_;
                 properties->absolute_score += score_increase;
                 target_dictionary->total_scores_[type] += score_increase;
-                target_dictionary->global_penalties_[type] +=
-                    config.weights_.training_.usage_reduction_others_;
+                target_dictionary->global_penalties_[type] += config.weights_.training_.usage_reduction_others_;
             }
         }
     }

@@ -43,7 +43,7 @@ import fl.nlp.tools.common;
 
 namespace fl::nlp::tools {
 
-const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/72.1/icudt72l.dat";
+const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/73.1/icudt73l.dat";
 
 const char* attrStatusSymbol(int32_t suggestion_attribute) noexcept {
     if (suggestion_attribute == fl::nlp::RESULT_ATTR_IN_THE_DICTIONARY) {
