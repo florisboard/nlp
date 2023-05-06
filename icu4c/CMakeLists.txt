@@ -10,8 +10,6 @@ find_program(GNU_MAKE_PROGRAM gmake REQUIRED)
 
 set(ICU_VERSION_MAJOR 73)
 set(ICU_VERSION_MINOR 1)
-# TODO: can we find this dynamically??
-set(ICU_HOST_TARGET "x86_64-unknown-linux-gnu")
 
 add_library(icu4c INTERFACE)
 
@@ -41,13 +39,17 @@ set(ICU_CONFIGURE_ARGS
     --disable-draft --disable-renaming --disable-tracing --disable-plugins --disable-extras --enable-icuio
     --disable-layoutex --enable-tools --disable-fuzzer --disable-tests --disable-samples
     --with-data-packaging=archive --with-library-bits=nochange --with-library-suffix=${ICU_LIB_NAME_SUFFIX})
-set(ICU_C_FLAGS -std=c11 -Os -fPIC -fno-short-wchar -fno-short-enums -fvisibility=hidden)
-set(ICU_CXX_FLAGS -std=c++11 -Os -fPIC -fno-short-wchar -fno-short-enums -fvisibility=hidden)
+
+#set(ICU_C_FLAGS -std=c17 -O3 -fPIC -fno-short-wchar -fno-short-enums -fvisibility=hidden)
+#set(ICU_CXX_FLAGS -std=c++20 -stdlib=libc++ -O3 -fPIC -fno-short-wchar -fno-short-enums -fvisibility=hidden)
+set(ICU_C_FLAGS -std=c17 -O3 -fPIC ${FLORIS_COMPILE_OPTIONS})
+set(ICU_CXX_FLAGS -std=c++20 -O3 -fPIC ${FLORIS_COMPILE_OPTIONS})
 set(ICU_CPP_FLAGS
     ${cpp_flags_prefix} -DU_USING_ICU_NAMESPACE=0 -DU_DISABLE_RENAMING=1 -DU_HAVE_NL_LANGINFO_CODESET=0
     -DU_HIDE_OBSOLETE_UTF_OLD_H=1 -DU_TIMEZONE=0 -DUCONFIG_NO_COLLATION=0 -DUCONFIG_NO_FORMATTING=0
     -DUCONFIG_NO_LEGACY_CONVERSION=0 -DUCONFIG_NO_REGULAR_EXPRESSIONS=0 -DUCONFIG_NO_TRANSLITERATION=0)
-set(ICU_LDFLAGS -pthread)
+set(ICU_LDFLAGS ${FLORIS_LINK_OPTIONS} -pthread)
+
 set(ICU_DATA_FILTER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/data-feature-filter.json)
 set(ICU_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/icu/icu4c)
 set(ICU_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR})
@@ -58,12 +60,10 @@ ProcessorCount(NUM_JOBS)
 set(ICU_HOST_BUILD_DIR ${ICU_BUILD_DIR}/.intermediate/host)
 set(ICU_HOST_INSTALL_DIR ${ICU_BUILD_DIR}/host)
 file(MAKE_DIRECTORY ${ICU_HOST_BUILD_DIR}) # Need to make build directory as ICU script requires this
-set(ICU_HOST_C_FLAGS -target ${ICU_HOST_TARGET} ${ICU_C_FLAGS})
-set(ICU_HOST_CXX_FLAGS -target ${ICU_HOST_TARGET} ${ICU_CXX_FLAGS})
 set(ICU_HOST_ENV_CMAKE
     ${CMAKE_COMMAND} -E env ICU_SOURCES="${ICU_SRC_DIR}" ICU_DATA_FILTER_FILE="${ICU_DATA_FILTER_FILE}"
-        CC="${CMAKE_C_COMPILER}" CXX="${CMAKE_CXX_COMPILER}" CFLAGS="${ICU_HOST_C_FLAGS}"
-        CXXFLAGS="${ICU_HOST_CXX_FLAGS}" CPPFLAGS="${ICU_CPP_FLAGS}" LDFLAGS="${ICU_LDFLAGS}")
+        CC="${CMAKE_C_COMPILER}" CXX="${CMAKE_CXX_COMPILER}" CFLAGS="${ICU_C_FLAGS}" CXXFLAGS="${ICU_CXX_FLAGS}"
+        CPPFLAGS="${ICU_CPP_FLAGS}" LDFLAGS="${ICU_LDFLAGS}")
 set(ICU_HOST_INSTALL_BYPRODUCTS)
 foreach(lib ${ICU_LIBS})
     if(NOT ANDROID)
@@ -116,29 +116,26 @@ if(ANDROID)
     set(ICU_ANDROID_BUILD_DIR ${ICU_BUILD_DIR}/.intermediate/android/${CMAKE_ANDROID_ARCH_ABI})
     set(ICU_ANDROID_INSTALL_DIR ${ICU_BUILD_DIR}/android/${CMAKE_ANDROID_ARCH_ABI})
     file(MAKE_DIRECTORY ${ICU_ANDROID_BUILD_DIR}) # Need to make build directory as ICU script requires this
-    get_filename_component(TOOLCHAIN ${CMAKE_C_COMPILER} DIRECTORY)
-    get_filename_component(TOOLCHAIN ${TOOLCHAIN} DIRECTORY)
-    set(ICU_ANDROID_CC ${TOOLCHAIN}/bin/${ICU_ANDROID_TARGET}${CMAKE_ANDROID_API}-clang)
-    set(ICU_ANDROID_CXX ${TOOLCHAIN}/bin/${ICU_ANDROID_TARGET}${CMAKE_ANDROID_API}-clang++)
-    set(ICU_ANDROID_LDFLAGS -lc -lstdc++ -Wl,--gc-sections,-rpath-link=${TOOLCHAIN}/sysroot/usr/lib/)
+    set(ICU_ANDROID_CC ${LLVM_TOOLCHAIN}/bin/${ICU_ANDROID_TARGET}${CMAKE_ANDROID_API}-clang)
+    set(ICU_ANDROID_CXX ${LLVM_TOOLCHAIN}/bin/${ICU_ANDROID_TARGET}${CMAKE_ANDROID_API}-clang++)
     set(ICU_ANDROID_ENV_CMAKE
         ${CMAKE_COMMAND} -E env
-        TOOLCHAIN=${TOOLCHAIN}
+        TOOLCHAIN=${LLVM_TOOLCHAIN}
         TARGET=${ICU_ANDROID_TARGET}
-        NDK_STANDARD_ROOT=${TOOLCHAIN}
+        NDK_STANDARD_ROOT=${LLVM_TOOLCHAIN}
         API=${CMAKE_ANDROID_API}
         ANDROIDVER=${CMAKE_ANDROID_API}
-        AR=${TOOLCHAIN}/bin/llvm-ar
+        AR=${LLVM_TOOLCHAIN}/bin/llvm-ar
         AS=${ICU_ANDROID_CC}
         CC=${ICU_ANDROID_CC}
         CXX=${ICU_ANDROID_CXX}
-        LD=${TOOLCHAIN}/bin/ld
-        RANLIB=${TOOLCHAIN}/bin/llvm-ranlib
-        STRIP=${TOOLCHAIN}/bin/llvm-strip
+        LD=${LLVM_TOOLCHAIN}/bin/ld
+        RANLIB=${LLVM_TOOLCHAIN}/bin/llvm-ranlib
+        STRIP=${LLVM_TOOLCHAIN}/bin/llvm-strip
         CFLAGS="${ICU_C_FLAGS}"
         CXXFLAGS="${ICU_CXX_FLAGS}"
         CPPFLAGS="${ICU_CPP_FLAGS}"
-        LDFLAGS="${ICU_ANDROID_LDFLAGS}"
+        LDFLAGS="${ICU_LDFLAGS}"
         ICU_SOURCES=${ICU_SRC_DIR}
         ICU_DATA_FILTER_FILE=${ICU_DATA_FILTER_FILE}
         ICU_CROSS_BUILD=${ICU_HOST_BUILD_DIR}
@@ -158,12 +155,12 @@ if(ANDROID)
         WORKING_DIRECTORY ${ICU_ANDROID_BUILD_DIR})
     add_custom_target(
         icu4c_android_build
-        COMMAND ${ICU_ANDROID_ENV_CMAKE} ${GNU_MAKE_PROGRAM} -j ${NUM_JOBS}
+        COMMAND ${ICU_ANDROID_ENV_CMAKE} ${GNU_MAKE_PROGRAM} -j ${NUM_JOBS} >/dev/null
         DEPENDS icu4c_android_configure
         WORKING_DIRECTORY ${ICU_ANDROID_BUILD_DIR})
     add_custom_target(
         icu4c_android
-        COMMAND ${ICU_ANDROID_ENV_CMAKE} ${GNU_MAKE_PROGRAM} install
+        COMMAND ${ICU_ANDROID_ENV_CMAKE} ${GNU_MAKE_PROGRAM} install >/dev/null
         DEPENDS icu4c_android_build
         BYPRODUCTS ${ICU_ANDROID_INSTALL_BYPRODUCTS}
         WORKING_DIRECTORY ${ICU_ANDROID_BUILD_DIR})
