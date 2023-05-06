@@ -126,7 +126,11 @@ class RecursiveFuzzySearchState {
         for (std::size_t i = 0; i < word.size(); i++) {
             cached_word_[i + 1] = word[i];
         }
+#ifdef ANDROID
         cached_word_span_ = fl::utils::make_span(cached_word_.begin() + 1, cached_word_.end());
+#else
+        cached_word_span_ = std::span(cached_word_.begin() + 1, cached_word_.end());
+#endif
     }
 
     void initCachedWordOppositeCase(const fl::str::UniString& word) noexcept {
@@ -186,7 +190,11 @@ class RecursiveFuzzySearchState {
 
     [[nodiscard]]
     inline std::span<const fl::str::UniChar> tokenSpanAt(std::size_t token_index) const {
+#ifdef ANDROID
         return fl::utils::make_span(cached_token_.begin() + 1, cached_token_.begin() + token_index + 1);
+#else
+        return std::span(cached_token_.begin() + 1, cached_token_.begin() + token_index + 1);
+#endif
     }
 
     [[nodiscard]]
@@ -205,7 +213,8 @@ class RecursiveFuzzySearchState {
 
     [[nodiscard]]
     inline bool isPrefixAt(std::size_t token_index) const {
-        return token_index > (cached_word_.size() - 1) && (cached_word_.size() == 1 || distances_[1][1].is_equal_ignoring_case_);
+        return token_index > (cached_word_.size() - 1) &&
+               (cached_word_.size() == 1 || distances_[1][1].is_equal_ignoring_case_);
     }
 
     void setTokenCharAt(std::size_t token_index, const fl::str::UniChar& token_char) {

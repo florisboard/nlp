@@ -38,8 +38,8 @@ struct SyllableCharacterSet {
 };
 
 const auto SYLLABLE_TOKEN_REGEX = std::regex(R"(\\\\[\\\\<-]|<[A-Za-z0-9]+>|<[\\\\][0-9]{1,2}>|[-]+|[^\\\\<]+)");
-const char SYLLABLE_START_OF_WORD = '#';//2; // ASCII value for start of text
-const char SYLLABLE_END_OF_WORD = '#';//3;   // ASCII value for end of text
+const char SYLLABLE_START_OF_WORD = '#'; // 2; // ASCII value for start of text
+const char SYLLABLE_END_OF_WORD = '#';   // 3;   // ASCII value for end of text
 const std::vector<SyllableCharacterSet> SYLLABLE_DEFAULT_CHARACTER_SETS = {
     {"start-of-word", "SOW", {std::string(1, SYLLABLE_START_OF_WORD)}},
     {"end-of-word", "EOW", {std::string(1, SYLLABLE_END_OF_WORD)}}};
