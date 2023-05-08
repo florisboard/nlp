@@ -2,15 +2,15 @@
 
 This document provides a quick overview of all currently available preprocessed word dictionaries:
 
-Name | Language | Preprocessed with | Additional notes
----|---|---|---
-`words_en-US` | English (US) | Wiktextract & Google Ngram | -
-`words_en-GB` | English (UK) | Wiktextract & Google Ngram | -
-`words_de` | German | Wiktextract & Google Ngram | -
-`words_es` | Spanish| Wiktextract & Google Ngram | -
-`words_fr` | French | Wiktextract & Google Ngram | -
-`words_it` | Italian | Wiktextract & Google Ngram | -
-`words_ru` | Russian | Wiktextract & Google Ngram | -
+Name | Language | Extension archive | Preprocessed with | Additional notes
+---|---|---|---|---
+`words_en-US` | English (US) | [Download](https://github.com/florisboard/nlp/raw/main/data/dicts/v0~draft1/org.florisboard.dictionaries.en-US.flex) | Wiktextract & Google Ngram | -
+`words_en-GB` | English (UK) | [Download](https://github.com/florisboard/nlp/raw/main/data/dicts/v0~draft1/org.florisboard.dictionaries.en-GB.flex) | Wiktextract & Google Ngram | -
+`words_de` | German | [Download](https://github.com/florisboard/nlp/raw/main/data/dicts/v0~draft1/org.florisboard.dictionaries.de.flex) | Wiktextract & Google Ngram | -
+`words_es` | Spanish | [Download](https://github.com/florisboard/nlp/raw/main/data/dicts/v0~draft1/org.florisboard.dictionaries.es.flex) | Wiktextract & Google Ngram | -
+`words_fr` | French | [Download](https://github.com/florisboard/nlp/raw/main/data/dicts/v0~draft1/org.florisboard.dictionaries.fr.flex) | Wiktextract & Google Ngram | -
+`words_it` | Italian | [Download](https://github.com/florisboard/nlp/raw/main/data/dicts/v0~draft1/org.florisboard.dictionaries.it.flex) | Wiktextract & Google Ngram | -
+`words_ru` | Russian | [Download](https://github.com/florisboard/nlp/raw/main/data/dicts/v0~draft1/org.florisboard.dictionaries.ru.flex) | Wiktextract & Google Ngram | -
 
 User dictionaries (`user_dict_*`) are meant for testing and can be ignored.
 
