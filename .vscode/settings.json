@@ -15,5 +15,8 @@
   "python.formatting.blackArgs": [
     "--line-length", "120"
   ],
-  "python.formatting.provider": "black"
+  "python.formatting.provider": "none",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  }
 }
