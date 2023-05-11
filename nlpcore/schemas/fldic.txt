@@ -35,26 +35,7 @@ Example:
 #~encoding: utf-8
 ```
 
-### 1. Metadata
-
-The first section after the global section must be the `[meta]` section, which provides the necessary metadata for the
-dictionary reader. It is written in a Toml-like syntax, however only strings and single-line arrays are supported as of
-v0~draft1. See the example for all supported properties and their type:
-
-Example:
-
-```
-[meta]
-name = "example"
-display_name = "Example"
-locales = ["en-US"]
-generated_at = "1234567899"
-generated_by = "manual_example"
-authors = ["John Doe <john@doe.com>"]
-license = "Apache-2.0"
-```
-
-### 2. List of words
+### 1. List of words
 
 The section `[words]` is in its essence a combination of a wordlist and TSV file format. Each line represents exactly
 one word and is formatted in the following way:
@@ -77,7 +58,7 @@ Each word has an implicit index (also called "word id") assigned to it, where th
 has 2 assigned, and so on and so forth. For words this is irrelevant, however if this dictionary contains ngrams these
 are necessary for correct deserialization (see next section).
 
-### 3. List of ngrams
+### 2. List of ngrams
 
 The section `[ngrams]` represents all stored ngrams in this dictionary using its word ids. Each line represents exactly
 one ngram of size >=2 and is formatted in the following way:
@@ -95,7 +76,7 @@ where
 - `<TAB>` is a literal TAB character (0x09)
 - `<SCORE>` is a positive signed 64-bit integer representing the asbolute score of this ngram
 
-### 4. List of shortcuts
+### 3. List of shortcuts
 
 The section `[shortcuts]` represents all stored shortcuts in this dictionary. Each line represents exactly one shortcut
 and is formatted in the following way:
