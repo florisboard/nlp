@@ -22,9 +22,10 @@ import time
 import googlengram_download
 import googlengram_wordlist
 
-TMP_DIR = os.path.join(flutils.dir_of(__file__), "../data/dicts/v0~draft1/.tmp/{lang}")
+DATA_DIR = os.path.join(flutils.dir_of(__file__), "../data/dicts/v0~draft1")
+TMP_DIR = os.path.join(DATA_DIR, ".tmp/{lang}")
 CONFIG_PATH = os.path.join(flutils.dir_of(__file__), "../data/wiktextract-config.json")
-DST_DICTIONARY = os.path.join(flutils.dir_of(__file__), "../data/dicts/v0~draft1/words_{lang}.fldic")
+DST_DICTIONARY = os.path.join(DATA_DIR, "words_{lang}.fldic")
 SCORE_THRESHOLD = 2
 
 WIKTEXTRACT = "wiktextract"
