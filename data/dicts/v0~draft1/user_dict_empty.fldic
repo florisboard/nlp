@@ -1,15 +1,6 @@
 #~schema: https://schemas.florisboard.org/nlp/v0~draft1/fldic.txt
 #~encoding: utf-8
 
-[meta]
-name="user_dictionary_empty"
-display_name="Test User Dictionary (empty)"
-locales=["en-US"]
-generated_at=""
-generated_by=""
-authors=[]
-license=""
-
 [words]
 
 [ngrams]
