@@ -45,11 +45,9 @@ EXTENSION_JSON_TEMPLATE = """{{
 }}"""
 
 
-def main() -> None:
-    data_path = sys.argv[1]
+def convert_dictionaries_to_extensions(data_path: str) -> None:
     os.makedirs(data_path, exist_ok=True)
     ext_json_path = os.path.join(data_path, "~extension.json")
-    start_time = time.time()
     for lang_code in build_dictionary.LANGUAGE_MAPPING.keys():
         print(f"-> LANGUAGE: {lang_code}")
         ext_id = EXTENSION_ID_TEMPLATE.format(lang_code=lang_code)
@@ -61,6 +59,11 @@ def main() -> None:
             ext_file.write(ext_json_path, "extension.json")
             ext_file.write(dict_path, f"dictionaries/{lang_code}.fldic")
     os.remove(ext_json_path)
+
+
+def main() -> None:
+    start_time = time.time()
+    convert_dictionaries_to_extensions(sys.argv[1])
     end_time = time.time()
     elapsed_time = end_time - start_time
     flutils.print_large_separator()

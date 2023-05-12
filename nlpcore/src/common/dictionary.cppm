@@ -34,6 +34,7 @@ namespace fl::nlp {
 // Atm the schema URL is only used as a long version string, however for the future it enables us to define and support
 // different schemas.
 export const auto FLDIC_SCHEMA_V0_DRAFT1 = "https://schemas.florisboard.org/nlp/v0~draft1/fldic.txt";
+export const auto FLDIC_SCHEMA_LATEST = FLDIC_SCHEMA_V0_DRAFT1;
 
 // The only allowed value for encoding
 export const auto FLDIC_ENCODING_UTF_8 = "utf-8";
@@ -51,16 +52,6 @@ export const char FLDIC_LIST_SEPARATOR = ',';
 
 export const auto FLDIC_GLOBAL_SCHEMA = "#~schema:";
 export const auto FLDIC_GLOBAL_ENCODING = "#~encoding:";
-
-export const auto FLDIC_META_NAME = "name";
-export const auto FLDIC_META_DISPLAY_NAME = "display_name";
-export const auto FLDIC_META_LOCALES = "locales";
-export const auto FLDIC_META_GENERATED_AT = "generated_at";
-export const auto FLDIC_META_GENERATED_BY = "generated_by";
-export const auto FLDIC_META_AUTHORS = "authors";
-export const auto FLDIC_META_LICENSE = "license";
-
-export const auto FLDIC_SECTION_META = "[meta]";
 
 namespace dictionary_serialization_helpers {
 
@@ -105,91 +96,11 @@ export std::string encodeList(const std::vector<std::string>& list) noexcept {
 
 } // namespace dictionary_serialization_helpers
 
-export class DictionaryMeta {
-  public:
-    std::string name;
-    std::string display_name;
-    std::vector<icu::Locale> locales; // in serialization use BCP 47 tags!
-    std::string generated_at;
-    std::string generated_by;
-    std::vector<std::string> authors;
-    std::string license;
-
-    void readLine(const auto& line) noexcept {
-        using namespace dictionary_serialization_helpers;
-
-        if (line.find(FLDIC_ASSIGNMENT) == std::string::npos) {
-            return;
-        }
-
-        std::vector<std::string> pair;
-        fl::str::split(line, FLDIC_ASSIGNMENT, pair);
-        auto& key = pair[0];
-        auto& value = pair[1];
-        fl::str::trim(key);
-        fl::str::trim(value);
-        if (key == FLDIC_META_NAME) {
-            name = decodeString(value);
-        } else if (key == FLDIC_META_DISPLAY_NAME) {
-            display_name = decodeString(value);
-        } else if (key == FLDIC_META_LOCALES) {
-            locales.clear();
-            auto locale_tags = decodeList(value);
-            for (const auto& locale_tag : locale_tags) {
-                UErrorCode status = U_ZERO_ERROR;
-                locales.push_back(icu::Locale::forLanguageTag(locale_tag, status));
-            }
-        } else if (key == FLDIC_META_GENERATED_AT) {
-            generated_at = decodeString(value);
-        } else if (key == FLDIC_META_GENERATED_BY) {
-            generated_by = decodeString(value);
-        } else if (key == FLDIC_META_AUTHORS) {
-            authors = decodeList(value);
-        } else if (key == FLDIC_META_LICENSE) {
-            license = decodeString(value);
-        }
-    }
-
-    void writeAllTo(std::ostream& ostream) const noexcept {
-        using namespace dictionary_serialization_helpers;
-
-        std::vector<std::string> locale_tags;
-        for (auto& locale : locales) {
-            UErrorCode status;
-            locale_tags.push_back(locale.toLanguageTag<std::string>(status));
-        }
-
-        ostream << FLDIC_META_NAME << FLDIC_ASSIGNMENT << encodeString(name) << FLDIC_NEWLINE;
-        ostream << FLDIC_META_DISPLAY_NAME << FLDIC_ASSIGNMENT << encodeString(display_name) << FLDIC_NEWLINE;
-        ostream << FLDIC_META_LOCALES << FLDIC_ASSIGNMENT << encodeList(locale_tags) << FLDIC_NEWLINE;
-        ostream << FLDIC_META_GENERATED_AT << FLDIC_ASSIGNMENT << encodeString(generated_at) << FLDIC_NEWLINE;
-        ostream << FLDIC_META_GENERATED_BY << FLDIC_ASSIGNMENT << encodeString(generated_by) << FLDIC_NEWLINE;
-        ostream << FLDIC_META_AUTHORS << FLDIC_ASSIGNMENT << encodeList(authors) << FLDIC_NEWLINE;
-        ostream << FLDIC_META_LICENSE << FLDIC_ASSIGNMENT << encodeString(license) << FLDIC_NEWLINE;
-    }
-
-    void reset() noexcept {
-        name.clear();
-        display_name.clear();
-        locales.clear();
-        generated_at.clear();
-        generated_by.clear();
-        authors.clear();
-        license.clear();
-    }
-};
-
-enum class DictionarySection {
-    GLOBAL,
-    META,
-};
-
 export class Dictionary {
   public:
     std::filesystem::path file_path;
     std::string schema = FLDIC_SCHEMA_V0_DRAFT1;
     std::string encoding = FLDIC_ENCODING_UTF_8;
-    DictionaryMeta meta;
 
     void loadFromDisk(const std::filesystem::path& path) {
         std::ifstream dict_file(path);
@@ -226,10 +137,9 @@ export class Dictionary {
     }
 
     void deserialize(std::istream& istream) {
-        schema = "(not specified)";
-        encoding = "(not specified)";
+        schema = FLDIC_SCHEMA_LATEST;
+        encoding = FLDIC_ENCODING_UTF_8;
 
-        auto section = DictionarySection::GLOBAL;
         auto prev_pos = istream.tellg();
         std::string line;
         std::vector<std::string> line_components;
@@ -243,37 +153,27 @@ export class Dictionary {
             fl::str::trim(line);
             if (line.empty()) continue;
 
-            if (line.starts_with(FLDIC_SECTION_META[0])) {
-                if (line == FLDIC_SECTION_META) {
-                    section = DictionarySection::META;
-                    if (!isValidSchema(schema)) {
-                        throw std::runtime_error(fmt::format("Invalid or unsupported schema: '{}'", schema));
-                    }
-                    if (!isValidEncoding(encoding)) {
-                        throw std::runtime_error(fmt::format("Invalid or unsupported encoding: '{}'", encoding));
-                    }
-                } else {
-                    break;
-                }
+            if (line.starts_with(FLDIC_LIST_START)) {
+                // We have reached a section, whcih means that's the begin of content
+                break;
             }
 
-            if (section == DictionarySection::GLOBAL) {
-                if (line.find(FLDIC_ASSIGNMENT_BY_COLON) == std::string::npos) {
-                    continue;
+            if (line.find(FLDIC_ASSIGNMENT_BY_COLON) == std::string::npos) {
+                continue;
+            }
+            fl::str::split(line, FLDIC_ASSIGNMENT_BY_COLON, line_components, 1);
+            auto& value = line_components[1];
+            fl::str::trim(value);
+            if (line.starts_with(FLDIC_GLOBAL_SCHEMA)) {
+                if (!isValidSchema(value)) {
+                    throw std::runtime_error(fmt::format("Invalid or unsupported schema: '{}'", schema));
                 }
-                fl::str::split(line, FLDIC_ASSIGNMENT_BY_COLON, line_components, 1);
-                auto& value = line_components[1];
-                fl::str::trim(value);
-                if (line.starts_with(FLDIC_GLOBAL_SCHEMA)) {
-                    schema.assign(value);
-                } else if (line.starts_with(FLDIC_GLOBAL_ENCODING)) {
-                    encoding.assign(value);
+                schema.assign(value);
+            } else if (line.starts_with(FLDIC_GLOBAL_ENCODING)) {
+                if (!isValidEncoding(value)) {
+                    throw std::runtime_error(fmt::format("Invalid or unsupported encoding: '{}'", encoding));
                 }
-            } else if (section == DictionarySection::META) {
-                if (line.starts_with(FLDIC_LINE_COMMENT)) {
-                    continue;
-                }
-                meta.readLine(line);
+                encoding.assign(value);
             }
         }
 
@@ -283,8 +183,7 @@ export class Dictionary {
 
     void serialize(std::ostream& ostream) {
         ostream << FLDIC_GLOBAL_SCHEMA << " " << schema << FLDIC_NEWLINE << FLDIC_GLOBAL_ENCODING << " " << encoding
-                << FLDIC_NEWLINE << FLDIC_NEWLINE << FLDIC_SECTION_META << FLDIC_NEWLINE;
-        meta.writeAllTo(ostream);
+                << FLDIC_NEWLINE;
         serializeContent(ostream);
     }
 };

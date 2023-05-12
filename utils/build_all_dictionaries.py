@@ -19,6 +19,7 @@ import os
 import sys
 import time
 import build_dictionary
+import convert_dictionaries_to_extensions
 
 
 def main() -> None:
@@ -26,6 +27,8 @@ def main() -> None:
     for lang_code in build_dictionary.LANGUAGE_MAPPING.keys():
         print(f"-> LANGUAGE: {lang_code}")
         build_dictionary.build_dictionary(lang_code)
+        flutils.print_large_separator()
+    convert_dictionaries_to_extensions.convert_dictionaries_to_extensions(build_dictionary.DATA_DIR)
     end_time = time.time()
     elapsed_time = end_time - start_time
     flutils.print_large_separator()

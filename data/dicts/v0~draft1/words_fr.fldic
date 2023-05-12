@@ -1,15 +1,6 @@
 #~schema: https://schemas.florisboard.org/nlp/v0~draft1/fldic.txt
 #~encoding: utf-8
 
-[meta]
-name="words_fr"
-display_name="Words (French)"
-locales=["fr"]
-generated_at="1682084530"
-generated_by="build_all_dictionaries.py"
-authors=["Patrick Goldinger <patrick@patrickgold.dev>"]
-license="Apache-2.0"
-
 [words]
 A	454847363
 AA	1471926
