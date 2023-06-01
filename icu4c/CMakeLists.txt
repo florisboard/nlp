@@ -52,7 +52,9 @@ set(ICU_LDFLAGS ${FLORIS_LINK_OPTIONS} -pthread)
 
 set(ICU_DATA_FILTER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/data-feature-filter.json)
 set(ICU_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/icu/icu4c)
-set(ICU_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR})
+if (NOT ICU_BUILD_DIR)
+    set(ICU_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR})
+endif()
 ProcessorCount(NUM_JOBS)
 
 # ----- HOST ----- #
