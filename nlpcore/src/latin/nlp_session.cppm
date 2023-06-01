@@ -58,22 +58,31 @@ export class LatinNlpSession {
         auto json_config = nlohmann::json::parse(config_file);
         config_file.close();
         json_config.get_to(config);
-        loadDictionary(state.USER_DICTIONARY_ID, config.user_dictionary_path);
-        auto id = state.USER_DICTIONARY_ID + 1;
+        loadDictionary(config.user_dictionary_path, state.USER_DICTIONARY_ID);
         for (auto& path : config.base_dictionary_paths) {
-            loadDictionary(id++, path);
+            loadDictionary(path);
         }
         UErrorCode status = U_ZERO_ERROR;
         iterators.init(config.primary_locale, status);
     }
 
-    void loadDictionary(LatinDictId id, const std::filesystem::path& dict_path) {
-        auto dict = std::make_unique<LatinDictionary>(id, state.shared_data);
-        dict->loadFromDisk(dict_path);
-        if (id >= state.dictionaries.size()) {
-            state.dictionaries.resize(id + 1);
+    void loadDictionary(const std::filesystem::path& dict_path, LatinDictId id = -1) {
+        if (isDictionaryAlreadyLoaded(dict_path)) {
+            return;
         }
-        state.dictionaries[id] = std::move(dict);
+        auto dict_id = (id >= 0) ? id : state.dictionaries.size();
+        auto dict = std::make_unique<LatinDictionary>(dict_id, state.shared_data);
+        dict->loadFromDisk(dict_path);
+        if (dict_id >= state.dictionaries.size()) {
+            state.dictionaries.resize(dict_id + 1);
+        }
+        state.dictionaries[dict_id] = std::move(dict);
+    }
+
+    bool isDictionaryAlreadyLoaded(const std::filesystem::path& dict_path) const noexcept {
+        return std::any_of(state.dictionaries.begin(), state.dictionaries.end(), [&](auto& dict) {
+            return dict->file_path == dict_path;
+        });
     }
 
     SpellingResult spell(

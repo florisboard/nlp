@@ -16,6 +16,8 @@
 
 module;
 
+#include <nlohmann/json.hpp>
+
 #include <algorithm>
 #include <bit>
 #include <cstdint>
@@ -128,14 +130,9 @@ export class SuggestionRequestFlags {
 };
 
 export struct SuggestionCandidate {
-    constexpr static const double MIN_CONFIDENCE = 0.0;
-    // Everything above 0.9 to 1.0 is reserved for special suggestions such as contacts, clipboard, etc., which is not
-    // handled in the native implementation
-    constexpr static const double MAX_CONFIDENCE = 0.9;
-
     std::string text;
     std::string secondary_text;
-    double confidence = MIN_CONFIDENCE;
+    double confidence = 0.0;
     bool is_eligible_for_auto_commit = false;
     bool is_eligible_for_user_removal = true;
 
@@ -154,11 +151,28 @@ export struct SuggestionCandidate {
           is_eligible_for_user_removal(is_eligible_for_user_removal_) {}
 };
 
+void to_json(nlohmann::json& j, const SuggestionCandidate& candidate) {
+    j = nlohmann::json {
+        {"text", candidate.text},
+        {"secondaryText", candidate.secondary_text},
+        {"confidence", candidate.confidence},
+        {"isEligibleForAutoCommit", candidate.is_eligible_for_auto_commit},
+        {"isEligibleForUserRemoval", candidate.is_eligible_for_user_removal}};
+}
+
+void from_json(const nlohmann::json& j, SuggestionCandidate& candidate) {
+    candidate.text = j.at("text").get<std::string>();
+    candidate.secondary_text = j.at("secondaryText").get<std::string>();
+    candidate.confidence = j.at("confidence").get<double>();
+    candidate.is_eligible_for_auto_commit = j.at("isEligibleForAutoCommit").get<bool>();
+    candidate.is_eligible_for_user_removal = j.at("isEligibleForUserRemoval").get<bool>();
+}
+
 export using SuggestionResults = std::vector<std::unique_ptr<SuggestionCandidate>>;
 
 struct TransientSuggestionCandidate {
     std::string text_;
-    double confidence_ = SuggestionCandidate::MIN_CONFIDENCE;
+    double confidence_ = 0.0;
     bool is_eligible_for_auto_commit_ = false;
     bool is_eligible_for_user_removal_ = true;
 };
@@ -212,8 +226,7 @@ class TransientSuggestionResults {
     double min_inserted_confidence_ = 0.0;
 
     static bool suggestions_sorter(
-        const std::unique_ptr<TransientSuggestionCandidate>& a,
-        const std::unique_ptr<TransientSuggestionCandidate>& b
+        const std::unique_ptr<TransientSuggestionCandidate>& a, const std::unique_ptr<TransientSuggestionCandidate>& b
     ) {
         /*if (a->edit_distance == b->edit_distance) {
             return a->confidence > b->confidence;
