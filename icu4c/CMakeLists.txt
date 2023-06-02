@@ -1,10 +1,9 @@
 project(ICU4C)
 
 include(ProcessorCount)
-
 # Locate GNU make utlility, as ICU requires GNU make.
 #  See: https://unicode-org.github.io/icu/userguide/icu4c/build.html#how-to-build-and-install-on-unix
-find_program(GNU_MAKE_PROGRAM gmake REQUIRED)
+include(FindGnuMake)
 
 # ----- SETUP LIBRARIES, HELPER FUNCTIONS AND FLAGS ----- #
 
