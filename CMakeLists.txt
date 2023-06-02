@@ -35,31 +35,17 @@ if (NOT ANDROID)
     set(FLORIS_LINK_OPTIONS -lc++)
 else()
     set(FLORIS_COMPILE_OPTIONS -DJSON_HAS_RANGES=0)
-    set(FLORIS_LINK_OPTIONS
-        -Wl,--gc-sections,-rpath-link=${LLVM_TOOLCHAIN}/sysroot/usr/lib
-        -lc -lstdc++)
+    if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+        set(FLORIS_LINK_OPTIONS
+            -Wl,--gc-sections,-rpath-link=${LLVM_TOOLCHAIN}/sysroot/usr/lib
+            -lc -lstdc++)
+    else()
+        # Default linker on MacOS does not does not support --gc-sections
+        set(FLORIS_LINK_OPTIONS
+            -Wl,-dead_strip,-rpath-link=${LLVM_TOOLCHAIN}/sysroot/usr/lib
+            -lc -lstdc++)
+    endif()
 endif()
-
-# Alternative approach of not using system headers at all, currently not really working though:
-#if (NOT ANDROID)
-#    set(FLORIS_COMPILE_OPTIONS
-#        -nostdinc++ -nostdlib++
-#        -isystem ${LLVM_TOOLCHAIN}/include/c++/v1
-#        -DJSON_HAS_RANGES=0)
-#    set(FLORIS_LINK_OPTIONS
-#        -L ${LLVM_TOOLCHAIN}/lib
-#        -Wl,-rpath,${LLVM_TOOLCHAIN}/lib
-#        -lc++)
-#else()
-#    set(FLORIS_COMPILE_OPTIONS
-#        -nostdinc++ -nostdlib++
-#        -isystem ${LLVM_TOOLCHAIN}/sysroot/usr/include/c++/v1
-#        -DJSON_HAS_RANGES=0)
-#    set(FLORIS_LINK_OPTIONS
-#        -L ${LLVM_TOOLCHAIN}/sysroot/usr/lib
-#        -Wl,--gc-sections,-rpath-link=${LLVM_TOOLCHAIN}/sysroot/usr/lib
-#        -lc -lstdc++)
-#endif()
 
 add_compile_options(${FLORIS_COMPILE_OPTIONS})
 add_link_options(${FLORIS_LINK_OPTIONS})
