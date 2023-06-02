@@ -6,10 +6,12 @@ endif()
 
 project(FlorisNLP VERSION 0.1.0)
 
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+include(EnforceSystemEnv)
 if (NOT ANDROID)
     include(CxxModules)
 else()
-    include(CMakeModules/RewriteCppmToHeader.cmake)
+    include(RewriteCppmToHeader)
 endif()
 
 set(CMAKE_C_STANDARD 17)
