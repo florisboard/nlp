@@ -65,12 +65,17 @@ def train_wordscores(dict_path: str, wordlist_path: str, score_threshold: str) -
     ).returncode
 
 
+def print_header(title: str) -> None:
+    print(f">>> {title} <<<")
+    print("-" * (len(title) + 8))
+
+
 def print_separator() -> None:
     print("-----")
 
 
 def print_large_separator() -> None:
-    print("\n=====")
+    print("\n=====\n")
 
 
 def ask_yes_no_question(question) -> bool:

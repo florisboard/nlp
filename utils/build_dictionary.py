@@ -19,7 +19,7 @@ import flutils
 import os
 import sys
 import time
-import googlengram_download
+from devtools import corpusdata
 import googlengram_wordlist
 
 DATA_DIR = os.path.join(flutils.dir_of(__file__), "../data/dicts/v0~draft1")
@@ -101,7 +101,7 @@ def build_dictionary(language_code: str) -> int:
     flutils.print_large_separator()
 
     print("Download Google Ngram data\n")
-    ret_code = googlengram_download.download_ngram_data(googlengram_url, tmp_dir)
+    ret_code = corpusdata.download_googlengram_specific_data(googlengram_url, tmp_dir)
     if ret_code != os.EX_OK:
         print(f"FATAL: Failed to download Google Ngram data! Aborting.")
         return ret_code

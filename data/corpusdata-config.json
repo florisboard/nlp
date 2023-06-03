@@ -1,0 +1,94 @@
+{
+  "wiktextract": {
+    "excludedSourceElements": [ "lang", "sounds", "forms", "hyphenation", "wikipedia", "translations", "examples",
+      "synonyms", "raw_glosses", "glosses", "antonyms", "derived", "head_templates", "etymology_text",
+      "etymology_templates", "etymology_number", "inflection_templates", "descendants" ],
+    "sources": {
+      "en": {
+        "url": "https://kaikki.org/dictionary/English/words/kaikki.org-dictionary-English-words.json",
+        "file": "kaikki.org-dictionary-English-words.json"
+      },
+      "de": {
+        "url": "https://kaikki.org/dictionary/German/words/kaikki.org-dictionary-German-words.json",
+        "file": "kaikki.org-dictionary-German-words.json"
+      },
+      "fr": {
+        "url": "https://kaikki.org/dictionary/French/words/kaikki.org-dictionary-French-words.json",
+        "file": "kaikki.org-dictionary-French-words.json"
+      },
+      "it": {
+        "url": "https://kaikki.org/dictionary/Italian/words/kaikki.org-dictionary-Italian-words.json",
+        "file": "kaikki.org-dictionary-Italian-words.json"
+      },
+      "es": {
+        "url": "https://kaikki.org/dictionary/Spanish/words/kaikki.org-dictionary-Spanish-words.json",
+        "file": "kaikki.org-dictionary-Spanish-words.json"
+      },
+      "pt": {
+        "url": "https://kaikki.org/dictionary/Portuguese/words/kaikki.org-dictionary-Portuguese-words.json",
+        "file": "kaikki.org-dictionary-Portuguese-words.json"
+      },
+      "pl": {
+        "url": "https://kaikki.org/dictionary/Polish/words/kaikki.org-dictionary-Polish-words.json",
+        "file": "kaikki.org-dictionary-Polish-words.json"
+      },
+      "ru": {
+        "url": "https://kaikki.org/dictionary/Russian/words/kaikki.org-dictionary-Russian-words.json",
+        "file": "kaikki.org-dictionary-Russian-words.json"
+      }
+    }
+  },
+  "googlengram": {
+    "sources": {
+      "en-US": {
+        "url_1gram": "https://storage.googleapis.com/books/ngrams/books/20200217/eng-us/eng-us-1-ngrams_exports.html",
+        "url_2gram": "https://storage.googleapis.com/books/ngrams/books/20200217/eng-us/eng-us-2-ngrams_exports.html",
+        "url_3gram": "https://storage.googleapis.com/books/ngrams/books/20200217/eng-us/eng-us-3-ngrams_exports.html",
+        "url_4gram": "https://storage.googleapis.com/books/ngrams/books/20200217/eng-us/eng-us-4-ngrams_exports.html",
+        "url_5gram": "https://storage.googleapis.com/books/ngrams/books/20200217/eng-us/eng-us-5-ngrams_exports.html"
+      },
+      "en-GB": {
+        "url_1gram": "https://storage.googleapis.com/books/ngrams/books/20200217/eng-gb/eng-gb-1-ngrams_exports.html",
+        "url_2gram": "https://storage.googleapis.com/books/ngrams/books/20200217/eng-gb/eng-gb-2-ngrams_exports.html",
+        "url_3gram": "https://storage.googleapis.com/books/ngrams/books/20200217/eng-gb/eng-gb-3-ngrams_exports.html",
+        "url_4gram": "https://storage.googleapis.com/books/ngrams/books/20200217/eng-gb/eng-gb-4-ngrams_exports.html",
+        "url_5gram": "https://storage.googleapis.com/books/ngrams/books/20200217/eng-gb/eng-gb-5-ngrams_exports.html"
+      },
+      "de": {
+        "url_1gram": "https://storage.googleapis.com/books/ngrams/books/20200217/ger/ger-1-ngrams_exports.html",
+        "url_2gram": "https://storage.googleapis.com/books/ngrams/books/20200217/ger/ger-2-ngrams_exports.html",
+        "url_3gram": "https://storage.googleapis.com/books/ngrams/books/20200217/ger/ger-3-ngrams_exports.html",
+        "url_4gram": "https://storage.googleapis.com/books/ngrams/books/20200217/ger/ger-4-ngrams_exports.html",
+        "url_5gram": "https://storage.googleapis.com/books/ngrams/books/20200217/ger/ger-5-ngrams_exports.html"
+      },
+      "fr": {
+        "url_1gram": "https://storage.googleapis.com/books/ngrams/books/20200217/fre/fre-1-ngrams_exports.html",
+        "url_2gram": "https://storage.googleapis.com/books/ngrams/books/20200217/fre/fre-2-ngrams_exports.html",
+        "url_3gram": "https://storage.googleapis.com/books/ngrams/books/20200217/fre/fre-3-ngrams_exports.html",
+        "url_4gram": "https://storage.googleapis.com/books/ngrams/books/20200217/fre/fre-4-ngrams_exports.html",
+        "url_5gram": "https://storage.googleapis.com/books/ngrams/books/20200217/fre/fre-5-ngrams_exports.html"
+      },
+      "it": {
+        "url_1gram": "https://storage.googleapis.com/books/ngrams/books/20200217/ita/ita-1-ngrams_exports.html",
+        "url_2gram": "https://storage.googleapis.com/books/ngrams/books/20200217/ita/ita-2-ngrams_exports.html",
+        "url_3gram": "https://storage.googleapis.com/books/ngrams/books/20200217/ita/ita-3-ngrams_exports.html",
+        "url_4gram": "https://storage.googleapis.com/books/ngrams/books/20200217/ita/ita-4-ngrams_exports.html",
+        "url_5gram": "https://storage.googleapis.com/books/ngrams/books/20200217/ita/ita-5-ngrams_exports.html"
+      },
+      "es": {
+        "url_1gram": "https://storage.googleapis.com/books/ngrams/books/20200217/spa/spa-1-ngrams_exports.html",
+        "url_2gram": "https://storage.googleapis.com/books/ngrams/books/20200217/spa/spa-2-ngrams_exports.html",
+        "url_3gram": "https://storage.googleapis.com/books/ngrams/books/20200217/spa/spa-3-ngrams_exports.html",
+        "url_4gram": "https://storage.googleapis.com/books/ngrams/books/20200217/spa/spa-4-ngrams_exports.html",
+        "url_5gram": "https://storage.googleapis.com/books/ngrams/books/20200217/spa/spa-5-ngrams_exports.html"
+      },
+      "ru": {
+        "url_1gram": "https://storage.googleapis.com/books/ngrams/books/20200217/rus/rus-1-ngrams_exports.html",
+        "url_2gram": "https://storage.googleapis.com/books/ngrams/books/20200217/rus/rus-2-ngrams_exports.html",
+        "url_3gram": "https://storage.googleapis.com/books/ngrams/books/20200217/rus/rus-3-ngrams_exports.html",
+        "url_4gram": "https://storage.googleapis.com/books/ngrams/books/20200217/rus/rus-4-ngrams_exports.html",
+        "url_5gram": "https://storage.googleapis.com/books/ngrams/books/20200217/rus/rus-5-ngrams_exports.html"
+      }
+    }
+  }
+}

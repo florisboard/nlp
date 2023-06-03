@@ -17,7 +17,7 @@
 import argparse
 import os
 import sys
-from devtools import icu4c
+from devtools import icu4c, corpusdata
 
 
 def main() -> None:
@@ -39,11 +39,32 @@ def main() -> None:
         help="if specified skips the confirmation dialog (for script mode)",
     )
 
+    corpusdata_parser = subparsers.add_parser(
+        "corpusdata-download",
+        help="helps downloading corpusdata",
+        description="Utility which downloads Wiktextract and Google Ngram partition files from their respecitve sources and stores them in given dst dir.",
+        epilog="See https://storage.googleapis.com/books/ngrams/books/datasetsv3.html for an overview of Google Ngram data.",
+    )
+    corpusdata_parser.add_argument(
+        "--corpus-config",
+        type=str,
+        required=True,
+        help="path for the corpus download config",
+    )
+    corpusdata_parser.add_argument(
+        "--dst-dir",
+        type=str,
+        required=True,
+        help="path for the dst corpus dir",
+    )
+
     args = parser.parse_args()
 
     ret_code = os.EX_OK
     if args.command == "icu4c":
         ret_code = icu4c.upgrade(args.upgrade, args.y)
+    elif args.command == "corpusdata-download":
+        ret_code = corpusdata.download_all(args.corpus_config, args.dst_dir)
     else:
         raise ValueError("Unreachable")
 
