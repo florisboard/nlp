@@ -1,5 +1,3 @@
-find_package(Python REQUIRED COMPONENTS Interpreter)
-
 set_property(GLOBAL PROPERTY __current_source_dir ${CMAKE_CURRENT_SOURCE_DIR})
 set_property(GLOBAL PROPERTY __current_binary_dir ${CMAKE_CURRENT_BINARY_DIR})
 function(target_module_sources target_name target_type)

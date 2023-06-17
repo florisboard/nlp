@@ -7,6 +7,8 @@ endif()
 project(FlorisNLP VERSION 0.1.0)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+find_package(Python 3.10...<4 REQUIRED COMPONENTS Interpreter)
+
 include(EnforceSystemEnv)
 if (NOT ANDROID)
     include(CxxModules)
