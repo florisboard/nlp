@@ -13,7 +13,7 @@ function(target_module_sources target_name target_type)
 
         # Auto prepend some hackery to all source files
         execute_process(
-            COMMAND python3 ${current_source_dir}/utils/rewrite_cppm_to_header.py --cppm ${source_path} --output-dir ${header_dir}
+            COMMAND ${Python_EXECUTABLE} ${current_source_dir}/utils/rewrite_cppm_to_header.py --cppm ${source_path} --output-dir ${header_dir}
             RESULT_VARIABLE header_rewrite_result
             OUTPUT_VARIABLE cpp_path
             OUTPUT_STRIP_TRAILING_WHITESPACE

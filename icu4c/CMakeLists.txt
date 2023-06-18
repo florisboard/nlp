@@ -1,10 +1,9 @@
 project(ICU4C)
 
 include(ProcessorCount)
-
 # Locate GNU make utlility, as ICU requires GNU make.
 #  See: https://unicode-org.github.io/icu/userguide/icu4c/build.html#how-to-build-and-install-on-unix
-find_program(GNU_MAKE_PROGRAM gmake REQUIRED)
+include(FindGnuMake)
 
 # ----- SETUP LIBRARIES, HELPER FUNCTIONS AND FLAGS ----- #
 
@@ -52,7 +51,9 @@ set(ICU_LDFLAGS ${FLORIS_LINK_OPTIONS} -pthread)
 
 set(ICU_DATA_FILTER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/data-feature-filter.json)
 set(ICU_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/icu/icu4c)
-set(ICU_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR})
+if (NOT ICU_BUILD_DIR)
+    set(ICU_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR})
+endif()
 ProcessorCount(NUM_JOBS)
 
 # ----- HOST ----- #

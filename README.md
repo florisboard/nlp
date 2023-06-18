@@ -1,7 +1,7 @@
 # FlorisBoard NLP
 
 This repository is the heart of the NLP functionality of [FlorisBoard](https://github.com/florisboard/florisboard). It
-consists mainly of 2 major components:
+mainly consists of 2 major components:
 
 - [nlpcore](nlpcore): The Core NLP library for FlorisBoard, which is responsible for managing dictionaries and for
   generating word suggestions/performing spell check for given input data. Compiles for both desktop and Android
@@ -15,15 +15,63 @@ If you want to contribute to this repository please see [CONTRIBUTING](CONTRIBUT
 
 ## Building & Running the project
 
-### General requirements
+This project can be build in 2 types:
+- **Submodule build**: NLP is built together with FlorisBoard and included as a submodule into the main project. If you are unsure what you are doing this option is probably the correct one.
+- **Standalone build**: NLP is built as a standalone utility and can only run on the machine on which it was compiled on. Useful for testing and dictionary generation.
 
-To be able to successfully build this project a host machine with a UNIX-like system (e.g. Ubuntu) must be installed. If
-you are on Windows 10/11 you can compile this project using WSL2 (Windows Subsystem for Linux 2), native Windows
-compilation is not supported.
+### System requirements
 
-Additionally you need to have `git` installed for cloning and initializing the submodules.
+To be able to compile this project on your PC, you must run a supported host system:
 
-### Initializing the local source repository
+System | Submodule build | Standalone build | Notes
+---|---|---|---
+Windows 7/8/10/11 | ❌ | ❌ | -
+Windows 10/11 with WSL2 | ✅ | ⚠️ | tested with distro:<br>Ubuntu 22.10
+MacOS | ❔ | ❔ | untested but should be supported; please provide feedback
+Debian 11.0 | ⚠️ | ❌ | submodule: `python3` package is outdated in the package repository
+Debian 12.0+ | ✅ | ⚠️ | standalone: `cmake` and `clang` packages are outdated in the package repository
+Ubuntu 22.04 | ✅ | ❌ | -
+Ubuntu 22.10 | ✅ | ⚠️ | standalone: `cmake` and `clang` packages are outdated in the package repository
+Ubuntu 23.04+ | ✅ | ⚠️ | standalone: `cmake` and `clang` packages are outdated in the package repository
+Other Linux systems | ❔ | ❔ | try yourself
+
+### Submodule build (targeting `Android`)
+
+Requirements if you compile NLP as a submodule for the main FlorisBoard project:
+
+- Android SDK
+- Java 17
+- Android NDK r25
+- CMake 3.22+
+- Ninja 1.10+
+- GNU make 3.80+
+  - MUST be GNU make and not some other variation of make or the ICU build will fail!!
+- Clang 14.x+ & libc++ (bundled with Android NDK)
+- Python 3.10+
+- Git
+
+If you have trouble installing the requirements or don't know how to install some you can
+also refer to [this excellent guide](https://github.com/florisboard/florisboard/issues/2218#issuecomment-1572763444) written by [@Thithic](https://github.com/Thithic), which guides you step by step in setting up the requirements on Ubuntu 22.04.
+
+#### Building
+
+NLP cannot be built as a standalone module if Android is targeted. In the main FlorisBoard
+project's root directory execute `./gradlew clean && ./gradlew assembleDebug` to build
+FlorisBoard.
+
+### Standalone build (targeting `Desktop`)
+
+Requirements if you compile NLP and NLP tools as a standalone utility for desktop:
+
+- CMake 3.26+
+- Ninja 1.11+
+- GNU make 3.80+
+  - MUST be GNU make and not some other variation of make or the ICU build will fail!!
+- Clang 16.x+ (see below if your distro does not have version 16 yet)
+- Package `libc++-dev` and `libc++abi-dev` (version 16.x+)
+- Git
+
+#### Initializing the local source repository
 
 ```shell
 # One-time setup
@@ -31,17 +79,6 @@ git clone https://github.com/florisboard/nlp.git
 cd nlp
 git submodule update --init --recursive
 ```
-
-### Building for Desktop targets (`nlpcore` & `nlptools`)
-
-#### Requirements
-
-- CMake 3.26+
-- Ninja 1.11+
-- GNU make 3.80+
-    - MUST be GNU make and not some other variation of make or the ICU build will fail!!
-- Clang 16.x+ (see below if your distro does not have version 16 yet)
-- Package `libc++-dev` and `libc++abi-dev` (version 16.x+)
 
 #### Set up clang compiler
 
@@ -61,35 +98,23 @@ Great! You do not have to set up anything else, and you can skip to the project 
 <details>
 <summary>The reported version is 15.x or older</summary>
 
-In this case you do not have a supported version of clang installed and we need to build and integrate the compiler
-manually.
-
-To properly support C++ modules we need a pre-release version of clang-16 as of March 2023, which can be found here:
-https://github.com/llvm/llvm-project/tree/release/16.x
-
-To compile the pre-release version of clang-16, issue the following commands:
+In this case you do not have a supported version of clang installed, and we need to download and integrate the compiler
+manually. Head to https://github.com/llvm/llvm-project/releases and download the appropriate prebuilt llvm-project for
+your system. Below example assumes you are on Ubuntu 22.04.
 
 ```shell
-# Get the source code
-git clone https://github.com/llvm/llvm-project.git
-cd llvm-project
-git checkout origin/release/16.x
-
-# Set up build directory
-mkdir build
-cd build
-
-# Build clang (may take a while, depending on the CPU anything from 15-60 mins)
-cmake -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_BUILD_TYPE=Release -G Ninja ../llvm && ninja
+# Download clang 16.0.x for Ubuntu 22.04
+wget https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.4/clang+llvm-16.0.4-x86_64-linux-gnu-ubuntu-22.04.tar.xz
+tar -xf clang+llvm-16.0.4-x86_64-linux-gnu-ubuntu-22.04.tar.xz
 ```
 
-Then we need to change the compiler path to the custom compiled one, else the build will fail. To change it, open
+After this we need to change the compiler path to the downloaded one, else the build will fail. To change it, open
 [CMakePresets.json](CMakePresets.json) in a text editor and change the C/CXX compiler vars like so:
 
 ```
     ...
-    "CMAKE_C_COMPILER": "/path/to/custom/compiled/llvm-project/build/bin/clang",
-    "CMAKE_CXX_COMPILER": "/path/to/custom/compiled/llvm-project/build/bin/clang++",
+    "CMAKE_C_COMPILER": "/path/to/downloaded/llvm-project/build/bin/clang",
+    "CMAKE_CXX_COMPILER": "/path/to/downloaded/llvm-project/build/bin/clang++",
     ...
 ```
 
@@ -124,24 +149,10 @@ data sources into dictionary files.
 
 TODO: documentation
 
-### Building for Android targets (`nlpcore` only)
-
-#### Requirements
-
-- Android NDK r25
-- CMake 3.22+
-- Ninja 1.10+
-- GNU make 3.80+
-    - MUST be GNU make and not some other variation of make or the ICU build will fail!!
-- Clang 14.x+ & libc++ (bundled with Android NDK)
-- Python 3.10+
-
-#### Building
-
-TODO: currently standalone Android build not possible, only works if integrated into main project
-
 ## Known issues
 
+- Compilation issues in submodule build mode:
+  - This is known and tracked in [florisboard#2218](https://github.com/florisboard/florisboard/issues/2218), please report there if you encounter any issues.
 - Memory usage of the NLP core trie map is high:
   - This is indeed a big issue right now, but unlike with the previous NLP attempt we are not restricted by Java's heap space restrictions anymore, only by natively available RAM, so for now we have to bite the bullet (or reduce the entries in the preprocessed dictionaries). If you think you have an idea on how to decrease the memory usage significantly (without overcomplicating the codebase) I am all ears!
 - Size of preprocessed dictionaries is quite large:
