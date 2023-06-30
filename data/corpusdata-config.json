@@ -6,35 +6,43 @@
     "sources": {
       "en": {
         "url": "https://kaikki.org/dictionary/English/words/kaikki.org-dictionary-English-words.json",
-        "file": "kaikki.org-dictionary-English-words.json"
+        "originalFile": "kaikki.org-dictionary-English-words.json",
+        "filteredFile": "kaikki.org-dictionary-English-words.jsonl"
       },
       "de": {
         "url": "https://kaikki.org/dictionary/German/words/kaikki.org-dictionary-German-words.json",
-        "file": "kaikki.org-dictionary-German-words.json"
+        "originalFile": "kaikki.org-dictionary-German-words.json",
+        "filteredFile": "kaikki.org-dictionary-German-words.jsonl"
       },
       "fr": {
         "url": "https://kaikki.org/dictionary/French/words/kaikki.org-dictionary-French-words.json",
-        "file": "kaikki.org-dictionary-French-words.json"
+        "originalFile": "kaikki.org-dictionary-French-words.json",
+        "filteredFile": "kaikki.org-dictionary-French-words.jsonl"
       },
       "it": {
         "url": "https://kaikki.org/dictionary/Italian/words/kaikki.org-dictionary-Italian-words.json",
-        "file": "kaikki.org-dictionary-Italian-words.json"
+        "originalFile": "kaikki.org-dictionary-Italian-words.json",
+        "filteredFile": "kaikki.org-dictionary-Italian-words.jsonl"
       },
       "es": {
         "url": "https://kaikki.org/dictionary/Spanish/words/kaikki.org-dictionary-Spanish-words.json",
-        "file": "kaikki.org-dictionary-Spanish-words.json"
+        "originalFile": "kaikki.org-dictionary-Spanish-words.json",
+        "filteredFile": "kaikki.org-dictionary-Spanish-words.jsonl"
       },
       "pt": {
         "url": "https://kaikki.org/dictionary/Portuguese/words/kaikki.org-dictionary-Portuguese-words.json",
-        "file": "kaikki.org-dictionary-Portuguese-words.json"
+        "originalFile": "kaikki.org-dictionary-Portuguese-words.json",
+        "filteredFile": "kaikki.org-dictionary-Portuguese-words.jsonl"
       },
       "pl": {
         "url": "https://kaikki.org/dictionary/Polish/words/kaikki.org-dictionary-Polish-words.json",
-        "file": "kaikki.org-dictionary-Polish-words.json"
+        "originalFile": "kaikki.org-dictionary-Polish-words.json",
+        "filteredFile": "kaikki.org-dictionary-Polish-words.jsonl"
       },
       "ru": {
         "url": "https://kaikki.org/dictionary/Russian/words/kaikki.org-dictionary-Russian-words.json",
-        "file": "kaikki.org-dictionary-Russian-words.json"
+        "originalFile": "kaikki.org-dictionary-Russian-words.json",
+        "filteredFile": "kaikki.org-dictionary-Russian-words.jsonl"
       }
     }
   },

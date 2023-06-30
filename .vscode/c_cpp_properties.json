@@ -1,15 +1,15 @@
 {
-    "version": 4,
-    "configurations": [
-        {
-            "name": "Linux",
-            "intelliSenseMode": "linux-clang-x64",
-            "compileCommands": "${workspaceFolder}/build/debug/compile_commands.json",
-            "defines": [],
-            "compilerPath": "/usr/bin/clang",
-            "cStandard": "c17",
-            "cppStandard": "c++20",
-            "configurationProvider": "ms-vscode.cmake-tools"
-        }
-    ]
+  "version": 4,
+  "configurations": [
+    {
+      "name": "Linux",
+      "intelliSenseMode": "linux-clang-x64",
+      "compileCommands": "${workspaceFolder}/build/release/compile_commands.json",
+      "defines": [ ],
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "c17",
+      "cppStandard": "c++20",
+      "configurationProvider": "ms-vscode.cmake-tools"
+    }
+  ]
 }

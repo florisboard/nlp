@@ -36,9 +36,10 @@ class WiktextractCorpusConfig:
         self.sources: dict[str, self.SourceInfo] = {}
 
     class SourceInfo:
-        def __init__(self, url: str, file: str) -> None:
+        def __init__(self, url: str, original_file: str, filtered_file: str) -> None:
             self.url: str = url
-            self.file: str = file
+            self.original_file: str = original_file
+            self.filtered_file: str = filtered_file
 
 
 class GoogleNgramCorpusConfig:
@@ -73,9 +74,10 @@ def parse_json_to_corpus_config(file_path) -> CorpusConfig:
         if sources:
             for source_name, source_info in sources.items():
                 url = source_info.get("url")
-                file = source_info.get("file")
-                if url and file:
-                    source = WiktextractCorpusConfig.SourceInfo(url, file)
+                original_file = source_info.get("originalFile")
+                filtered_file = source_info.get("filteredFile")
+                if url and original_file and filtered_file:
+                    source = WiktextractCorpusConfig.SourceInfo(url, original_file, filtered_file)
                     wiktextract_config.sources[source_name] = source
 
     # Parse googlengram data
@@ -115,37 +117,34 @@ def filter_json_data(corpus_config: CorpusConfig, json_data):
     return filtered_json_data
 
 
-def filter_wiktextract_file(corpus_config: CorpusConfig, kaikki_path: str) -> None:
-    kaikki_tmp_path = f"{kaikki_path}.tmp"
+def filter_wiktextract_file(corpus_config: CorpusConfig, kaikki_path: str, filtered_kaikki_path: str) -> None:
     with open(kaikki_path, "r") as kaikki_file:
-        with open(kaikki_tmp_path, "w") as kaikki_tmp_file:
+        with open(filtered_kaikki_path, "w") as filtered_kaikki_file:
             for line in kaikki_file:
                 json_data = json.loads(line)
                 filtered_json_data = filter_json_data(corpus_config, json_data)
-                kaikki_tmp_file.write(json.dumps(filtered_json_data))
-                kaikki_tmp_file.write("\n")
-    os.remove(kaikki_path)
-    os.rename(kaikki_tmp_path, kaikki_path)
+                filtered_kaikki_file.write(json.dumps(filtered_json_data))
+                filtered_kaikki_file.write("\n")
 
 
 def download_wiktextract(corpus_config: CorpusConfig, dst_dir: str) -> int:
     flutils.print_header("DOWNLOAD WIKTEXTRACT")
     for lang_tag, source in corpus_config.wiktextract.sources.items():
         print(f"[{lang_tag}]")
-        kaikki_path = os.path.join(dst_dir, source.file)
+        kaikki_path = os.path.join(dst_dir, source.original_file)
+        filtered_kaikki_path = os.path.join(dst_dir, source.filtered_file)
         if os.path.exists(kaikki_path):
             print(f"Skip {kaikki_path} (already exists)")
-            flutils.print_separator()
-            continue
-        print(f"Download {kaikki_path}")
-        ret_code = flutils.download(url=source.url, to_file=kaikki_path)
-        if ret_code != 0:
-            print(f"WARN: Failed to complete download (error code {ret_code})")
-            os.remove(kaikki_path)
-            flutils.print_separator()
-            continue
+        else:
+            print(f"Download {kaikki_path}")
+            ret_code = flutils.download(url=source.url, to_file=kaikki_path)
+            if ret_code != 0:
+                print(f"WARN: Failed to complete download (error code {ret_code})")
+                os.remove(kaikki_path)
+                flutils.print_separator()
+                continue
         print(f"Filtering {kaikki_path}")
-        filter_wiktextract_file(corpus_config, kaikki_path)
+        filter_wiktextract_file(corpus_config, kaikki_path, filtered_kaikki_path)
         flutils.print_separator()
 
     return os.EX_OK
