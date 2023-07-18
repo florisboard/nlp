@@ -30,7 +30,7 @@ def download(url: str, to_file: str | None = None) -> int:
 
 
 def prep_wiktextract(wiktextract_path: str, dict_path: str, config_path: str, filter_name: str, stats_path: str) -> int:
-    nlptools_executable = os.path.join(dir_of(__file__), "../build/release/bin/nlptools")
+    nlptools_executable = os.path.join(dir_of(__file__), "../../build/release/bin/nlptools")
     return subprocess.run(
         [
             nlptools_executable,
@@ -50,7 +50,7 @@ def prep_wiktextract(wiktextract_path: str, dict_path: str, config_path: str, fi
 
 
 def train_wordscores(dict_path: str, wordlist_path: str, score_threshold: str) -> int:
-    nlptools_executable = os.path.join(dir_of(__file__), "../build/release/bin/nlptools")
+    nlptools_executable = os.path.join(dir_of(__file__), "../../build/release/bin/nlptools")
     return subprocess.run(
         [
             nlptools_executable,

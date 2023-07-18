@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import argparse
-import flutils
 import gzip
 import json
 import os
@@ -24,6 +23,7 @@ import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
 from typing import Pattern, Tuple
+from devtools import flutils
 
 
 def parse_line(line: str) -> Tuple[str, int]:

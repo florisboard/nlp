@@ -14,91 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flutils
 import json
 import os
 import re
 import time
+from devtools import flutils
+from devtools.corpusconfig import *
 
 
 HTML_LINK_SCRAPING_REGEX = r"<li><a href=\"(.*?)\">.*<\/a><\/li>"
-
-
-class CorpusConfig:
-    def __init__(self) -> None:
-        self.wiktextract = WiktextractCorpusConfig()
-        self.googlengram = GoogleNgramCorpusConfig()
-
-
-class WiktextractCorpusConfig:
-    def __init__(self) -> None:
-        self.excluded_source_elements: list[str] = []
-        self.sources: dict[str, self.SourceInfo] = {}
-
-    class SourceInfo:
-        def __init__(self, url: str, original_file: str, filtered_file: str) -> None:
-            self.url: str = url
-            self.original_file: str = original_file
-            self.filtered_file: str = filtered_file
-
-
-class GoogleNgramCorpusConfig:
-    def __init__(self) -> None:
-        self.sources: dict[str, self.SourceInfo] = {}
-
-    class SourceInfo:
-        def __init__(self, url_1gram: str, url_2gram: str, url_3gram: str, url_4gram: str, url_5gram: str) -> None:
-            self.url_1gram: str = url_1gram
-            self.url_2gram: str = url_2gram
-            self.url_3gram: str = url_3gram
-            self.url_4gram: str = url_4gram
-            self.url_5gram: str = url_5gram
-
-
-def parse_json_to_corpus_config(file_path) -> CorpusConfig:
-    with open(file_path) as f:
-        data = json.load(f)
-
-    config = CorpusConfig()
-
-    # Parse wiktextract data
-    wiktextract_data = data.get("wiktextract")
-    if wiktextract_data:
-        wiktextract_config = config.wiktextract
-
-        excluded_source_elements = wiktextract_data.get("excludedSourceElements")
-        if excluded_source_elements:
-            wiktextract_config.excluded_source_elements = excluded_source_elements
-
-        sources = wiktextract_data.get("sources")
-        if sources:
-            for source_name, source_info in sources.items():
-                url = source_info.get("url")
-                original_file = source_info.get("originalFile")
-                filtered_file = source_info.get("filteredFile")
-                if url and original_file and filtered_file:
-                    source = WiktextractCorpusConfig.SourceInfo(url, original_file, filtered_file)
-                    wiktextract_config.sources[source_name] = source
-
-    # Parse googlengram data
-    googlengram_data = data.get("googlengram")
-    if googlengram_data:
-        googlengram_config = config.googlengram
-
-        sources = googlengram_data.get("sources")
-        if sources:
-            for source_name, source_info in sources.items():
-                url_1gram = source_info.get("url_1gram")
-                url_2gram = source_info.get("url_2gram")
-                url_3gram = source_info.get("url_3gram")
-                url_4gram = source_info.get("url_4gram")
-                url_5gram = source_info.get("url_5gram")
-
-                if url_1gram and url_2gram and url_3gram and url_4gram and url_5gram:
-                    source = GoogleNgramCorpusConfig.SourceInfo(url_1gram, url_2gram, url_3gram, url_4gram, url_5gram)
-                    googlengram_config.sources[source_name] = source
-
-    return config
 
 
 def filter_json_data(corpus_config: CorpusConfig, json_data):
@@ -207,9 +131,9 @@ def download_googlengram_data(corpus_config: CorpusConfig, dst_dir: str) -> int:
 def download_all(corpus_config_path: str, corpusdata_dir: str) -> int:
     corpus_config = parse_json_to_corpus_config(corpus_config_path)
 
-    wiktextract_dir = os.path.join(corpusdata_dir, "wiktextract")
+    wiktextract_dir = os.path.join(corpusdata_dir, WiktextractCorpusConfig.ID)
     os.makedirs(wiktextract_dir, exist_ok=True)
-    googlengram_dir = os.path.join(corpusdata_dir, "googlengram")
+    googlengram_dir = os.path.join(corpusdata_dir, GoogleNgramCorpusConfig.ID)
     os.makedirs(googlengram_dir, exist_ok=True)
 
     start_time = time.time()

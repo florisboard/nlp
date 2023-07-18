@@ -14,18 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flutils
 import os
 import sys
 import time
 import build_dictionary
 import convert_dictionaries_to_extensions
+from devtools import flutils
 
 
 def main() -> None:
     start_time = time.time()
     for lang_code in build_dictionary.LANGUAGE_MAPPING.keys():
-        print(f"-> LANGUAGE: {lang_code}")
         build_dictionary.build_dictionary(lang_code)
         flutils.print_large_separator()
     convert_dictionaries_to_extensions.convert_dictionaries_to_extensions(build_dictionary.DATA_DIR)
