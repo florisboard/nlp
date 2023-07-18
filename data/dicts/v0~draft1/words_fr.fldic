@@ -2,6 +2,7 @@
 #~encoding: utf-8
 
 [words]
+'a	90
 A	454847363
 AA	1471926
 AAAAA	5322
@@ -16,6 +17,7 @@ ADQ	17661
 AELE	243998
 AFM	34328
 AFP	315558
+AFPC	13615
 AIE	116919
 AIIP	526
 AIP	25019
@@ -120,6 +122,7 @@ Acadiennes	10122
 Acadiens	404195
 Acarnanie	113578
 Achab	311212
+Achache	7511
 Achaïe	363202
 Achille	4073206
 Achour	108296
@@ -160,12 +163,14 @@ Agen	2073931
 Aggée	86572
 Aglukark	198
 Aglukkaq	166
+Agly	55181
 Agneau	933450
 Agniers	42390
 Agnès	3243062
 Agout	92660
 Agésilas	262516
 Aicard	100695
+Aimé	1931807
 Aimée	572740
 Ain	2447562
 Airard	12230
@@ -188,6 +193,7 @@ Akkadiens	14051
 Akkouche	1002
 Akram	25558
 Akrem	269
+Akwesasne	7554
 Alain	9504906
 Alains	317569
 Alaphilippe	7152
@@ -233,6 +239,7 @@ Alexandrins	297612
 Alexandrovsk	14522
 Alexia	134111
 Alexis	4101777
+Alfa	233284
 Alfred	7755714
 Alger	11204799
 Algérie	21936394
@@ -246,6 +253,7 @@ Aline	787756
 Alisson	4916
 Alix	1095789
 Aliénor	303630
+Allais	348491
 Allard	944337
 Allemagne	67130843
 Allemand	3865173
@@ -269,6 +277,7 @@ Alsaciens	737155
 Altaï	251152
 Alysson	6433
 Alès	293844
+Alénya	2877
 Alépin	3509
 Amadou	440759
 Amalric	126635
@@ -427,6 +436,7 @@ Antiochos	236524
 Antiochène	6160
 Antiphon	116527
 Antiquité	3903237
+Antist	4862
 Antisthène	112819
 Antoine	24541834
 Antoinette	3469437
@@ -472,12 +482,14 @@ Araméennes	1271
 Araméens	73840
 Arbas	22837
 Arbois	634123
+Arbonne	23939
 Arbrissel	86530
 Arcadie	678088
 Arcadien	29468
 Arcadienne	4692
 Arcadiennes	1998
 Arcadiens	187440
+Arcangues	15036
 Arceneaux	3198
 Archambault	372737
 Arches	280832
@@ -492,6 +504,7 @@ Ardéchois	15066
 Ardéchoise	3063
 Ardéchoises	568
 Argand	106072
+Argelès	153473
 Argenteuil	626530
 Argentin	157137
 Argentine	3814223
@@ -508,6 +521,7 @@ Aristée	169132
 Aristénète	13371
 Arize	34423
 Ariège	985008
+Ariégeois	26395
 Arkhangelsk	65447
 Arkhanguelsk	1346
 Arlequin	989458
@@ -532,6 +546,7 @@ Arméniennes	26729
 Arméniens	1957246
 Arménistan	277
 Arnaud	3827953
+Arno	505236
 Arnoux	543774
 Arntfield	683
 Arpajon	239473
@@ -564,6 +579,7 @@ Arès	239765
 Aréopage	249987
 Arétas	33968
 Asbestos	74910
+Ascarat	1575
 Ascension	1257336
 Ascou	11834
 Ascoux	2088
@@ -582,7 +598,9 @@ Assouline	65605
 Assyrie	982585
 Astier	417738
 Astié	27236
+Astolphe	169343
 Astrid	216671
+Astruc	336215
 Asturien	12843
 Asturienne	20105
 Asturiennes	1130
@@ -590,6 +608,7 @@ Asturiens	28987
 Asturies	731709
 Astère	16854
 Astérix	114559
+Ath	635668
 Athanase	1577390
 Athènes	10746382
 Athéna	711261
@@ -615,6 +634,7 @@ Aucoin	28876
 Aude	2068919
 Audet	133865
 Audette	11904
+Audierne	127920
 Audrey	378584
 Audric	9327
 Audrée	2505
@@ -646,6 +666,7 @@ Australiennes	14323
 Australiens	366176
 Austronésie	1252
 Auteuil	906878
+Auteuillois	427
 Authement	299
 Authier	81066
 Autriche	28559407
@@ -689,6 +710,7 @@ Ayumi	2753
 Azerbaïdjan	371280
 Azerbaïdjanais	12990
 Azerbaïdjanaise	503
+Azereix	5842
 Azraël	26902
 Aztèque	22853
 Aztèques	274411
@@ -732,6 +754,7 @@ BP	2151638
 BPA	22754
 BPS	15594
 BQ	37846
+BRI	108755
 BTP	245579
 BV	136269
 Baalbeck	52742
@@ -794,6 +817,7 @@ Bangkok	731873
 Bangkokiens	191
 Bangladesh	376037
 Bankass	3539
+Bannalec	17279
 Bantou	133158
 Bantous	148787
 Baptiste	8985589
@@ -835,6 +859,7 @@ Basque	578212
 Basques	708123
 Bassompierre	497375
 Bassorah	114248
+Bassussarry	1802
 Bastia	848283
 Bastien	737145
 Bastienne	29673
@@ -845,10 +870,12 @@ Batave	135659
 Bataves	242271
 Bathily	23050
 Bathurst	237536
+Batman	78008
 Baudelaire	3902016
 Baudier	53701
 Baudouin	2634541
 Baudrillard	186610
+Baudrit	6375
 Bauer	737268
 Baumé	235231
 Baup	21936
@@ -861,6 +888,7 @@ Bayonne	3149050
 Bayraktar	1335
 Bazin	1217727
 Baïse	48168
+Beatles	184604
 Beauchamp	511251
 Beauchemin	199133
 Beauchesne	397073
@@ -877,6 +905,7 @@ Beaumont	3616821
 Beauregard	874315
 Beausoleil	95444
 Beauvais	3749152
+Beauval	143064
 Becquart	23822
 Becquerel	697209
 Beijing	177631
@@ -953,6 +982,7 @@ Besançon	5743605
 Bessette	76792
 Besson	852578
 Bestiac	1868
+Betafo	24707
 Betancourt	48465
 Betchat	7414
 Bethléem	1050508
@@ -960,6 +990,8 @@ Bethléhem	110176
 Bethphagé	16493
 Bethsabée	137032
 Bethsaïda	22810
+Bettachini	2038
+Bettembos	1762
 Bettencourt	88031
 Beyala	46887
 Beyrouth	2364215
@@ -981,6 +1013,7 @@ Bible	10175043
 Bibracte	136820
 Bichat	723296
 Bichkek	18873
+Bidart	72934
 Bidule	11905
 Bifröst	1126
 Bihouix	1007
@@ -990,6 +1023,7 @@ Bilodeau	67848
 Binche	276135
 Bindslev	243
 Binnet	821
+Binoche	38441
 Biot	812470
 Bioteau	1433
 Birks	14157
@@ -1019,6 +1053,8 @@ Biélorusses	22845
 Biélorussie	279505
 Black	1548989
 Blacks	64847
+Blagnac	57343
+Blaignac	13268
 Blais	293547
 Blaise	1573791
 Blanc	7654369
@@ -1046,6 +1082,7 @@ Bo'ao	67
 Boao	433
 Bobcaygeon	1063
 Bobigny	192384
+Bobovnikoff	610
 Boche	255512
 Boches	421264
 Bohême	3781321
@@ -1055,6 +1092,7 @@ Boilet	5505
 Boisacq	15998
 Boisbriand	15213
 Boisclair	33501
+Boissezon	16116
 Boivin	540560
 Boko	73574
 Bolivie	1370871
@@ -1105,6 +1143,7 @@ Bostoniens	20635
 Botswana	328445
 Botswanais	2885
 Botswanaise	134
+Botte	163242
 Bouallegue	98
 Bouchard	1377744
 Bouchehr	2974
@@ -1121,6 +1160,7 @@ Bouglainval	3724
 Bouix	48098
 Boukhobza	4381
 Boulanger	1404957
+Bouleternère	4565
 Boulibaba	347
 Boulibané	391
 Boulogne	5294471
@@ -1156,13 +1196,16 @@ Boutcha	231
 Boutella	920
 Boutilier	6492
 Boutin	273145
+Bouvette	13978
 Bouvier	1169300
 Bouxwiller	82401
 Bouéni	14057
 Bowman	160002
+Boyancé	48592
 Boyer	2495836
 Bozouls	19026
 Brabant	5663339
+Bradfer	8983
 Brahim	277978
 Brandebourg	1738895
 Brau	45578
@@ -1223,6 +1266,7 @@ Bruxelloise	22722
 Bruxelloises	4015
 Bruz	24851
 Bryson	45532
+Bréant	84990
 Brébeuf	136312
 Brésil	9759075
 Brésilien	204419
@@ -1234,15 +1278,18 @@ Brême	565436
 Bucarest	1895486
 Buckingham	809037
 Budapest	2073740
+Buemi	244
 Buffevent	6953
 Bugatti	71910
 Bui	64057
 Bulgare	230514
 Bulgares	1539577
 Bulgarie	4019213
+Bulgnéville	29807
 Bunjil	1194
 Burgonde	45368
 Burgondes	403202
+Buridan	210168
 Burin	128764
 Burkina	1180810
 Burundais	42386
@@ -1417,6 +1464,7 @@ Calvados	2314091
 Calédonie	2267363
 Camara	255817
 Camarde	15986
+Cambligneul	1862
 Cambodge	2098992
 Cambridge	4762899
 Cambronne	201938
@@ -1443,9 +1491,11 @@ Canarienne	1406
 Canariennes	2023
 Canariens	39964
 Canaries	1180496
+Canavan	4409
 Cancer	974651
 Cancún	29732
 Candilis	13805
+Canet	203542
 Caniapiscau	9482
 Canigou	170043
 Cannes	1926231
@@ -1487,6 +1537,7 @@ Capverdiennes	237
 Capverdiens	11508
 Caradoc	70231
 Caralp	19759
+Caramel	37476
 Caraquet	30309
 Caravage	287818
 Caraïbes	1270500
@@ -1514,6 +1565,7 @@ Caron	1460087
 Carpates	217510
 Carpenter	254674
 Carpentier	827229
+Carpentras	896100
 Carqueiranne	18035
 Carrier	905454
 Carrière	1123225
@@ -1556,9 +1608,11 @@ Caucasienne	10686
 Caucasiennes	11682
 Caucasiens	52628
 Cauchon	286287
+Caulières	1742
 Caumartin	356796
 Cauvin	200175
 Cavalaire	33441
+Caveirac	32978
 Cayamant	864
 Cayenne	1518351
 Cayes	153179
@@ -1583,6 +1637,7 @@ Cerbère	261342
 Cerise	198855
 Cervin	122394
 Ceylan	1578982
+Chaban	415156
 Chabert	490453
 Chablais	421857
 Chabon	4224
@@ -1600,12 +1655,14 @@ Chaldéens	784594
 Chalonnais	39655
 Chalonnaise	5316
 Chalonnaises	603
+Cham	846565
 Chambord	912728
 Chambérien	1935
 Chambérienne	639
 Chambériennes	147
 Chambériens	5038
 Chambéry	2231806
+Chamoniard	1547
 Chamonix	435837
 Champagne	7360671
 Champenois	295766
@@ -1615,6 +1672,7 @@ Champerret	26653
 Champhol	4979
 Champlain	859519
 Champneuf	4811
+Chams	84221
 Chancel	213144
 Chandeleur	269958
 Chanel	301814
@@ -1677,6 +1735,7 @@ Cheyennes	27969
 Chiac	674
 Chiasso	35081
 Chiasson	39857
+Chibougamau	39898
 Chicago	3472748
 Chicheportiche	2709
 Chichester	102532
@@ -1702,8 +1761,10 @@ Chirol	39061
 Chiron	334545
 Chirongui	1797
 Chisa	2041
+Chisasibi	4560
 Chisinau	15385
 Chiyo	3480
+Chièvres	123186
 Chlef	8678
 Chleuh	21431
 Chleuhs	25008
@@ -1762,11 +1823,13 @@ Citrini	730
 Citroën	475373
 City	1889681
 Cixous	85404
+Cizos	5820
 Claira	8311
 Claire	5189928
 Clairouin	3414
 Clara	1929430
 Clarendon	787269
+Clarensac	11340
 Clariond	20783
 Clarisse	752399
 Clary	254230
@@ -1863,6 +1926,7 @@ Comtois	310536
 Comtoise	19175
 Comtoises	11153
 Coméliau	7355
+Concarneau	278169
 Condat	117173
 Condom	491986
 Condé	7749390
@@ -1872,6 +1936,7 @@ Congo	12556494
 Congolais	629913
 Congolaise	108509
 Congolaises	35489
+Coni	230587
 Conoc	1130
 Conogan	4067
 Constance	4382467
@@ -1955,7 +2020,10 @@ Courbieu	239
 Couronne	4531589
 Courseulles	51979
 Courtemanche	40221
+Courtin	411531
 Courtois	897971
+Courtrai	963020
+Couserannais	840
 Couserans	129346
 Cousineau	71566
 Coussau	1220
@@ -1971,6 +2039,7 @@ Cracovien	2923
 Cracovienne	2902
 Cracoviennes	420
 Cracoviens	4872
+Cramchaban	315
 Crampagna	5123
 Craon	544469
 Crespelle	8632
@@ -2133,6 +2202,7 @@ Dauzat	223388
 David	18400793
 Davis	1251725
 Davy	923348
+Deauville	280999
 Debaralle	937
 Debierne	24348
 Debrecen	42633
@@ -2160,6 +2230,7 @@ Delvincourt	329336
 Dembeni	3194
 Dembélé	17166
 Demesmaeker	1278
+Denamiel	4114
 Denault	14341
 Deneuve	76207
 Denholm	5530
@@ -2167,6 +2238,7 @@ Denicourt	7553
 Denis	14273342
 Denise	1772202
 Denoncourt	7084
+Derny	2329
 Deroche	22587
 Derrida	811997
 Desaulniers	37283
@@ -2191,6 +2263,8 @@ Deveaux	24598
 Deville	950626
 Devolle	380
 Devos	185433
+Dewarrat	1294
+Dezaly	283
 Diagana	7345
 Diakité	29021
 Diamniadio	4913
@@ -2263,12 +2337,14 @@ Dorsaf	676
 Dorval	432633
 Doré	560530
 Douanier	88108
+Douarnenez	244900
 Doubs	2146404
 Doucette	32700
 Douchanbé	12796
 Doudinka	1949
 Douglas	1751250
 Doujani	284
+Doullens	292807
 Doumbouya	13482
 Doumergue	322749
 Douvres	695584
@@ -2291,6 +2367,7 @@ Drummond	332382
 Drummondville	87058
 Drôme	1551566
 Drômois	5955
+Dubas	15798
 Dubay	9953
 Dubaï	139558
 Dublin	1732506
@@ -2312,6 +2389,7 @@ Dufaux	26459
 Dufour	1705944
 Dufresne	432857
 Dufrêne	38478
+Duhaime	17482
 Duhamel	1386724
 Dujardin	649794
 Dujour	10137
@@ -2339,6 +2417,7 @@ Dupuit	97113
 Dupuits	37425
 Dupuy	1887710
 Dupuytren	651118
+Duquesne	484711
 Durance	905654
 Durand	4732261
 Durex	3003
@@ -2346,6 +2425,7 @@ Durocher	151489
 Dussault	148755
 Dussutour	2819
 Duteil	69691
+Dutriez	1714
 Duval	2604907
 Duvauchelle	7337
 Duverger	298359
@@ -2368,8 +2448,10 @@ Désirée	298152
 Détroit	585959
 E	40184413
 EAU	1198923
+ECU	258573
 EDSC	6163
 EEE	133414
+EEI	8751
 EHPAD	39824
 EI	356068
 EII	18413
@@ -2408,6 +2490,7 @@ Egyptien	460497
 Egyptienne	199214
 Egyptiennes	73553
 Egyptiens	2541369
+Egée	496979
 Ehpad	6665
 Eiffel	755636
 Eisenberg	49498
@@ -2416,6 +2499,7 @@ Ekat	591
 Ekrem	10869
 Elbe	2442626
 Eldorado	302381
+Elise	651881
 Elnour	201
 Elven	44080
 Elysée	1130127
@@ -2476,6 +2560,7 @@ Espagnol	2364063
 Espagnole	657669
 Espagnoles	196727
 Espagnols	11276974
+Espelette	70712
 Esposito	57036
 Espérandieu	164539
 Esquilin	107801
@@ -2537,6 +2622,7 @@ Eveline	116030
 Evêché	520449
 Ewok	800
 Exarchopoulos	729
+Exbrayat	19375
 Excellence	5167132
 Exocet	23624
 Exode	1069610
@@ -2588,6 +2674,8 @@ Falguière	96196
 Falguières	13072
 Fanny	1313739
 Fantômas	89125
+Farabeuf	47008
+Fareng	825
 Farmer	141025
 Fassett	4193
 Fathallah	10576
@@ -2685,7 +2773,10 @@ Fogiel	13878
 Foix	2448070
 Follorou	2208
 Fonck	45761
+Fons	290818
 Fontaine	8421365
+Fontanes	643230
+Fontanès	26488
 Fontenot	4289
 Force	4819513
 Ford	1316810
@@ -2764,6 +2855,7 @@ Fréchette	158335
 Frédéric	15289884
 Frédérick	257305
 Frédérique	483218
+Frégate	96030
 Frégoses	2053
 Frémicourt	24037
 Frémont	263041
@@ -2788,6 +2880,7 @@ GDT	2529
 GES	186155
 GEU	16599
 GG	427386
+GIEC	72814
 GIGN	45458
 GN	177415
 GNL	73065
@@ -2861,6 +2954,8 @@ Garand	47467
 Garasse	156435
 Garat	475355
 Gard	2988536
+Gardon	219259
+Gargantua	839352
 Garneau	329039
 Garonne	5120344
 Garros	164501
@@ -2925,6 +3020,7 @@ Genie	68417
 Genk	38139
 Genèse	3232910
 Genève	24965756
+Genêts	73595
 Geoffroy	3312805
 Georgeaux	164
 Georges	27254396
@@ -2941,6 +3037,7 @@ Germanie	2506688
 Germanopratin	192
 Germanopratins	350
 Gers	1208808
+Gerussi	232
 Gervais	2170385
 Gervaise	409942
 Gethsémané	27882
@@ -2958,6 +3055,7 @@ Gibelins	329492
 Gibraltar	1766650
 Gibraltarien	389
 Gibraltariens	2598
+Giec	10195
 Gigi	101514
 Gignac	115441
 Gilbert	5311588
@@ -3016,6 +3114,7 @@ Gozo	56298
 Gracefield	5054
 Graille	24315
 Grammont	1112874
+Gramont	906820
 Granada	180462
 Granato	2371
 Grande-Bretagne	111
@@ -3097,6 +3196,7 @@ Guilliermond	35314
 Guillory	21884
 Guillot	716983
 Guillotin	152704
+Guilvinec	34352
 Guingamp	316097
 Guingouin	23090
 Guinée	5044152
@@ -3128,6 +3228,7 @@ Guénin	36755
 Guénolé	72089
 Guépéou	55715
 Guérin	2875946
+Guéthary	34629
 Gwenaël	11053
 Gwenaëlle	29511
 Gwendoline	64541
@@ -3162,6 +3263,7 @@ HLM	505301
 HNE	3665
 HNP	2554
 HNR	1199
+HP	586968
 HS	208146
 HT	662261
 HTML	252417
@@ -3172,6 +3274,7 @@ Hachem	59480
 Hadopi	11309
 Hadrien	1110339
 Hadès	325624
+Haenel	59079
 Hainault	117364
 Hainaut	4142403
 Hajdu	17291
@@ -3210,6 +3313,7 @@ Hasegawa	17552
 Hasmonéens	19125
 Hathor	205786
 Hatton	107721
+Haubourdin	71533
 Haudricourt	51857
 Hauschild	7411
 Hauschildt	4570
@@ -3290,6 +3394,7 @@ Hisako	4401
 Hispanie	61377
 Hispaniola	123023
 Hitomi	5472
+Hitte	29451
 Hittite	42228
 Hiérapolis	109346
 Hiéron	240519
@@ -3400,6 +3505,7 @@ Hésiode	910249
 I	159196694
 IA	494169
 ICI	279918
+IDH	74992
 IGN	129949
 IMC	95904
 INCA	13765
@@ -3407,6 +3513,7 @@ INRIA	28350
 INSEE	1386394
 IPC	223483
 IPE	22071
+IPS	41904
 IQA	412
 IRAP	4950
 IRCC	3061
@@ -3466,6 +3573,7 @@ Ingrid	344538
 Ingvar	23041
 Inrap	10760
 Inria	9680
+Insta	3814
 Insulinde	100856
 Intercités	2337
 Interlaken	80352
@@ -3552,6 +3660,7 @@ Italiennes	215373
 Italiens	7023856
 Itchkérie	1161
 Iturée	11108
+Itxassou	11342
 Ivanie	479
 Ivoirien	78887
 Ivoirienne	65370
@@ -3592,6 +3701,7 @@ Jambrès	2029
 Janequin	32028
 Janicot	34285
 Janine	490782
+Jankélévitch	156460
 Jannequin	28146
 Jannès	14435
 Janzé	62352
@@ -3693,6 +3803,7 @@ Juges	2316748
 Juguet	4384
 Juif	3230259
 Juifs	18809746
+Juillan	8056
 Juive	462312
 Juives	178231
 Jules	18038650
@@ -3764,6 +3875,7 @@ Katangais	43259
 Katangaise	4440
 Katangaises	1188
 Katar	16744
+Katell	13334
 Katia	251681
 Katmandou	86994
 Kavani	350
@@ -3793,6 +3905,7 @@ Kevin	571857
 Kevine	231
 Khassonké	9927
 Khimki	1125
+Khmer	69037
 Kialing	1121
 Kiamika	4156
 Kielburger	438
@@ -3843,6 +3956,7 @@ Kuniko	3271
 Kurde	69931
 Kurdes	535134
 Kurimoto	1698
+Kwango	172620
 Kyiv	7324
 Kylian	39187
 Kéka	242
@@ -3857,6 +3971,7 @@ LE	66845072
 LGBT	46821
 LGN	23665
 LGV	13656
+LICRA	18359
 LNH	25832
 LOSC	5581
 LSD	100961
@@ -3898,8 +4013,11 @@ Lafontaine	531594
 Laforce	51334
 Lafourcade	38575
 Lafrenière	28213
+Lagace	3707
+Lagacé	33037
 Laganière	7858
 Lagarosse	3052
+Laghouat	208495
 Lagide	17484
 Lagos	634476
 Lagrange	1813944
@@ -3911,6 +4029,7 @@ Lalande	998859
 Lalanne	396142
 Lalonde	209605
 Lamar	61029
+Lamarque	399608
 Lamartine	4112401
 Lambert	6201329
 Lambège	945
@@ -3933,6 +4052,7 @@ Landes	2209404
 Landier	27462
 Landrienne	2415
 Landrieu	26250
+Landru	71731
 Landry	893528
 Langelier	94837
 Langevin	470045
@@ -3966,6 +4086,7 @@ Lapège	1108
 Lara	654077
 Larissa	169002
 Larivière	237675
+Larocque	71151
 Larousse	1555702
 Lasalle	299910
 Latifi	1932
@@ -4024,6 +4145,8 @@ Lecompte	58982
 Lecomte	960686
 Lecoq	478658
 Ledoux	461436
+Ledru	701433
+Ledrue	136
 Leduc	709439
 Lefebvre	2568074
 Lefevre	177952
@@ -4100,6 +4223,7 @@ Libérien	11709
 Libérienne	7625
 Libériennes	710
 Libériens	26590
+Licra	7505
 Liechtenstein	379321
 Liechtensteinois	1197
 Lieoux	586
@@ -4141,7 +4265,10 @@ Lionel	1560284
 Lions	473837
 Lipa	24600
 Lisa	937082
+Lisbonnais	1067
 Lisbonne	4520636
+Lisbonnin	138
+Lisboète	448
 Lise	1232168
 Lisette	669403
 Lisle	1062490
@@ -4170,7 +4297,9 @@ Liège	9396948
 Liégeois	733010
 Liégeoise	42533
 Liégeoises	5834
+Liévin	305618
 Ljubljana	161399
+Llorach	4853
 Lloris	6394
 Lochaber	11832
 Loches	521127
@@ -4200,6 +4329,7 @@ Longueuil	234121
 Longueuillois	293
 Longyearbyen	5455
 Loranger	66059
+Lore	122472
 Loriaux	10178
 Lorient	1358354
 Lorientais	13705
@@ -4221,7 +4351,9 @@ Loubet	373421
 Loubier	27187
 Louchet	36691
 Loudun	601034
+Loudéac	107536
 Louga	81664
+Louhossoa	5434
 Louis	113773040
 Louisbourg	214796
 Louise	10035212
@@ -4244,6 +4376,7 @@ Ltee	6341
 Ltée	244685
 Luc	8402396
 Lucas	3140852
+Lucheux	30584
 Luchon	369930
 Lucie	2520797
 Lucien	8160527
@@ -4321,6 +4454,7 @@ Lévis	730321
 Lévite	77138
 Lévitique	448547
 Lévy	3132031
+Lévézou	6007
 Lézard	158231
 Lœuilly	5131
 M	92044152
@@ -4354,6 +4488,7 @@ MacKinnon	27220
 Macaire	638742
 Macamic	5197
 Macao	710850
+Macaye	10961
 Maccabée	30805
 Maccabées	110721
 Machhad	7384
@@ -4361,6 +4496,7 @@ Machin	128773
 Machins	2535
 Macintosh	147583
 Macquaire	4603
+Macrobe	410062
 Macron	232833
 Macronie	991
 Macédoine	3185505
@@ -4388,6 +4524,7 @@ Magendie	518463
 Magenta	455003
 Maghreb	2261099
 Maghrébin	44634
+Maginot	259875
 Magnol	52539
 Magnon	198087
 Magot	40417
@@ -4417,6 +4554,7 @@ Makenzy	738
 Mal	3087468
 Malachie	256437
 Malais	651423
+Malaise	321055
 Malaises	24873
 Malaisie	1233364
 Malaisien	4308
@@ -4438,6 +4576,7 @@ Malgache	307425
 Malgaches	466349
 Malgouyres	3574
 Mali	2544930
+Malicia	14543
 Malien	73446
 Malienne	27740
 Maliennes	7164
@@ -4518,6 +4657,7 @@ Marchand	2774166
 Marchandeau	35668
 Marchandot	927
 Marche	4070851
+Marches	544298
 Marchessault	15631
 Marciac	45052
 Marcoux	107188
@@ -4576,6 +4716,7 @@ Marseillaise	1074315
 Marseillaises	22087
 Marseille	20748760
 Marson	56726
+Marsoui	2428
 Marthe	3383969
 Martial	2414323
 Martien	50448
@@ -4606,6 +4747,7 @@ Massat	53119
 Masse	813159
 Masson	3553821
 Massé	598296
+Mastodon	57889
 Matam	66940
 Matawinie	6201
 Matera	47386
@@ -4644,6 +4786,7 @@ Mauritaniennes	2776
 Mauritaniens	60669
 Maurois	277119
 Maurras	1054127
+Mauzé	48722
 Max	6842307
 Maxence	599425
 Maxime	3473449
@@ -4663,6 +4806,7 @@ Mayenne	3145876
 Mayeux	132011
 Mayo	352784
 Mayotte	655854
+Mazaltarim	281
 Mazars	29354
 Mazingarbe	14164
 Maéva	4908
@@ -4701,6 +4845,7 @@ Menkao	444
 Menu	904305
 Mercadié	2558
 Mercedes	550606
+Mercie	82368
 Merco	3290
 Mercos	498
 Mercure	6396767
@@ -4714,6 +4859,7 @@ Mes	13923621
 Meschacébé	11066
 Mesdames	2208227
 Mesdemoiselles	182954
+Mesrine	42408
 Messaoui	863
 Messeigneurs	363862
 Messie	2835789
@@ -4726,6 +4872,7 @@ Messins	109554
 Messire	1719311
 Messonnier	5376
 Messrs	71396
+Metge	25348
 Metz	8806272
 Meullenet	145
 Meunier	1301591
@@ -4852,9 +4999,11 @@ Mongolie	828567
 Mongols	1056139
 Monika	79164
 Monique	2049914
+Monjoie	21949
 Monoblet	10055
 Monréal	15628
 Mons	5404076
+Monsanglant	342
 Monseigneur	9801875
 Monsieur	50620062
 Montagnard	80983
@@ -4875,9 +5024,13 @@ Montferrier	56402
 Montgaillard	182842
 Montgauch	1961
 Montgolfier	271340
+Montignargues	1494
+Montjoie	232836
+Montjoy	9527
 Montlhéry	204562
 Montmagny	188333
 Montmartre	2305046
+Montmartrois	11368
 Montminy	13845
 Montner	4193
 Montoulieu	14013
@@ -4938,10 +5091,12 @@ Mouchet	169774
 Mouflet	3919
 Mouligneau	3587
 Mouloud	159061
+Moumoulous	269
 Mounet	158517
 Mourad	548088
 Mourelatos	2961
 Mouret	421405
+Mouscron	132367
 Moussa	832149
 Mousseau	63414
 Mozambicain	4259
@@ -4970,9 +5125,11 @@ Munichoises	543
 Munster	1696488
 Munténie	18086
 Murakami	31794
+Murdochville	11691
 Muret	856176
 Muriel	440735
 Murielle	79370
+Murs	409831
 Murzeau	2464
 Mutuel	110316
 Myanmar	109423
@@ -5013,6 +5170,7 @@ Ménard	878880
 Ménière	88870
 Ménédème	22175
 Mérida	202400
+Mérignac	124542
 Mérigon	7177
 Mérinide	7645
 Mérinides	65640
@@ -5045,10 +5203,12 @@ NIP	15314
 NM	183515
 NMT	3448
 NO	1641315
+NOTAM	13672
 NPD	57633
 NRBC	6089
 NRF	381772
 NSDAP	90095
+NTM	20768	p
 Nadeau	274580
 Nadejda	47872
 Nadia	572902
@@ -5086,6 +5246,7 @@ Nantaise	58488
 Nantaises	5451
 Nanterre	1047107
 Nantes	11133835
+Naours	11071
 Naples	14244589
 Napolitain	266480
 Napolitaine	52979
@@ -5121,6 +5282,7 @@ Nausicaa	120840
 Navalny	1966
 Navarre	7940138
 Navarrenx	43815
+Nazaré	18194
 Nazaréen	121772
 Naziréen	2410
 Ndiaga	5880
@@ -5205,6 +5367,7 @@ Niçois	102266
 Niçoise	14294
 Niçoises	2633
 Nièvre	1232452
+Noailhac	4574
 Noir	3695499
 Noire	5501275
 Noires	326735
@@ -5234,8 +5397,11 @@ Norvégienne	46021
 Norvégiennes	10090
 Norvégiens	289811
 Nosseigneurs	121321
+Notre-Dame	43
 Noualhat	594
 Nouméa	682834
+Noutary	2178
+Nouyrigat	1290
 Novatien	102680
 Novossibirsk	23156
 Noé	1706804
@@ -5258,6 +5424,7 @@ Nuuk	5998
 Nzonzi	1197
 NÉ	112246
 Nègre	677263
+Nègres	1022211
 Néapolis	48351
 Nédélec	20302
 Néerlandais	486306
@@ -5288,12 +5455,14 @@ OEA	87734
 OGM	287912
 OIML	2178
 OIT	366942
+OK	1349281
 OL	137198
 OLAF	15351
 OM	486602
 OMC	749778
 OMG	9600
 OMM	62347
+OMPI	145170
 OMS	721903
 ONG	1662318
 ONGs	20927
@@ -5322,7 +5491,9 @@ Odile	1391161
 Odin	475157
 Odyssée	1070774
 Odénat	10602
+Offignies	1872
 Ogawa	22191
+Oge	4984
 Oghouzes	1383
 Ogier	586589
 Ogmios	17776
@@ -5332,6 +5503,9 @@ Oise	6623785
 Oligocène	450017
 Olivia	656355
 Olivier	7635459
+Ollier	286734
+Ollié	1954
+Ollé	69491
 Olonne	236550
 Olténie	47615
 Olympe	1989259
@@ -5357,6 +5531,7 @@ Ontario	3632360
 Onésime	196539
 Opatrny	232
 Ophélie	291333
+Optevoz	5454
 Oranais	129833
 Oranaise	5492
 Oranaises	1366
@@ -5366,32 +5541,45 @@ Orcadien	666
 Orcadiens	2922
 Orcel	53648
 Orchies	213649
+Ordizan	2253
+Orensanz	843
+Organ	114742
+Orgeix	11784
 Orianne	14474
 Orient	25191461
+Orignac	12945
 Orinda	2185
 Oriège	4257
+Orlu	20740
 Orly	356265
 Orléanais	669349
 Orléanaise	8823
 Orléanaises	2657
 Orléans	20536389
 Orne	1729367
+Orognen	258
 Oronce	41696
 Oronte	436692
 Orontien	508
 Orphée	1651268
 Orpustan	1323
 Orsay	1663366
+Ortet	5369
+Ortholan	2433
 Orville	139209
 Osiris	1381797
 Oslo	684052
+Osmin	70691
 Osque	6097
 Osques	40413
 Osroène	7401
+Ossau	142879
+Ossun	87676
 Ossète	5032
 Ossètes	60827
 Ossétie	46447
 Ossétien	209
+Oste	30106
 Ostende	1439400
 Ostie	630675
 Osée	308812
@@ -5401,6 +5589,7 @@ Otrante	418510
 Ottawa	4140974
 OuLiPo	8617
 Ouachita	9207
+Ouagadougou	711612
 Ouaki	3002
 Oualalou	5626
 Oualid	29077
@@ -5415,14 +5604,25 @@ Ouganda	922045
 Ougandais	30086
 Ougandaise	1369
 Ougandaises	602
+Ouilhon	95
+Ouillon	4499
 Ouimet	85993
 Ouisconsin	3943
+Oule	15524
 Oulipo	46776
+Oulié	6445
+Oulé	19373
 Ouo	10513
 Oural	858453
 Ouralsk	13211
+Ourthe	249599
+Ousset	12591
 Oussouriisk	231
 Oust	112489
+Oustalet	34553
+Oustaloup	223
+Oustau	4592
+Ousteau	744
 Oustric	24873
 Outaouais	322151
 Outremont	120655
@@ -5497,6 +5697,7 @@ PQN	3618
 PRM	15745
 PS	1560806
 PSA	145571
+PSC	92935
 PSG	92382
 PV	360601
 Pabine	125
@@ -5532,6 +5733,8 @@ Palay	24030
 Palengat	2756
 Palerme	1539781
 Palermitain	4413
+Palermitaine	1398
+Palermitaines	709
 Palermitains	20252
 Palestine	5422216
 Palestinien	95065
@@ -5570,6 +5773,8 @@ Paléoprotérozoïque	1859
 Pambrun	8053
 Pamiers	627987
 Pamir	194700
+Pampelonne	33520
+Pampelune	651104
 Pamphylie	124439
 Paname	34752
 Panamá	60939
@@ -5621,6 +5826,7 @@ Pareilh	105
 Parent	1043111
 Pargade	4113
 Paries	6612
+Parignargues	2684
 Parigot	45414
 Parigote	1300
 Parigotes	331
@@ -5706,6 +5912,8 @@ Pelletan	573959
 Pelletier	1699369
 Peltier	329196
 Pendanx	1056
+Pendjab	155949
+Pendjabi	3951
 Penelopegate	412
 Penha	20770
 Pennsylvanie	464455
@@ -5867,6 +6075,7 @@ Philopon	78849
 Philémon	319011
 Phlégon	33195
 Phlégéthon	8635
+Phocée	130694
 Phrygie	557164
 Phuket	35521
 Phung	19766
@@ -5877,7 +6086,10 @@ Phénicienne	30505
 Phéniciennes	72891
 Phéniciens	1334227
 Phérécyde	63018
+Phœnicie	7104
+Phœnicien	783
 Phœnicienne	734
+Phœniciennes	1227
 Phœniciens	6340
 Piat	245894
 Picard	3265448
@@ -5895,6 +6107,8 @@ Pichilemu	717
 Picon	185926
 Picot	887559
 Picquet	162117
+Picquier	37506
+Picquigny	112307
 Pie	6451236
 Piedmont	247097
 Pieiller	7333
@@ -5905,6 +6119,7 @@ Pierrette	524298
 Pierrick	43629
 Pierrot	1165727
 Pietralunga	1151
+Pigasse	17105
 Piketty	43897
 Pikine	49555
 Pikogan	2020
@@ -5927,9 +6142,14 @@ Piquemal	46776
 Piquet	248368
 Piray	2955
 Pironi	3863
+Pisan	255120
+Pisane	6170
+Pisanes	1785
+Pisans	376227
 Pise	2408371
 Pisidie	114615
 Pissarro	277505
+Pissevin	3813
 Pistoia	146786
 Piémont	4038673
 Piémontais	612793
@@ -5998,7 +6218,9 @@ Ponant	194582
 Ponce	628881
 Pondichéry	1039749
 Poniatowski	507489
+Pont	10089372
 Pontiac	101270
+Pontivy	269232
 Pontrieux	45419
 Popaul	28275
 Popesco	30166
@@ -6042,6 +6264,9 @@ Pouyanne	22633
 Poénaru	385
 Pr	1697962
 Pradier	340197
+Pragois	15067
+Pragoise	1058
+Pragoises	504
 Prague	4428695
 Prascovie	41624
 Pratas	2694
@@ -6052,6 +6277,7 @@ Priam	585898
 Priape	203709
 Priest	563569
 Prigogine	91242
+Prigojine	410
 Primeau	20999
 Primeaux	602
 Primel	21441
@@ -6187,7 +6413,9 @@ Quevauvilliers	3157
 Queysanne	5284
 Quiberon	448521
 Quiberonnais	356
+Quillévéré	1881
 Quimper	1271335
+Quimperlé	228210
 Quimpérois	8501
 Quimpéroise	853
 Quimpéroises	216
@@ -6204,8 +6432,10 @@ Québécoises	68118
 RAS	120713
 RC	382099
 RCI	25430
+RDA	1010233
 RDC	551508
 RDP	185813
+RDS	29091
 REEE	5628
 REER	47502
 REP	160116
@@ -6216,6 +6446,7 @@ RG	291352
 RH	409736
 RIB	26907
 RIF	30403
+RIP	32736
 ROR	13417
 ROU	18455
 RPA	23067
@@ -6257,6 +6488,7 @@ Raoul	5018175
 Raoust	7843
 Raphaël	4608773
 Raphaëlle	85248
+Rascol	13076
 Raspiengeas	1223
 Rastignac	348872
 Rastignacs	1284
@@ -6272,6 +6504,7 @@ Razès	68421
 Raîche	2325
 Rebecca	585535
 Rechac	2407
+Reddit	3968
 Redouane	21869
 Reichenbach	246571
 Reiko	11469
@@ -6340,6 +6573,7 @@ Rivesaltes	106109
 Riyad	105657
 Rizzi	34260
 Rizzuto	7039
+Roaix	20944
 Roberge	88827
 Robert	31634908
 Roberte	153107
@@ -6364,8 +6598,11 @@ Rochelais	97975
 Rochelaise	5886
 Rochelaises	1333
 Rocheleau	23399
+Rockall	15140
+Rocque	179322
 Rodin	880035
 Rodolphe	2698654
+Rodès	14870
 Roger	11436403
 Rojouan	306
 Roland	7554144
@@ -6406,6 +6643,7 @@ Roth	770225
 Rothkopf	1575
 Rothschild	1276368
 Rothstein	30645
+Rouaix	19964
 Roubaisien	4774
 Roubaisienne	3317
 Roubaisiennes	323
@@ -6507,11 +6745,13 @@ SDP	23911
 SE	2606248
 SEA	67983
 SFR	60232
+SGDG	1965
 SHA	39097
 SI	2068801
 SICAV	83089
 SIDA	469916
 SIGB	2246
+SIH	5771
 SIMDUT	11659
 SIRET	28717
 SJ	177261
@@ -6576,6 +6816,7 @@ Sainte	35494244
 Saintes	2456241
 Saintonge	1225782
 Sainty	4822
+Sainté	5342
 Saito	30755
 Sajjan	437
 Sakura	21916
@@ -6584,6 +6825,7 @@ Salamanque	802342
 Salamine	544068
 Salat	89748
 Saleich	4516
+Saleilles	89534
 Salente	95480
 Salerne	711653
 Saljuq	459
@@ -6616,6 +6858,7 @@ Sanctus	380872
 Sandra	509168
 Sandrine	381531
 Sansoucy	7070
+Santoni	50651
 Sara	1408249
 Saragosse	1109329
 Sarah	2731559
@@ -6656,6 +6899,7 @@ Satomi	6577
 Saturne	2406254
 Sauber	4165
 Sauldre	43030
+Saulxures	33310
 Saumur	1812902
 Saurat	50317
 Saurier	5600
@@ -6665,6 +6909,7 @@ Sauvagnas	4396
 Sauveterre	211801
 Sauvignac	2808
 Sauvé	246802
+Sauxure	217
 Sauzet	187311
 Save	401392
 Savignac	174484
@@ -6696,6 +6941,7 @@ Schadenfreude	8089
 Scheffer	328892
 Schefferville	22241
 Scheuchzer	56362
+Schiappa	6815
 Schild	28599
 Schmidt	2074140
 Schmitt	791502
@@ -6847,6 +7093,7 @@ Sofia	1241750
 Sofiane	28923
 Sofonea	465
 Sohar	17383
+Soignies	266041
 Soileau	1473
 Soizic	24561
 Sokoloff	28156
@@ -6857,6 +7104,7 @@ Soleil	9934454
 Solenn	24172
 Solenne	18761
 Soleure	826832
+Soljenitsyne	104177
 Sologne	651616
 Solovieff	10452
 Soloviev	100480
@@ -6880,6 +7128,8 @@ Sophocle	1629242
 Sophonie	64204
 Sophène	13400
 Sor	275973
+Sorabe	3733
+Sorbets	25617
 Sorbon	69814
 Sorbonne	6501027
 Sorgeat	2298
@@ -6889,6 +7139,7 @@ Sospel	59252
 Sosthène	103832
 Sotchi	26091
 Souabe	1054744
+Souchez	51702
 Soudan	3740506
 Soudanais	170513
 Soudanaise	23387
@@ -6897,8 +7148,11 @@ Soueix	6376
 Soula	58976
 Soulaires	3048
 Soulan	17748
+Soum	40658
 Soumgaït	3230
+Souraïde	2555
 Sousson	2349
+Souvignargues	6596
 Soviétique	1306286
 Soviétiques	1226985
 Sozi	1221
@@ -6944,6 +7198,7 @@ Stéphan	151505
 Stéphane	2095402
 Stéphanie	781966
 Stésichore	62579
+Sucy	78208
 Sud	37804513
 Suisse	25852823
 Suisses	4546437
@@ -6994,6 +7249,7 @@ Syriennes	24787
 Syriens	965218
 Syrte	136586
 Syène	126952
+Szlamowicz	759
 Sète	320663
 Sève	257536
 Sèvres	2676495
@@ -7031,6 +7287,7 @@ TAI	42854
 TAS	49204
 TBI	18355
 TBK	708	p
+TCC	70112
 TCD	14185
 TCH	18070
 TD	167892
@@ -7177,8 +7434,11 @@ Tchétchène	11617
 Tchétchènes	60357
 Tchétchénie	179397
 Tebboune	246
+Tech	426064
 Teilhet	5494
 Telotte	643
+Tempo	112893
+Tempos	3691
 Tenderloin	4344
 Teramo	35053
 Terni	148086
@@ -7266,6 +7526,7 @@ Thérien	27708
 Thérouanne	265724
 Thérèse	7469084
 Thésée	1205566
+Théza	2505
 Théétète	148981
 Tibet	1040118
 Tibre	1260983
@@ -7309,11 +7570,14 @@ Tokélaou	6749
 Tolbiac	171285
 Tolisso	361
 Tolstoï	1195462
+Tombelaine	45004
+Tomblaine	23630
 Tombouctou	738005
 Tondreau	6025
 Tonkin	2310457
 Tonti	32171
 Tootoo	323
+Torcé	23102
 Toronto	2410573
 Torontois	5395
 Torontoise	473
@@ -7346,6 +7610,8 @@ Tourangeaux	60706
 Tourangelle	15884
 Tourangelles	3164
 Tourcoing	572012
+Tournai	3416298
+Tournay	1672476
 Tours	10565910
 Tourtouse	4215
 Touré	512406
@@ -7361,6 +7627,7 @@ Transylvanie	1396366
 Traoré	193335
 Trapani	133156
 Trappes	124980
+Trein	2133
 Tremblay	907567
 Trente	6133779
 Trentin	174840
@@ -7369,6 +7636,7 @@ Tricastin	37471
 Tricolore	25178
 Trieste	1343140
 Trieu	53308
+Trieux	42398
 Trifluvien	3349
 Trifluvienne	351
 Trifluviennes	440
@@ -7424,6 +7692,8 @@ Tunisois	10661
 Tunisoise	836
 Tunisoises	581
 Turc	2152763
+Turcoman	19635
+Turcomane	905
 Turcs	10882569
 Turgeon	138743
 Turin	6555679
@@ -7434,6 +7704,7 @@ Turkestan	644817
 Turkmène	7203
 Turkmènes	50466
 Turkménistan	124781
+Turkoman	4723
 Turku	46949
 Turpin	749921
 Turque	182951
@@ -7449,6 +7720,8 @@ Tyrolien	27292
 Tyrolienne	11468
 Tyroliennes	6136
 Tyroliens	96623
+Tyrrhène	7751
+Tyrrhénienne	122517
 Téhéran	1038250
 Téhéranais	2052
 Télougou	936
@@ -7464,6 +7737,7 @@ Térébinthacées	16766
 Tétouan	240499
 Tétreault	22570
 Tétreaultville	729
+Têt	111457
 Tôkyô	107975
 Türkiye	10320
 Tœufles	1317
@@ -7511,11 +7785,13 @@ Uranus	419233
 Urau	885
 Urbain	3213506
 Urruty	6646
+Ursule	870040
 Uruguay	1321547
 Uruguayen	13081
 Uruguayenne	5049
 Uruguayennes	474
 Uruguayens	16566
+Ustou	14287
 Usée	19671
 Usées	11106
 Usés	18339
@@ -7558,12 +7834,15 @@ Vadon	26398
 Vaduz	30086
 Vahibé	413
 Vaillancourt	103872
+Vaison	316829
+Vakinankaratra	24747
 Valachie	1112663
 Valais	1567977
 Valaque	49808
 Valaques	288220
 Valaquie	27367
 Valcourt	85121
+Valdegour	1628
 Valence	4632930
 Valenciennes	3036772
 Valentin	2223290
@@ -7596,6 +7875,7 @@ Vannes	1761797
 Vannot	988
 Vanot	3394
 Vanuatu	162008
+Vaquerolles	301
 Var	4162269
 Varane	10777
 Varda	68046
@@ -7618,6 +7898,7 @@ Vaugier	2298
 Vauguier	327
 Vauquier	5371
 VdO	206
+Venasque	52703
 Vendée	4377058
 Vendéen	125389
 Vendéens	841457
@@ -7680,6 +7961,7 @@ Vietnamien	67679
 Vietnamienne	26068
 Vietnamiennes	10981
 Vietnamiens	384425
+Vignacourt	36370
 Vigneron	242605
 Viking	198428
 Vilaine	1803339
@@ -7699,6 +7981,7 @@ Vincennes	2773377
 Vincent	11190839
 Vingrau	9955
 Vintimille	343904
+Vinça	26755
 Vioche	824
 Violaine	255790
 Violet	462794
@@ -7775,6 +8058,8 @@ Waswanipi	6996
 Waterloo	1533125
 Watremez	5249
 Watteau	761757
+Wattrelos	45513
+Wavrin	105592
 Web	1507427
 Weinstein	65768
 Weintraub	20947
@@ -7796,6 +8081,7 @@ Willemstad	14384
 William	7260509
 Williams	1702407
 Wilson	3342442
+Wingles	12591
 Winneway	699
 Winnipeg	488549
 Winnipegosis	4030
@@ -7829,6 +8115,7 @@ Xerxès	506761
 Xinjiang	81386
 Xiongnu	11157
 Xme	41696
+Xmes	200
 Xénocrate	101942
 Xénophane	178419
 Xénophon	1372079
@@ -7899,6 +8186,7 @@ Yui	4468
 Yukiko	19835
 Yuko	9618
 Yukon	571628
+Yukonais	206
 Yukonnais	669
 Yumi	13313
 Yumiko	2905
@@ -8014,6 +8302,7 @@ Zurichoises	1012
 Zutkerque	2811
 Zuydcoote	26761
 Zuytpeene	2721
+Zwevegem	5024
 Zébédée	106073
 Zélande	3166587
 Zélote	7663
@@ -8024,6 +8313,7 @@ Zénon	894860
 Zénonienne	101
 Zénoniens	186
 Zéphirin	78563
+Zéralda	12808
 Zœbersdorf	185
 a	2788019691
 a'ec	2129
@@ -8564,6 +8854,7 @@ ablette	37482
 ablettes	34633
 ablier	671
 abliers	122
+ablue	1128
 ablution	204319
 ablutionne	213
 ablutionner	344
@@ -9139,6 +9430,9 @@ abrogée	822807
 abrogées	906056
 abrogés	632932
 abrotone	270
+abroutis	6655
+abroutissent	181
+abroutit	112
 abrupt	477256
 abrupte	715871
 abruptement	178202
@@ -10581,6 +10875,7 @@ accoutraient	248
 accoutrait	770
 accoutrant	702
 accoutre	4349
+accoutrement	410594
 accoutrements	74491
 accoutrent	1106
 accoutrer	9195
@@ -11386,9 +11681,13 @@ aciculaire	56113
 aciculaires	123397
 acicule	21239
 acicules	29901
+aciculifoliée	394
 aciculiforme	492
 aciculiformes	763
 aciculé	13531
+aciculée	11287
+aciculées	9712
+aciculés	10897
 acide	65655428
 acides	13513160
 acidifia	697
@@ -11534,6 +11833,9 @@ acosmiques	849
 acotylédone	954
 acotylédones	15708
 acotylédoné	680
+acotylédonée	108
+acotylédonées	3777
+acotylédonés	3239
 acoumètre	7350
 acoumètres	1824
 acoumétrie	3679
@@ -12752,6 +13054,7 @@ adolescent	3464407
 adolescente	966124
 adolescentes	411701
 adolescents	3224797
+adon	14944
 adonc	358356
 adonide	1921
 adonides	889
@@ -13124,10 +13427,12 @@ adultère	3489622
 adultères	515679
 adultération	47798
 adultérations	17268
+adultérez	140
 adultérin	235703
 adultérine	86104
 adultérines	16329
 adultérins	191254
+adultérons	170
 adulât	480
 adulèrent	651
 adulé	124013
@@ -15080,6 +15385,7 @@ agroécosystèmes	6891
 agrume	21930
 agrumes	558953
 agrumiculture	12636
+agrypnie	4312
 agrège	52056
 agrègent	14645
 agrègera	116
@@ -15674,6 +15980,7 @@ aimons	2535059
 aimâmes	17292
 aimât	236634
 aimâtes	8967
+aimè	5024
 aimèrent	211085
 aimé	15275553
 aimée	5701447
@@ -15720,9 +16027,13 @@ aisance	5181073
 aisances	470037
 aise	11913742
 aises	775546
+aisez	38227
+aisiez	2372
+aisions	580
 aisnée	80361
 aisnées	2069
 aisnés	9341
+aisons	23184
 aisseau	8538
 aisseaux	13356
 aisselle	1184223
@@ -16285,6 +16596,10 @@ aldéhydes	358348
 aldéhydique	48144
 aldéhydiques	29362
 ale	695660
+alentis	2966
+alentisse	114
+alentissent	479
+alentit	1917
 alentour	1808083
 alentours	3097603
 alerta	68622
@@ -17784,6 +18099,8 @@ amalgamé	164418
 amalgamée	52912
 amalgamées	70364
 amalgamés	93291
+amancher	609
+amanché	935
 amandaie	277
 amandaies	303
 amande	1179948
@@ -18224,8 +18541,10 @@ amenés	4317902
 amer	3740622
 americana	211402
 amerissage	587
+amerlo	317
 amerloque	3539
 amerloques	2152
+amerlot	103
 amerri	4294
 amerrir	12961
 amerrira	169
@@ -20598,6 +20917,7 @@ anthoxanthines	309
 anthracifère	26370
 anthracifères	12938
 anthracite	542798
+anthracites	71566
 anthraciteuse	8909
 anthraciteuses	9817
 anthraciteux	22933
@@ -20705,6 +21025,8 @@ anthérifère	9255
 anthérifères	6140
 anthérozoïde	23022
 anthérozoïdes	63726
+antiacadémique	2123
+antiacadémiques	485
 antiacide	8886
 antiacides	14629
 antiacridien	2798
@@ -22715,9 +23037,6 @@ appaisâmes	79
 appaisât	532
 appaisèrent	4438
 appaisé	69397
-appaisée	44503
-appaisées	15197
-appaisés	21401
 appalachien	19468
 appalachienne	14235
 appalachiennes	8232
@@ -23024,9 +23343,6 @@ appellât	8946
 appellâtes	287
 appellèrent	23030
 appellé	1359259
-appellée	697600
-appellées	185022
-appellés	324460
 appelons	4179534
 appels	5242781
 appelâmes	37905
@@ -24686,6 +25002,7 @@ argenté	1021202
 argentée	605772
 argentées	376244
 argentés	523277
+argh	2147
 argien	32631
 argienne	37200
 argiennes	12176
@@ -27607,6 +27924,7 @@ asynchrones	118163
 asynchronique	1476
 asynchroniquement	370
 asynchroniques	507
+asynchronisme	19556
 asyndète	33562
 asyndètes	4505
 asynergie	18012
@@ -28471,8 +28789,11 @@ attiédissez	380
 attiédissons	216
 attiédit	12161
 attorney	138515
+attouche	10608
 attouchement	485250
 attouchements	247804
+attouchez	147
+attouchons	249
 attracteur	63197
 attracteurs	39241
 attractif	400208
@@ -30702,6 +31023,7 @@ axion	2399
 axions	3208
 axipète	1192
 axipètes	174
+axis	223283
 axisymétrie	610
 axisymétrique	13088
 axisymétriques	6299
@@ -31260,6 +31582,7 @@ bactériologiques	353305
 bactériologiste	43290
 bactériologistes	54834
 bactériolyse	18001
+bactériolysine	3284
 bactériophage	97017
 bactériophages	62886
 bactériorhodopsine	1401
@@ -31705,7 +32028,7 @@ baisassent	2911	p
 baisasses	46	p
 baisassiez	99	p
 baisassions	257	p
-baise	1251197	p
+baise	1251197
 baisemain	42115
 baisemains	26422
 baisement	29760
@@ -31730,12 +32053,12 @@ baiseur	15419
 baiseurs	5550
 baiseuse	4983
 baiseuses	1446
-baisez	45394	p
-baisiez	7718	p
-baisions	8524	p
+baisez	45394
+baisiez	7718
+baisions	8524
 baisodrome	3626
 baisodromes	359
-baisons	33437	p
+baisons	33437
 baisota	212
 baisotaient	56
 baisotait	320
@@ -31918,6 +32241,7 @@ balandier	521
 balane	5580
 balanes	27413
 balanifères	157
+balanique	14834
 balanite	31119
 balanites	11506
 balanoglosse	234
@@ -31929,6 +32253,7 @@ balanopréputiale	614
 balanopréputiales	252
 balanoïde	57
 balanoïdes	1162
+balanus	5509
 balança	418963
 balançai	59673
 balançaient	284483
@@ -33926,6 +34251,8 @@ bayai	143
 bayaient	2072
 bayais	754
 bayait	4665
+bayaka	1938
+bayakas	512
 bayant	8578
 bayard	6387
 bayards	1079
@@ -35561,6 +35888,7 @@ biomarqueur	5043
 biomarqueurs	18840
 biomasse	525636
 biomasses	46805
+biomathématiques	1562
 biomatériau	2596
 biomatériaux	13027
 biome	10930
@@ -35815,6 +36143,7 @@ biscayenne	11679
 biscayennes	4499
 biscayens	13324
 biscayne	132
+biscaynes	201
 biscaïen	45459
 biscaïenne	2827
 biscaïennes	1086
@@ -35987,6 +36316,7 @@ bistronomie	4179
 bistronomique	7754
 bistronomiques	892
 bistrot	604683
+bistrotier	10813
 bistrots	179959
 bistré	49209
 bistrée	37850
@@ -36000,6 +36330,7 @@ bisulfures	4024
 bisulque	1720
 bisulques	4288
 bisyllabique	4643
+bisyllabiques	5979
 bisât	129
 bisé	1085
 bisée	362
@@ -36020,6 +36351,7 @@ bitemporale	12369
 bitemporales	1576
 bitemporaux	538
 bitension	581
+biter	17650
 biterrois	18829
 biterroise	11133
 biterroises	2957
@@ -36414,6 +36746,7 @@ blastopore	74805
 blastopores	561
 blastula	54590
 blastulas	8929
+blastule	7572
 blastème	103381
 blastèmes	24700
 blasât	42
@@ -36783,6 +37116,7 @@ bluffées	533
 bluffés	6192
 blush	23296
 bluta	563
+blutage	76639
 blutaient	526
 blutait	1711
 blutant	1829
@@ -36794,6 +37128,7 @@ bluterait	139
 blutes	810
 blutez	46
 blutions	1086
+blutoir	39917
 blutons	250
 bluté	13042
 blutée	42338
@@ -37724,6 +38059,7 @@ bou	748119
 bouana	522
 boubou	114049
 bouboule	2368
+boubouler	286
 bouboules	437
 bouc	1582650
 boucan	104278
@@ -38497,6 +38833,8 @@ bourguignon	625319
 bourguignonne	569632
 bourguignonnes	173042
 bourguignons	392454
+bourguignote	6346
+bourguignotes	2621
 bourlets	6793
 bourlingua	1079
 bourlinguaient	569
@@ -38770,6 +39108,8 @@ bouteras	284
 bouterez	485
 bouteriez	341
 bouterions	101
+bouterolle	46606
+bouterolles	12464
 bouterons	2610
 bouteront	2339
 boutes	12102
@@ -38865,6 +39205,7 @@ bouzouki	5942
 bouzoukis	994
 bouée	442552
 bouées	317842
+bovarysme	39287
 bovidé	78309
 bovidés	418485
 bovin	554589
@@ -38968,9 +39309,11 @@ brachiales	60869
 brachialgie	765
 brachiaux	38903
 brachiocéphalique	18095
+brachiocéphaliques	2283
 brachiosaure	785
 brachiosaures	293
 brachycéphale	122044
+brachycéphales	196514
 brachycéphalisation	2731
 brachylogie	7668
 brachylogies	903
@@ -39049,6 +39392,7 @@ braguettes	20746
 brahmane	296964
 brahmanes	410841
 brahmanique	240784
+brahmaniques	99837
 brahmanisme	175527
 brahmine	30824
 brahmsien	2324
@@ -39281,12 +39625,12 @@ branleur	17797	p
 branleurs	12939	p
 branleuse	3378	p
 branleuses	1185	p
-branlez	5561	p
-branliez	705	p
-branlions	795	p
+branlez	5561
+branliez	705
+branlions	795
 branloche	150
 branlocher	277	p
-branlons	1539	p
+branlons	1539
 branlâmes	378	p
 branlât	1922	p
 branlèrent	4022	p
@@ -40151,6 +40495,7 @@ bronchiques	619349
 bronchite	886907
 bronchites	249073
 bronchitique	11887
+bronchitiques	18913
 bronchodilatateur	9616
 bronchodilatateurs	13004
 bronchons	3122
@@ -40167,6 +40512,7 @@ bronchés	134
 brontomètre	193
 brontosaure	5494
 brontosaures	3393
+brony	59
 bronza	4309
 bronzage	125412
 bronzages	1727
@@ -40705,6 +41051,7 @@ bréviaires	153750
 brévium	165
 brêle	3239	p
 brêles	1903	p
+brême	10977
 brûla	948487
 brûlage	70442
 brûlages	5455
@@ -41152,6 +41499,7 @@ butterai	57
 butteraient	237
 butterais	103
 butterait	1111
+buttereau	362
 butterez	209
 butteriez	41
 butterons	193
@@ -41211,6 +41559,7 @@ buvons	299357
 buzz	70696
 buée	451444
 buées	94262
+byblienne	247
 bye	83771
 byronien	38180
 byronienne	19450
@@ -42543,6 +42892,8 @@ caducifoliés	6739
 caducité	556289
 caducités	4298
 caducs	241400
+caducée	258061
+caducées	9881
 caduque	751333
 caduques	601916
 cadurcien	4954
@@ -42881,7 +43232,11 @@ calaisiens	5951
 calait	28738
 calamar	20457
 calamars	55505
+calamba	1939
 calambac	4487
+calambou	236
+calambouc	1317
+calambour	3160
 calame	56533
 calament	9284
 calaments	347
@@ -43841,6 +44196,7 @@ candidaté	1728
 candide	803845
 candidement	84263
 candides	207804
+candidose	26716
 candie	10397
 candies	14980
 candir	2822
@@ -44441,6 +44797,7 @@ cappadociennes	14879
 cappadociens	20559
 cappuccino	45630
 cappuccinos	6773
+capri	23082
 caprice	3821434
 caprices	3356411
 capricieuse	893738
@@ -44463,6 +44820,7 @@ capriole	4500
 caprioles	4153
 caprique	22197
 capriques	233
+capris	3188
 caprisant	1194
 caprolactame	7464
 caprolactames	166
@@ -44499,9 +44857,12 @@ captant	97784
 captas	7196
 captasse	187
 captateur	8109
+captateurs	6376
 captatif	5436
 captation	526475
 captations	36943
+captatrice	7658
+captatrices	1840
 capte	312196
 captent	113196
 capter	1292995
@@ -46444,6 +46805,7 @@ caverneuses	60962
 caverneux	663524
 cavernicole	51907
 cavernicoles	90280
+cavernite	484
 caves	2649961
 caveçon	25756
 caveçons	1710
@@ -47260,6 +47622,7 @@ chalandes	1382
 chalandise	46518
 chalandises	1618
 chalands	554568
+chalant	6283
 chalaze	50586
 chalazion	18963
 chalcanthe	491
@@ -47380,6 +47743,8 @@ chamanique	109505
 chamaniques	68799
 chamanisme	186270
 chamanismes	2271
+chamaniste	6970
+chamanistes	12027
 chamans	110352
 chamarré	101502
 chamarrée	48312
@@ -47487,6 +47852,10 @@ chamoiser	1269
 chamoiserie	12582
 chamoiseries	5287
 chamomilles	253
+chamoniard	3143
+chamoniarde	1818
+chamoniardes	580
+chamoniards	2713
 chamorro	1502
 chamotte	26195
 chamottes	1646
@@ -47506,6 +47875,8 @@ champignonnant	343
 champignonne	1451
 champignonnent	1886
 champignonner	932
+champignonneuse	761
+champignonneuses	424
 champignonneux	441
 champignonniste	5565
 champignonnistes	14511
@@ -47763,6 +48134,7 @@ chanturgues	50
 chantâmes	19153
 chantât	58567
 chantâtes	2421
+chantè	1041
 chantèrent	286304
 chanté	3243283
 chantée	1133931
@@ -48380,6 +48752,8 @@ chaude	9440061
 chaudeau	7075
 chaudement	842738
 chaudes	4125145
+chaudez	70
+chaudin	844
 chaudière	3995609
 chaudières	3034730
 chaudron	555678
@@ -48559,6 +48933,7 @@ chavirant	13054
 chavirassent	131
 chavire	104700
 chavirement	23697
+chavirements	2496
 chavirent	27371
 chavirer	270783
 chavirera	2543
@@ -48872,6 +49247,7 @@ chevets	51535
 cheveu	975233
 cheveux	25984479
 cheville	1747645
+cheviller	28157
 chevilles	1542918
 chevillette	17654
 chevillettes	15217
@@ -49047,7 +49423,7 @@ chicotter	467
 chicottes	2072
 chicoutai	417
 chics	183934
-chie	233320	p
+chie	233320
 chien	16836776
 chienchien	3656
 chienchiens	679
@@ -49079,7 +49455,7 @@ chieur	7166	p
 chieurs	4224	p
 chieuse	10771	p
 chieuses	1932	p
-chiez	30731	p
+chiez	30731
 chiffe	46761
 chiffes	17014
 chiffon	814764
@@ -49173,7 +49549,7 @@ chignons	59579
 chigné	128
 chignée	448
 chihuahua	14175
-chiions	59	p
+chiions	59
 chiisme	96344
 chiite	327104
 chiites	351286
@@ -49276,7 +49652,7 @@ chiné	37154
 chinée	11857
 chinées	8766
 chinés	40862
-chions	13521	p
+chions	13521
 chiot	207920
 chiots	121975
 chiotte	16929	p
@@ -49884,6 +50260,7 @@ chouias	99
 chouillat	92
 chouinegomme	189
 chouiner	4878
+choupi	416
 choupinou	651
 chouquette	2617
 choura	7895
@@ -49903,6 +50280,7 @@ choure	759
 chourent	52
 chourer	2329
 choures	91
+chourine	582
 chouré	1875
 chourée	301
 chourées	160
@@ -49993,6 +50371,7 @@ chromatographiques	44436
 chromatopsie	3179
 chromatopsies	294
 chrome	1625166
+chromer	2544
 chromeuse	258
 chromeuses	166
 chromeux	14227
@@ -50413,6 +50792,7 @@ chénopodiacées	3756
 chéquier	57307
 chéquiers	20003
 chéri	2475751
+chériat	6163
 chérie	3136147
 chéries	226105
 chérif	274378
@@ -51922,6 +52302,7 @@ clergés	143023
 clermontois	30393
 clermontoise	26262
 clermontoises	5517
+cli	173219
 clic	800973
 clicha	335
 clichaient	132
@@ -52625,6 +53006,9 @@ cobaye	1274478
 cobayes	898643
 cobelligérance	3178
 cobelligérant	1744
+cobelligérante	913
+cobelligérantes	176
+cobelligérants	1478
 cobra	149564
 cobée	735
 coca	391962
@@ -52826,6 +53210,7 @@ codeuses	1269
 codex	634415
 codez	4526
 codicillaire	19662
+codicillaires	2072
 codicille	348604
 codicilles	109753
 codiez	271
@@ -53158,6 +53543,8 @@ cohabité	68590
 cohabitée	148
 cohabités	214
 cohobation	5446
+cohobe	2372
+cohobez	245
 cohorte	1123206
 cohortes	1037799
 cohue	761217
@@ -53238,6 +53625,7 @@ coincerons	1169
 coinceront	943
 coinces	2069
 coincez	2441
+coinche	1116
 coinciez	209
 coincions	412
 coincoin	1107
@@ -57425,6 +57813,7 @@ conférés	1054485
 confœdérations	151
 conga	7204
 congas	7378
+conge	56049
 congela	6174
 congelai	318
 congelaient	2626
@@ -57443,6 +57832,7 @@ congelé	290363
 congelée	248034
 congelées	212934
 congelés	368338
+conges	27950
 congestion	2090032
 congestionna	2584
 congestionnaient	1822
@@ -58875,6 +59265,7 @@ consumes	14714
 consumez	37991
 consumiez	2781
 consumions	2388
+consumoit	30882
 consumons	16641
 consumâmes	399
 consumât	11719
@@ -59888,6 +60279,7 @@ contrespionnage	309
 contretemps	434714
 contreterroriste	356
 contreterroristes	626
+contretorpilleur	4967
 contrevenaient	28342
 contrevenais	2744
 contrevenait	50643
@@ -61545,6 +61937,7 @@ corrosive	259557
 corrosives	119855
 corroyage	58777
 corroyages	3722
+corroyer	25975
 corroyeur	84783
 corroyeurs	102580
 corroyère	849
@@ -63585,6 +63978,7 @@ criassent	12303
 criasses	703
 criassions	151
 cribla	20215
+criblage	157100
 criblai	735
 criblaient	25258
 criblais	490
@@ -64437,6 +64831,8 @@ cryptologue	2597
 cryptologues	2743
 cryptomnésie	5008
 cryptomnésies	284
+cryptomonnaie	2977
+cryptomonnaies	6111
 cryptons	58
 cryptonyme	2859
 cryptonymes	3013
@@ -64780,6 +65176,7 @@ crépusculaires	153364
 crépuscule	2481470
 crépuscules	168311
 créquier	7272
+créquiers	274
 crésol	73353
 crésols	24689
 crésyl	45228
@@ -64945,6 +65342,11 @@ cueillîmes	6357
 cueillît	3836
 cueillîtes	526
 cuesta	70796
+cuide	140118
+cuidez	16667
+cuidiez	11977
+cuidions	4848
+cuidons	7781
 cuiller	976315
 cuillers	457049
 cuillerée	1030346
@@ -65510,6 +65912,8 @@ curés	4712502
 cus	107134
 cuscute	67792
 cuspide	76838
+custode	178951
+custodes	91330
 customisait	115
 customisant	1041
 customisation	6783
@@ -65861,6 +66265,8 @@ cytotrophoblaste	3946
 cytotrophoblastes	581
 czar	1176469
 czarien	523
+czarienne	23937
+czariennes	1593
 czarine	141802
 czars	94749
 czimbalum	51
@@ -65874,6 +66280,7 @@ câblait	5654
 câblant	1468
 câblas	492
 câble	3355830
+câbleau	829
 câblent	1845
 câbler	23744
 câblera	764
@@ -65897,6 +66304,7 @@ câblodistribution	27692
 câblogramme	23289
 câblogrammes	8347
 câblons	178
+câblot	2645
 câblât	64
 câblèrent	576
 câblé	59749
@@ -65936,7 +66344,7 @@ câliné	8014
 câlinée	4691
 câlinées	612
 câlinés	1944
-câlisse	2303	p
+câlisse	2303
 câlisser	253	p
 câlisses	60	p
 câpre	11173
@@ -66148,12 +66556,9 @@ célébré	3388749
 célébrée	1796725
 célébrées	785233
 célébrés	686561
-célée	7776
-célées	4576
 céléripède	101
 célérité	1424553
 célérités	8828
-célés	13311
 cément	194286
 cémenta	1163
 cémentai	150
@@ -66470,6 +66875,7 @@ d'or	129061
 d'ordinaire	756
 d'origine	2217
 d'où	9892
+d'urgence	509
 d'usage	693
 d'y	4443
 d'époque	55
@@ -66842,6 +67248,7 @@ dansons	78994
 dansâmes	10720
 dansât	14241
 dansâtes	1084
+dansè	289
 dansèrent	133401
 dansé	668480
 dansée	99983
@@ -67340,6 +67747,7 @@ dernière	95621167
 dernièrement	3599698
 dernières	46812163
 derny	1861
+dernys	66
 derrick	26944
 derrière	45206729
 derrières	1037020
@@ -68173,6 +68581,7 @@ dextérité	1039620
 dextérités	4917
 dey	500893
 deys	49732
+deçà	3556395
 dhamma	17165
 dia	935201
 diabase	101434
@@ -68579,6 +68988,9 @@ dichroïque	25053
 dichroïques	14100
 dichroïsme	74180
 dichroïsmes	1267
+dicibilité	6586
+dicible	70976
+dicibles	7519
 dickensien	3914
 dickensienne	2765
 dickensiennes	644
@@ -68654,8 +69066,11 @@ dicyanure	1656
 dicyanures	299
 dicétone	15978
 dicétones	21526
+didacte	2282
+didactes	826
 didacticiel	16125
 didacticiels	22512
+didacticien	23557
 didactique	2574285
 didactiquement	22661
 didactiques	827882
@@ -69062,6 +69477,7 @@ diiodures	241
 dijonnais	119306
 dijonnaise	81093
 dijonnaises	22047
+dikkenek	115
 diktat	124227
 diktats	67202
 dilacération	64095
@@ -72477,6 +72893,8 @@ douions	20558
 doujours	378
 douleur	35254306
 douleurs	15143662
+douliez	226
+doulions	241
 douloureuse	6276671
 douloureusement	1444192
 douloureuses	2556508
@@ -72869,7 +73287,6 @@ drillée	308
 drillées	203
 drillés	654
 dring	9985
-drink	91663
 drinks	37129
 drisse	51541
 drisses	37173
@@ -73494,6 +73911,7 @@ dysentérique	108080
 dysentériques	106028
 dysfibrinogénémie	569
 dysfibrinogénémies	413
+dysfonction	115258
 dysfonctionnaient	143
 dysfonctionnait	814
 dysfonctionnant	1130
@@ -73561,6 +73979,7 @@ dystrophine	6346
 dystrophisation	684
 dysurie	107673
 dysuries	3966
+dysérection	937
 dysérythropoïèse	813
 dysérythropoïèses	255
 dytique	8054
@@ -73741,9 +74160,6 @@ débarassons	270
 débarassât	516
 débarassèrent	665
 débarassé	22079
-débarassée	12902
-débarassées	5242
-débarassés	9078
 débarbouilla	8489
 débarbouillai	1228
 débarbouillaient	1638
@@ -74688,6 +75104,7 @@ débruitage	1136
 débruiter	175
 débrutir	772
 débrutissement	153
+débrûle	750
 débucher	6492
 débudgétiser	1466
 débullage	737
@@ -76440,6 +76857,7 @@ décompensation	107867
 décompilateur	188
 décompiler	483
 décompilé	191
+décomplexer	6350
 décomplexé	17130
 décomplexée	23395
 décomplexées	2869
@@ -80191,8 +80609,14 @@ déjoué	272146
 déjouée	104468
 déjouées	82791
 déjoués	100532
+déjudiciarisant	130
 déjudiciarisation	16168
+déjudiciarise	141
 déjudiciariser	1479
+déjudiciarisé	427
+déjudiciarisée	568
+déjudiciarisées	77
+déjudiciarisés	97
 déjuge	39344
 déjugea	2952
 déjugeaient	894
@@ -81250,7 +81674,7 @@ démerdaient	368	p
 démerdais	604	p
 démerdait	1039	p
 démerdant	244	p
-démerde	17533	p
+démerde	17533
 démerdent	3679	p
 démerder	19132	p
 démerdera	1157	p
@@ -81262,7 +81686,7 @@ démerderas	595	p
 démerderez	407	p
 démerderont	496	p
 démerdes	5266	p
-démerdez	4383	p
+démerdez	4383
 démerdé	3589	p
 démerdée	873	p
 démerdés	842	p
@@ -83457,6 +83881,7 @@ déportée	167800
 déportées	109597
 déportés	1844412
 déposa	2213963
+déposable	1871
 déposai	114473
 déposaient	330027
 déposais	32436
@@ -85347,6 +85772,7 @@ désencombraient	111
 désencombrait	940
 désencombrant	2416
 désencombre	4341
+désencombrement	20097
 désencombrent	765
 désencombrer	39213
 désencombrera	491
@@ -87474,6 +87900,7 @@ détruite	5077021
 détruites	2645398
 détruits	3401049
 détrôna	62681
+détrônable	253
 détrônai	369
 détrônaient	4505
 détrônais	179
@@ -87482,6 +87909,8 @@ détrônant	33568
 détrônas	525
 détrônassent	503
 détrône	82409
+détrônement	51583
+détrônements	2117
 détrônent	16153
 détrôner	518169
 détrônera	14504
@@ -88968,9 +89397,6 @@ embarassons	241
 embarassât	52
 embarassèrent	135
 embarassé	58791
-embarassée	18560
-embarassées	6362
-embarassés	14640
 embarcadère	286034
 embarcadères	53739
 embarcation	1279272
@@ -89901,7 +90327,7 @@ emmerdaient	1744	p
 emmerdais	1249	p
 emmerdait	8144	p
 emmerdant	23619	p
-emmerde	63046	p
+emmerde	63046
 emmerdement	9286
 emmerdements	32949
 emmerdent	8626	p
@@ -89918,10 +90344,10 @@ emmerdeur	36682	p
 emmerdeurs	20438	p
 emmerdeuse	25629	p
 emmerdeuses	4981	p
-emmerdez	3018	p
-emmerdiez	210	p
-emmerdions	108	p
-emmerdons	446	p
+emmerdez	3018
+emmerdiez	210
+emmerdions	108
+emmerdons	446
 emmerdé	25490	p
 emmerdée	4417	p
 emmerdées	424	p
@@ -90041,7 +90467,7 @@ emmêlées	70794
 emmêlés	157602
 emoji	1312
 emojis	1250
-empaffe	48	p
+empaffe	48
 empaffer	271	p
 empaffes	279	p
 empaffé	3746	p
@@ -90809,6 +91235,7 @@ empressée	727008
 empressées	264845
 empressés	1299417
 emprise	3293457
+emprises	192253
 emprisonna	107510
 emprisonnai	1410
 emprisonnaient	36238
@@ -91751,12 +92178,12 @@ enconnai	121	p
 enconnais	46	p
 enconnait	435	p
 enconnant	584	p
-enconne	2525	p
+enconne	2525
 enconnent	167	p
 enconner	2330	p
 enconnera	125	p
 enconnerai	55	p
-enconnez	139	p
+enconnez	139
 enconné	152	p
 enconnée	1447	p
 enconnées	116	p
@@ -91980,8 +92407,8 @@ enculeur	3903	p
 enculeurs	2079	p
 enculeuse	159	p
 enculeuses	44	p
-enculez	689	p
-enculons	113	p
+enculez	689
+enculons	113
 enculèrent	320	p
 enculé	56757	p
 enculée	8638	p
@@ -92204,6 +92631,7 @@ endolorie	102769
 endolories	39724
 endoloris	107374
 endolymphe	22857
+endolysine	288
 endomembranaire	1406
 endomembranaires	250
 endomembrane	57
@@ -92248,8 +92676,10 @@ endomorphismes	31942
 endomètre	124184
 endomètres	1314
 endométrectomie	494
+endométriome	4298
 endométriose	46489
 endométrioses	2063
+endométrioïde	1373
 endométrite	66858
 endométrites	11352
 endonucléase	4963
@@ -93452,15 +93882,15 @@ engrossaient	849	p
 engrossais	44	p
 engrossait	1665	p
 engrossant	1990	p
-engrosse	10051	p
+engrosse	10051
 engrossent	2809	p
 engrosser	31150	p
 engrossera	636	p
 engrosserait	196	p
 engrosses	1633	p
-engrossez	294	p
-engrossiez	195	p
-engrossons	58	p
+engrossez	294
+engrossiez	195
+engrossons	58
 engrossât	55	p
 engrossèrent	107	p
 engrossé	20882	p
@@ -95677,6 +96107,7 @@ entremetteuse	130062
 entremetteuses	43901
 entremettre	67968
 entremirent	2074
+entremis	91303
 entremise	2815437
 entremises	32336
 entremêla	16801
@@ -95975,7 +96406,7 @@ entrées	5978749
 entrés	4375641
 entubait	200	p
 entubant	43	p
-entube	864	p
+entube	864
 entubent	211	p
 entuber	7113	p
 entubes	196	p
@@ -96644,6 +97075,7 @@ esbigné	1356
 esbignée	267
 esbignés	393
 esbroufe	42290
+esbroufeur	2037
 escabeau	385012
 escabeaux	91724
 escabelle	49222
@@ -96756,6 +97188,7 @@ escarcelle	160462
 escarcelles	13751
 escargot	342341
 escargotière	9854
+escargotières	10109
 escargots	430854
 escarmoucha	6605
 escarmouchaient	3920
@@ -100616,6 +101049,7 @@ extrinsèque	406317
 extrinsèquement	14627
 extrinsèques	353072
 extrorse	5941
+extrorses	22992
 extroverti	2536
 extrovertie	1395
 extroverties	251
@@ -100862,6 +101296,7 @@ exégétiques	172133
 exéma	369
 eyalet	10694
 eyra	1019
+ez	913691
 eûmes	1831198
 eût	77161837
 eûtes	184476
@@ -101225,6 +101660,7 @@ faillent	47787
 failles	1925603
 faillez	16114
 failli	5557981
+faillibilisme	6114
 faillibilité	73701
 faillibilités	390
 faillible	180575
@@ -101331,11 +101767,15 @@ fak	43465
 fakir	110252
 fakirisme	5417
 fakirs	92771
+falafel	6512
 falaise	2114076
 falaises	1626220
+falaque	350
 falarique	1930
 falbala	17099
 falbalas	89703
+falcade	212
+falcata	39600
 falciforme	74863
 falconidé	447
 falconiformes	564
@@ -101502,6 +101942,7 @@ fanatisées	31114
 fanatisés	85561
 fanaux	237858
 fandango	44776
+fandangue	414
 fane	289002
 fanent	125268
 faner	173921
@@ -101649,7 +102090,7 @@ faons	80497
 faque	2333
 faquin	141241
 faquins	68396
-far	1284374
+faquir	17867
 farad	20348
 faraday	4905
 faradique	160627
@@ -101908,6 +102349,7 @@ fastueuse	387728
 fastueusement	91801
 fastueuses	212310
 fastueux	730801
+fat	1112788
 fatal	4775502
 fatale	5467301
 fatalement	2646440
@@ -102708,6 +103150,7 @@ ferrailleront	245
 ferrailles	275116
 ferrailleur	50459
 ferrailleurs	36053
+ferrailleuse	1200
 ferraillez	275
 ferraillions	120
 ferraillons	955
@@ -103017,6 +103460,7 @@ feuilletait	128885
 feuilletant	362220
 feuilletas	52
 feuilleter	663530
+feuilleteur	874
 feuilletez	22581
 feuilletiez	723
 feuilletine	842
@@ -104035,14 +104479,14 @@ fissuré	133986
 fissurée	102810
 fissurées	66204
 fissurés	94768
-fista	619
-fistait	214
-fistant	410
-fistas	294
+fista	619	p
+fistait	214	p
+fistant	410	p
+fistas	294	p
 fiste	6609
-fistent	1122
-fister	2823
-fistes	46934
+fistent	1122	p
+fister	2823	p
+fistes	46934	p
 fistez	144
 fistions	149
 fiston	163462
@@ -104052,8 +104496,8 @@ fistule	1573581
 fistuline	599
 fistulisation	36335
 fistulographie	1878
-fisté	518
-fistée	179
+fisté	518	p
+fistée	179	p
 fisétine	1757
 fit	158317665
 fitness	129758
@@ -104674,6 +105118,7 @@ fleurissiez	634
 fleurissions	378
 fleurissons	1918
 fleuriste	304013
+fleuristerie	1991
 fleuristes	182236
 fleurit	1245905
 fleuron	540200
@@ -105716,13 +106161,17 @@ fongibles	145190
 fongicide	92122
 fongicides	186749
 fongicole	336
+fongicoles	1873
 fongiforme	3866
+fongiformes	13285
 fongique	77406
 fongiques	79589
 fongistatique	6193
 fongite	1098
 fongivore	243
+fongivores	1925
 fongoïde	26278
+fongoïdes	3776
 fongus	154908
 fonio	61748
 fonios	482
@@ -105754,6 +106203,7 @@ fonçât	711
 foodista	195
 foodistas	385
 foodtruck	409
+foodtrucks	267
 foot	764566
 football	1870985
 footballer	1585
@@ -105943,6 +106393,8 @@ forgés	352361
 foriez	1208
 forint	26158
 forions	1020
+forjuge	153
+forjugiez	438
 forma	5326526
 formable	3909
 formables	2073
@@ -106560,6 +107012,7 @@ foulé	767724
 foulée	1045721
 foulées	311605
 foulés	293761
+foundouk	1958
 foune	3315	p
 founes	241
 four	8450606
@@ -108547,6 +109000,7 @@ frôlé	202309
 frôlée	32892
 frôlées	12908
 frôlés	20770
+ftour	4808
 fuchsia	62082
 fuchsias	28927
 fuchsien	10255
@@ -108554,7 +109008,7 @@ fuchsienne	7134
 fuchsiennes	25659
 fuchsiens	8507
 fuchsine	320003
-fucke	133	p
+fucke	133
 fucker	1832	p
 fucké	852	p
 fuckée	308	p
@@ -108799,6 +109253,7 @@ funestement	12427
 funestes	4580556
 fungiforme	2557
 fungique	9802
+fungiques	6435
 fungus	43896
 funiculaire	290200
 funiculaires	94690
@@ -109418,10 +109873,13 @@ férales	768
 féralies	178
 féraux	698
 férial	22962
+férie	95026
+fériez	930
 féringien	1303
 féringienne	1177
 féringiennes	495
 féringiens	758
+férions	482
 féroce	3103977
 férocement	252981
 féroces	2387402
@@ -109482,6 +109940,7 @@ fétuine	1005
 fétuque	48913
 fétuques	12478
 fétus	104296
+févi	1864
 févier	28589
 féviers	2136
 février	71904221
@@ -110135,7 +110594,7 @@ gamahuchaient	185	p
 gamahuchais	387	p
 gamahuchait	949	p
 gamahuchant	892	p
-gamahuche	2182	p
+gamahuche	2182
 gamahucher	3618	p
 gamahuchera	209	p
 gamahucherai	141	p
@@ -110143,7 +110602,7 @@ gamahucherait	59	p
 gamahucheur	240
 gamahucheurs	234
 gamahucheuses	122
-gamahuchez	117	p
+gamahuchez	117
 gamahuchèrent	156	p
 gamahuché	297	p
 gamahuchée	653	p
@@ -110489,6 +110948,8 @@ gares	2625643
 garez	14081
 gargamelle	3580
 gargamelles	218
+gargantua	3963
+gargantuas	853
 gargantuesque	31873
 gargantuesquement	54
 gargantuesques	16853
@@ -114430,6 +114891,7 @@ grimperions	485
 grimperons	3114
 grimperont	7046
 grimpes	9531
+grimpette	19170
 grimpeur	89045
 grimpeurs	139435
 grimpeuse	3884
@@ -115204,11 +115666,11 @@ gueules	2772886
 gueuleton	27072
 gueuletonner	1526
 gueuletons	11794
-gueulez	2728	p
-gueuliez	295	p
-gueulions	645	p
+gueulez	2728
+gueuliez	295
+gueulions	645
 gueuloir	17111
-gueulons	805	p
+gueulons	805
 gueulât	44	p
 gueulèrent	1153	p
 gueulé	33275	p
@@ -115414,6 +115876,8 @@ guitaristiques	672
 guitoune	16840
 guitounes	8137
 guits	2700
+guivre	26053
+guivres	13503
 gujarati	9737
 gummifère	1057
 gunite	2990
@@ -115569,6 +116033,7 @@ gynandre	2482
 gynandres	2611
 gynandrie	8795
 gynandromorphisme	7927
+gynarchie	288
 gynocide	725
 gynophage	125
 gynéco	34210
@@ -116131,6 +116596,7 @@ géométrisées	4305
 géométrisés	4435
 géonomie	2693
 géophage	1352
+géophagie	10241
 géophile	1352
 géophysicien	22615
 géophysicienne	481
@@ -116186,6 +116652,7 @@ géothermie	68183
 géothermies	190
 géothermique	180582
 géothermiques	48515
+géotrichose	197
 géotrope	1695
 géotropes	786
 géotropisme	56355
@@ -116515,6 +116982,7 @@ habsbourgeois	32579
 habsbourgeoise	37268
 habsbourgeoises	6303
 hacha	17389
+hachage	57265
 hachai	790
 hachaient	10785
 hachais	809
@@ -117320,6 +117788,7 @@ hasarderions	3572
 hasarderons	31277
 hasarderont	9920
 hasardes	5923
+hasardeur	1089
 hasardeuse	568265
 hasardeusement	9216
 hasardeuses	369986
@@ -118069,6 +118538,7 @@ hispanophiles	2190
 hispanophone	33803
 hispanophones	45449
 hispide	40903
+hispides	54946
 hissa	278220
 hissai	24948
 hissaient	34785
@@ -119902,6 +120372,7 @@ hyménéen	317
 hyménéenne	718
 hyménéennes	177
 hyménéens	343
+hyménées	16212
 hyoglosse	10611
 hyoglosses	1851
 hyoïde	277840
@@ -119983,6 +120454,10 @@ hypercritique	54303
 hypercube	6887
 hypercubes	1776
 hyperdulie	13255
+hyperdéveloppé	1126
+hyperdéveloppée	790
+hyperdéveloppées	458
+hyperdéveloppés	609
 hyperefficace	349
 hyperefficaces	56
 hyperelliptique	12609
@@ -120059,6 +120534,10 @@ hyperoxyde	4084
 hyperoxydes	458
 hyperparamètre	664
 hyperparamètres	2388
+hyperperformant	264
+hyperperformante	142
+hyperperformantes	44
+hyperperformants	202
 hyperphosphatémie	5781
 hyperphénylalaninémie	812
 hyperphénylalaninémies	272
@@ -120397,6 +120876,7 @@ hypoténuse	173023
 hypoténuses	11963
 hypovitaminose	11890
 hypovitaminoses	2264
+hypovolémie	34933
 hypovolémique	12193
 hypovolémiques	1557
 hypoxie	123087
@@ -121642,6 +122122,7 @@ igos	1912
 iguane	59818
 iguanes	49752
 iguanodon	10115
+iguanodons	6773
 il	3154221092
 ile	4046227
 iles	1581655
@@ -124122,6 +124603,7 @@ incohérente	420288
 incohérentes	466940
 incohérents	296944
 incoiffable	216
+incoiffables	476
 incollable	21852
 incollables	5494
 incolore	2030301
@@ -124758,6 +125240,7 @@ indice	13949757
 indices	9992857
 indiciaire	200352
 indiciaires	45638
+indicibilité	6211
 indicible	1330198
 indiciblement	43654
 indicibles	215934
@@ -125315,6 +125798,7 @@ indémodable	15890
 indémodables	7788
 indémontable	4547
 indémontables	1345
+indémontrabilité	2267
 indémontrable	86479
 indémontrables	55509
 indéniable	2132243
@@ -125336,6 +125820,7 @@ indépendantismes	467
 indépendantiste	174228
 indépendantistes	230029
 indépendants	6833432
+indéposable	47
 indéracinable	78645
 indéracinables	22427
 indéréglable	12063
@@ -125361,6 +125846,8 @@ indéterminée	2175854
 indéterminées	615282
 indéterminément	16557
 indéterminés	420228
+indétrônable	9687
+indétrôné	115
 indévissable	610
 indévissables	270
 indévot	10015
@@ -127066,6 +127553,8 @@ inscrivons	85038
 inscrivîmes	1845
 inscrivît	15890
 inscrivîtes	266
+inscrupuleuse	185
+inscrupuleux	172
 inscrutablement	133
 insectarium	9966
 insecte	3792095
@@ -128294,6 +128783,8 @@ intercommunautaire	32693
 intercommunautaires	66710
 intercommunaux	112324
 intercommunication	61319
+intercompréhensible	290
+intercompréhension	87642
 interconfédéral	3688
 interconfédérale	969
 interconfédérales	315
@@ -129601,6 +130092,7 @@ intuitifs	105153
 intuition	5572383
 intuitionisme	12467
 intuitionismes	175
+intuitionner	12309
 intuitionnisme	41384
 intuitionnismes	429
 intuitionniste	36690
@@ -131168,6 +131660,7 @@ ixeront	194
 ixes	5598
 ixez	239
 ixia	4207
+ixie	912
 ixions	1035
 ixième	6930
 ixièmes	690
@@ -131865,6 +132358,10 @@ jetterions	10616
 jetterons	76647
 jetteront	198647
 jettes	143035
+jettez	100280
+jettiez	3469
+jettions	5568
+jettons	76440
 jetâmes	111579
 jetât	163493
 jetâtes	3877
@@ -132422,6 +132919,7 @@ jubilées	350
 jubilés	68273
 jubé	379946
 jubés	53448
+juc	22232
 jucha	17642
 juchai	1267
 juchaient	3647
@@ -132594,6 +133092,7 @@ juillettistes	1001
 juin	105451013
 juins	6280
 juive	6096394
+juiverie	90538
 juives	2120390
 jujube	26215
 jujubier	65698
@@ -133597,6 +134096,7 @@ labradorien	1876
 labradorienne	1927
 labradoriennes	707
 labradoriens	429
+labre	521391
 labyrinthe	2308501
 labyrinthes	306342
 labyrinthique	194217
@@ -133646,6 +134146,7 @@ lacrymal	379853
 lacrymale	342267
 lacrymales	195472
 lacrymaux	147548
+lacrymo	23665
 lacrymogène	42166
 lacrymogènes	83692
 lacrymonasal	3979
@@ -136345,6 +136846,8 @@ lisaient	602547
 lisais	728452
 lisait	4333037
 lisant	5293647
+lisbonnais	1248
+lisbonnin	401
 lisboète	8012
 lisboètes	2845
 lise	1234305
@@ -136553,6 +137056,7 @@ littéral	1343129
 littérale	1734789
 littéralement	4669412
 littérales	194176
+littéralisme	40565
 littérateur	1181958
 littérateurs	1272599
 littératie	63471
@@ -138571,6 +139075,7 @@ m'enfin	3101
 m'man	66779
 m'sieu	60961
 m'sieur	144319
+m'sieurs	4053
 m'y	8435755
 ma	223665420
 ma'ame	3825
@@ -138734,6 +139239,7 @@ macromoléculaires	39152
 macromolécule	29690
 macromolécules	131235
 macron	2109
+macronie	682
 macronisme	3331
 macroniste	1109
 macronistes	797
@@ -140804,6 +141310,7 @@ marcassite	38660
 marcassites	15858
 marcescence	2230
 marcescent	4863
+marcescente	7172
 marcescentes	6311
 marcescents	3769
 marcha	3438129
@@ -141526,6 +142033,7 @@ marémotrices	13256
 maréomètre	998
 maréomètres	256
 mas	1904512
+masago	189
 mascara	88446
 mascarade	552493
 mascarades	280724
@@ -141987,6 +142495,9 @@ matraquera	181
 matraquerait	110
 matraqueront	130
 matraques	78997
+matraqueur	1773
+matraqueurs	3824
+matraqueuse	225
 matraquez	293
 matraquons	43
 matraquèrent	631
@@ -142204,6 +142715,7 @@ maurétanien	9725
 maurétanienne	10071
 maurétaniennes	5385
 maurétaniens	4807
+mauser	19243
 mausolée	1224755
 mausolées	297446
 maussade	817439
@@ -142387,6 +142899,7 @@ maïa	5317
 maïakovskien	619
 maïeur	119451
 maïeurs	21508
+maïeuticien	3063
 maïeutique	85918
 maïeutiquement	129
 maïeutiques	1697
@@ -142863,12 +143376,12 @@ merdes	56584	p
 merdeuse	8794	p
 merdeuses	2712	p
 merdeux	57238	p
-merdez	463	p
+merdez	463
 merdia	49
 merdias	187
 merdier	69576	p
 merdiers	1007	p
-merdique	49591	p
+merdique	49591
 merdiques	13458
 merdu	2328	p
 merdé	38179	p
@@ -144596,6 +145109,7 @@ mixé	17142
 mixée	11245
 mixées	8765
 mixés	16279
+miyako	617
 mièvre	133109
 mièvrement	1577
 mièvrerie	115058
@@ -148490,6 +149004,7 @@ mâchonnais	1556
 mâchonnait	31861
 mâchonnant	46662
 mâchonne	25906
+mâchonnement	15082
 mâchonnent	6626
 mâchonner	31041
 mâchonnera	177
@@ -148795,6 +149310,7 @@ médaillée	13172
 médaillées	4645
 médaillés	92233
 médecin	33013573
+médecine	27651855
 médecines	332175
 médecins	20760098
 médersa	47736
@@ -148924,7 +149440,13 @@ médiocraties	311
 médiocre	8171180
 médiocrement	2131006
 médiocres	3605236
+médiocrisant	61
+médiocrise	215
 médiocriser	460
+médiocrisé	218
+médiocrisée	174
+médiocrisées	58
+médiocrisés	104
 médiocrité	2409312
 médiocrités	186429
 médions	163
@@ -149792,6 +150314,7 @@ mésiale	46642
 mésiales	8395
 mésiaux	4921
 mésinformation	2143
+mésinterpréter	3805
 mésite	1143
 mésites	164
 mésityle	13418
@@ -150277,6 +150800,7 @@ métronome	141014
 métronomes	11125
 métronomique	16106
 métronomiquement	826
+métronomiques	7053
 métrons	942
 métropole	6606782
 métropoles	1025681
@@ -150426,8 +150950,6 @@ mût	20080
 mûtes	1088
 mœlle	17267
 mœlles	1566
-mœuf	1338
-mœufs	1123
 mœurs	31106169
 n	310350553
 n'	53805
@@ -150577,6 +151099,7 @@ namuroise	44335
 namuroises	18683
 nan	589864
 nana	357158
+nanan	17028
 nanar	39546
 nanard	411
 nanars	17546
@@ -150590,6 +151113,7 @@ nandrolone	2938
 nanisme	109874
 nanismes	2833
 nanite	237
+nankin	122578
 nanobiotechnologie	132
 nanocapteurs	466
 nanocristal	437
@@ -150827,6 +151351,7 @@ narration	3685842
 narrations	523298
 narrative	1657101
 narratives	567312
+narratologie	56535
 narratrice	424377
 narratrices	17162
 narre	246087
@@ -151459,6 +151984,7 @@ neurofibrillaires	8609
 neurofibrille	2487
 neurofibrilles	55341
 neurofibromatose	24113
+neurogenèse	9119
 neurolemme	171
 neuroleptique	57184
 neuroleptiques	161604
@@ -151809,10 +152335,12 @@ nigari	1409
 nigaud	201124
 nigaude	15348
 nigaudement	345
+nigauder	438
 nigauderie	4589
 nigauderies	2254
 nigaudes	2740
 nigauds	87349
+nigaudé	155
 nigelle	15812
 nigelles	3435
 nigelline	538
@@ -152127,6 +152655,9 @@ nocturne	3514224
 nocturnement	4268
 nocturnes	2293771
 nodal	162309
+nodale	85359
+nodales	119646
+nodaux	83622
 nodulaire	150631
 nodulaires	97208
 nodule	378001
@@ -154766,6 +155297,7 @@ odalisque	59176
 odalisques	62946
 ode	1871353
 odelette	16942
+odelettes	13538
 odes	889998
 odeur	16557589
 odeurs	2448431
@@ -157107,6 +157639,7 @@ ostensible	386912
 ostensiblement	924438
 ostensibles	118687
 ostensif	6983
+ostensive	16990
 ostensoir	223452
 ostensoirs	50731
 ostentation	1123042
@@ -158408,6 +158941,7 @@ palermitain	12941
 palermitaine	11199
 palermitaines	2892
 palermitains	6572
+paleron	12317
 pales	469481
 palestinien	962451
 palestinienne	840083
@@ -158980,6 +159514,7 @@ panserons	971
 panseront	2664
 panses	58713
 pansexualité	1150
+pansexuel	758
 pansez	10480
 pansiez	449
 pansions	6955
@@ -159052,6 +159587,7 @@ pantouflardes	428
 pantouflards	6242
 pantoufle	188816
 pantoufles	653642
+pantouflier	2068
 pantoum	10161
 pantoute	10908
 panty	4616
@@ -159177,6 +159713,9 @@ papillotés	1055
 papinade	180
 papinades	141
 papion	13360
+papiracée	1256
+papiracées	316
+papiracés	480
 papis	6684
 papisme	299586
 papismes	130
@@ -160483,6 +161022,7 @@ parlures	6241
 parlâmes	166334
 parlât	612527
 parlâtes	14331
+parlè	6093
 parlèrent	884560
 parlé	37603216
 parlée	1526613
@@ -164009,6 +164549,7 @@ phalère	7901
 phanal	1858
 phantaisie	16986
 phantaisies	5033
+phantasie	10553
 phantasmagorie	3885
 phantasmagories	1207
 phantasmagorique	999
@@ -164059,6 +164600,7 @@ pharmaciens	1801440
 pharmacies	567161
 pharmacochimie	1397
 pharmacocinétique	30866
+pharmacocinétiques	19083
 pharmacodynamie	43787
 pharmacodynamique	61141
 pharmacodépendance	13036
@@ -164071,6 +164613,7 @@ pharmacologique	180452
 pharmacologiquement	9809
 pharmacologiques	202032
 pharmacologiste	6547
+pharmacologue	13217
 pharmacomanie	882
 pharmacopée	346229
 pharmacopées	84476
@@ -164224,6 +164767,8 @@ phlébologue	2795
 phlébologues	1827
 phlébotomie	44036
 phlébotomies	2099
+phlébotomiste	2694
+phlébotomistes	1805
 phobie	383026
 phobies	208465
 phobique	100596
@@ -164843,6 +165388,7 @@ phéromone	34305
 phéromones	73327
 phérormone	2465
 phérormones	2228
+phœnicien	352
 phœnicienne	331
 phœniciennes	431
 phœniciens	277
@@ -165529,7 +166075,7 @@ pincés	82766
 pindarique	68620
 pindariques	31779
 pindarisme	5346
-pine	130101	p
+pine	130101
 pineau	58852
 pineaux	13676
 pinent	346	p
@@ -165538,14 +166084,14 @@ pinerai	54	p
 pineraie	20358
 pinerais	131	p
 pines	30923	p
-pinez	327	p
+pinez	327
 pingouin	79716
 pingouins	110658
 pingre	38306
 pingrerie	17728
 pingreries	241
 pingres	13774
-pinions	9884	p
+pinions	9884
 pinique	7825
 piniques	217
 pinière	7582
@@ -165553,11 +166099,12 @@ pinnipède	1259
 pinnothère	2268
 pinnule	79708
 pinocytose	16515
-pinons	387	p
+pinons	387
 pinot	144804
 pinotte	684
 pinottes	1721
 pinoïde	262
+pinoïdes	467
 pins	3839796
 pinson	165921
 pinsons	112085
@@ -165828,6 +166375,9 @@ pirouetté	4167
 pirouettée	94
 pis	6244646
 pisan	53874
+pisane	46628
+pisanes	14916
+pisans	40080
 piscicole	120170
 piscicoles	71146
 pisciculteur	22605
@@ -167403,6 +167953,7 @@ plumes	6209202
 plumet	189500
 plumetis	41207
 plumets	96802
+plumeté	822
 plumeuse	46706
 plumeuses	73735
 plumeux	71893
@@ -167498,7 +168049,10 @@ plutonisme	17703
 plutonium	346446
 plutôt	93362879
 pluvial	120610
+pluviale	188544
+pluviales	725352
 pluvian	920
+pluviaux	28717
 pluvier	62609
 pluviers	62987
 pluvieuse	509442
@@ -167641,6 +168195,7 @@ pneumonique	113559
 pneumoniques	77823
 pneumopathie	70816
 pneumopathies	57785
+pneumothorax	404945
 pneus	871457
 pneux	2781
 pnictures	642
@@ -168455,6 +169010,7 @@ polycorde	1008
 polycordes	1470
 polycotylaires	66
 polycratie	3155
+polycrise	210
 polycristallin	42443
 polycristalline	12722
 polycristallines	11309
@@ -169378,6 +169934,13 @@ popé	976
 popée	2922
 popées	553
 popés	348
+poqua	53
+poque	105042
+poques	7325
+poquet	19663
+poqué	2316
+poquée	279
+poqués	327
 porc	3731330
 porcelaine	3852782
 porcelaines	817943
@@ -170581,10 +171144,10 @@ poutrelle	90665
 poutrelles	445086
 poutrer	229	p
 poutres	2573873
-poutrez	477	p
-poutriez	173	p
-poutrions	259	p
-poutrons	225	p
+poutrez	477
+poutriez	173
+poutrions	259
+poutrons	225
 poutré	313	p
 poutrée	68	p
 poutrées	49	p
@@ -172044,6 +172607,7 @@ proféré	406559
 proférée	143922
 proférées	294617
 proférés	159157
+prog	34301
 progestatif	30681
 progestérone	213475
 progestérones	1283
@@ -172910,6 +173474,7 @@ propulsés	58538
 propyle	62222
 propyles	370
 propylique	97211
+propyliques	7854
 propylène	183070
 propylènes	2036
 propène	12536
@@ -173121,6 +173686,7 @@ prostatectomie	83294
 prostatique	378794
 prostatiques	137225
 prostatisme	9135
+prostatite	60871
 prosterna	284556
 prosternai	25691
 prosternaient	62993
@@ -173478,6 +174044,7 @@ protéome	3404
 protéomes	591
 protéomique	7618
 protéomiques	1233
+protéosynthèse	6581
 protérozoïque	11396
 protérozoïques	7195
 protêt	674168
@@ -173784,7 +174351,6 @@ préambule	2748611
 préambuler	280
 préambules	191765
 préambulé	199
-préau	428684
 préaux	125521
 préavis	1390066
 prébase	1330
@@ -174563,6 +175129,7 @@ prégustation	821
 prégénital	19114
 préhellénique	40330
 préhenseur	10557
+préhensible	29810
 préhensile	41940
 préhensiles	28508
 préhension	432576
@@ -174819,6 +175386,7 @@ prémunissons	1943
 prémunit	90755
 prémunition	45785
 prémunît	1939
+prémâcher	361
 prémédication	28454
 prémédita	4184
 préméditai	396
@@ -175096,6 +175664,7 @@ prérectal	2437
 prérectale	8141
 prérectales	282
 prérectaux	241
+préremplir	306
 prérentrée	4669
 prérequis	92105
 préretraite	132529
@@ -175553,6 +176122,7 @@ prévarication	346726
 prévarications	208474
 prévaricatrice	5483
 prévaricatrices	1986
+prévariquer	26886
 prévaudra	218452
 prévaudrai	8462
 prévaudraient	32768
@@ -175918,6 +176488,7 @@ psitt	7756
 psittacidé	856
 psittacisme	34084
 psittacose	28348
+psk	303
 psophomètre	525
 psophométrique	1380
 psoralier	502
@@ -176815,6 +177386,7 @@ pyramider	6027
 pyramides	1984903
 pyramidion	26993
 pyramidions	11630
+pyramidon	45309
 pyramidé	6408
 pyrane	2108
 pyranes	219
@@ -177834,6 +178406,7 @@ périphériquement	14355
 périphériques	2389126
 périple	890126
 périples	107729
+périploque	379
 péripolaire	1550
 péripolaires	1071
 périptère	36840
@@ -178234,6 +178807,8 @@ pétulant	90993
 pétulante	86396
 pétulantes	11423
 pétulants	18474
+pétune	691
+pétunez	381
 pétunia	11915
 pétunias	25579
 pétât	270
@@ -181597,6 +182172,7 @@ rapiéçage	15427
 rapiéçages	7189
 raplapla	5433
 raplaplas	274
+rapontic	1242
 rappel	5790508
 rappela	3495253
 rappelai	407275
@@ -182469,6 +183045,7 @@ ravenala	5914
 ravenelle	10091
 ravenelles	13956
 ravennate	15668
+ravert	55
 raves	307293
 ravet	4615
 ravets	8526
@@ -186323,7 +186900,11 @@ regorgé	7817
 regorgée	597
 regorgées	300
 regorgés	449
+regrat	13866
+regrattage	3028
 regratter	12134
+regratterie	822
+regrattier	15542
 regret	10942089
 regrets	6208402
 regretta	631786
@@ -186763,6 +187344,7 @@ relavé	6483
 relavée	2263
 relavées	1999
 relavés	2718
+relax	62444
 relaxa	13135
 relaxai	632
 relaxaient	1124
@@ -189289,6 +189871,14 @@ repaieront	256
 repaies	880
 repaire	994160
 repaires	381558
+repairez	827
+repairiez	2950
+repairons	628
+repais	29462
+repaissez	7647
+repaissiez	592
+repaissions	1749
+repaissons	6779
 repaitre	25205
 reparais	18267
 reparaissaient	122656
@@ -192843,6 +193433,7 @@ rhabillées	5978
 rhabillés	13920
 rhade	229
 rhadé	5530
+rhapontic	5876
 rhapsode	49251
 rhapsodes	67767
 rhapsodie	55496
@@ -192866,6 +193457,7 @@ rhinopharyngé	2006
 rhinopharynx	16089
 rhinopithèque	182
 rhinoplastie	38399
+rhinoplastique	2931
 rhinorrhée	20735
 rhinorrhées	1763
 rhinos	6275
@@ -193780,6 +194372,7 @@ rizières	932164
 roadmap	3787
 roadmaps	976
 roadster	10656
+roadsters	1829
 roba	24177
 robai	230
 robaient	1004
@@ -194429,6 +195022,8 @@ rosserais	1694
 rosserait	1646
 rosseras	163
 rosserez	897
+rosserie	33033
+rosseries	13659
 rosseriez	99
 rosserions	60
 rosserons	995
@@ -194806,6 +195401,9 @@ roulières	2835
 roulons	126270
 roulotte	206364
 roulottes	78957
+roulottier	1038
+roulottiers	4604
+roulottière	56
 roulure	21576
 roulures	9246
 roulâmes	24081
@@ -195570,9 +196168,6 @@ râtisse	1435
 râtissent	766
 râtissez	145
 râtissé	716
-râtissée	448
-râtissées	646
-râtissés	257
 règle	44521831
 règlement	31943740
 règlementa	2600
@@ -196824,6 +197419,7 @@ récupérée	316618
 récupérées	260497
 récupérés	377230
 récura	2626
+récurage	17091
 récurai	588
 récuraient	1665
 récurais	1049
@@ -199886,6 +200482,7 @@ résolvés	348
 résolûment	318107
 résolûmes	141314
 résolût	25995
+résomptif	4535
 résonance	2311822
 résonances	554055
 résonant	23249
@@ -201726,6 +202323,7 @@ sagacité	2745580
 sagacités	2082
 sagaie	131827
 sagaies	133711
+sagamité	10051
 sagas	173081
 sage	20775556
 sagefemme	82422
@@ -206853,6 +207451,7 @@ snowboard	24818
 snowboardeur	290
 snowboardeurs	1192
 snowboardeuse	123
+snowboot	113
 soap	44555
 soaps	12030
 sobre	3317526
@@ -207309,6 +207908,7 @@ solidifiés	50783
 solidisme	23428
 solidité	5997321
 solidités	21483
+soliflore	2854
 soliloque	130573
 soliloques	46629
 solipsisme	100239
@@ -207598,6 +208198,7 @@ sommeillé	53121
 sommeillée	61
 sommeils	161501
 sommelier	220599
+sommeliers	48665
 sommelière	11121
 sommelières	3277
 sommellerie	8640
@@ -207857,6 +208458,8 @@ sonorisent	1997
 sonoriser	11999
 sonorisera	299
 sonorises	42
+sonoriste	569
+sonoristes	323
 sonorisé	17268
 sonorisée	12765
 sonorisées	8804
@@ -208948,6 +209551,7 @@ sourît	8894
 sourîtes	386
 sous	568566395
 sous-ensemble	152
+sous-espace	128
 sous-groupe	128
 souscripteur	668440
 souscripteurs	1693530
@@ -209836,6 +210440,7 @@ spécula	59962
 spéculai	2272
 spéculaient	40104
 spéculaire	310975
+spéculaires	38801
 spéculais	1798
 spéculait	54152
 spéculant	116500
@@ -210273,6 +210878,7 @@ statuerons	3216
 statueront	63778
 statues	8899582
 statuette	1164213
+statuettes	1219853
 statuez	5536
 statuiez	972
 statuions	706
@@ -210571,6 +211177,7 @@ stomate	49089
 stomates	404058
 stomatite	257820
 stomatologie	83410
+stomatologique	21667
 stomatologiste	17870
 stomatologue	3665
 stomatologues	2152
@@ -211614,6 +212221,7 @@ subsidiairement	707399
 subsidiaires	487895
 subsidiarité	337737
 subsidiarités	336
+subsidier	25406
 subsista	628953
 subsistai	1252
 subsistaient	488971
@@ -212511,6 +213119,11 @@ sulfureuses	637111
 sulfureux	2288359
 sulfurique	7858665
 sulfuriques	65111
+sulfuriser	155
+sulfurisé	101173
+sulfurisée	644
+sulfurisées	271
+sulfurisés	3191
 sulfuré	1653519
 sulfurée	82027
 sulfurées	132736
@@ -213149,6 +213762,7 @@ supraglottal	64
 supraglottale	290
 supraglottales	61
 supraliminaire	5734
+supraliminal	2095
 supraluminique	3226
 supraluminiques	1370
 supramoléculaire	7183
@@ -215182,6 +215796,7 @@ syncopés	24762
 syncrétique	144943
 syncrétiquement	3300
 syncrétiques	47362
+syncrétiser	1418
 syncrétisme	533203
 syncrétismes	41829
 syncytiotrophoblaste	4562
@@ -217827,7 +218442,6 @@ tatoué	166925
 tatouée	83106
 tatouées	45465
 tatoués	120152
-tau	260818
 taube	10161
 taubérien	1191
 taubérienne	202
@@ -218036,6 +218650,7 @@ tchop	1380
 tchouktche	6847
 tchèque	2065164
 tchèques	553911
+tchécophone	242
 tchécoslovaque	927770
 tchécoslovaques	259531
 tchékhovien	3473
@@ -218729,6 +219344,10 @@ terra	1461720
 terraformage	565
 terraformation	4034
 terraformer	1025
+terraformé	243
+terraformée	477
+terraformées	187
+terraformés	141
 terrai	22553
 terraient	28540
 terrain	47002698
@@ -219041,9 +219660,6 @@ tetons	19875
 tette	114038
 tettes	7387
 teté	71408
-tetée	5662
-tetées	2984
-tetés	763
 teub	2120	p
 teubs	153	p
 teubé	449
@@ -219328,6 +219944,8 @@ thromboplastine	28806
 thrombose	483545
 thromboses	184188
 thrombospondine	1018
+thrombotique	26695
+thrombotiques	13016
 thrombus	175304
 thrène	30535
 thréonine	34802
@@ -219917,6 +220535,7 @@ tirasses	9026
 tirassiez	1157
 tirassions	2249
 tire	16700342
+tirebouchonner	1445
 tirelire	116886	p
 tirelires	26883	p
 tirent	4807081
@@ -220022,6 +220641,7 @@ tisserais	613
 tisserait	4806
 tisserand	626913
 tisserande	20914
+tisseranderie	15929
 tisserandes	16887
 tisserands	854896
 tisseras	1364
@@ -221784,6 +222404,7 @@ traditions	15622804
 traducteur	4153848
 traducteurs	1535255
 traductibilité	13195
+traductif	6313
 traduction	28193793
 traductionnel	4859
 traductionnelle	6115
@@ -224786,7 +225407,7 @@ trombinoscopes	859
 tromblon	48482
 tromblons	27739
 trombona	48	p
-trombone	197933	p
+trombone	197933
 tromboner	312	p
 trombones	154145
 tromboniste	11172
@@ -224853,7 +225474,7 @@ tronchant	172	p
 tronche	163880
 troncher	2476	p
 tronches	19243	p
-tronchons	1300	p
+tronchons	1300
 tronché	332	p
 tronchée	544	p
 tronchées	175	p
@@ -225394,6 +226015,7 @@ trustes	4605
 trustez	57
 trustions	3785
 trustons	155
+trusts	624229
 trustèrent	273
 trusté	4104
 trypanosome	74485
@@ -225958,6 +226580,8 @@ turc	4043811
 turcique	92972
 turcologie	6699
 turcologue	6251
+turcoman	20403
+turcomane	12595
 turcophone	12197
 turcophones	31043
 turcs	1985554
@@ -226259,6 +226883,7 @@ tyroliennes	48116
 tyroliens	54641
 tyrosine	279091
 tyrosines	5113
+tyrrhénien	33006
 tzar	467650
 tzarine	42892
 tzarines	1079
@@ -226916,6 +227541,7 @@ tératogénétiques	185
 tératologie	132956
 tératologies	1311
 tératologique	95136
+tératologiques	95617
 tératologiste	2323
 tératome	16471
 tératoscopie	549
@@ -227363,11 +227989,13 @@ underground	141587
 undécagone	116
 undécane	2168
 undécanoïque	3621
+undécillions	312
 undécylique	1367
 une	4625572472
 unes	31162389
 unetelle	13645
 unguifère	311
+unguis	65164
 unguéal	37786
 unguéale	65668
 unguéales	27256
@@ -230223,6 +230851,7 @@ victimera	365
 victimes	18551370
 victimez	122
 victimisation	104328
+victimisations	5318
 victimiser	4757
 victimisme	1840
 victimiste	1149
@@ -231648,6 +232277,7 @@ voirie	2634522
 voiries	176395
 vois	32492707
 voisement	19084
+voiser	2812
 voisin	15982006
 voisina	13853
 voisinage	15962370
@@ -232018,7 +232648,6 @@ vosgien	193710
 vosgienne	130156
 vosgiennes	78038
 vosgiens	70538
-vostre	10320437
 vota	1257728
 votai	9127
 votaient	191118
@@ -232286,6 +232915,7 @@ voûtait	14866
 voûtant	8953
 voûtas	558
 voûte	8346727
+voûtement	56627
 voûtent	7813
 voûter	58703
 voûtera	618
@@ -232342,6 +232972,7 @@ vrillé	22498
 vrillée	10700
 vrillées	7749
 vrillés	9996
+vrmt	97
 vrombi	1175
 vrombir	27074
 vrombira	131
@@ -232639,6 +233270,8 @@ vénusien	10634
 vénusienne	13252
 vénusiennes	3745
 vénusiens	3888
+vénuste	1319
+vénustes	280
 vénère	442468
 vénèrent	191321
 vénèrera	533
@@ -233425,6 +234058,7 @@ yogistes	234
 yogourt	35195
 yogourts	8035
 yoguique	5044
+yoguiques	2132
 yoguisme	1029
 yoguiste	123
 yoguistes	553
@@ -234255,6 +234889,8 @@ zouma	501
 zourna	1895
 zournas	286
 zouz	8106
+zouzou	1961
+zouzous	1700
 zoziau	636
 zoziaux	910
 zozime	78
@@ -234522,7 +235158,11 @@ zêtes	644
 À	67314088
 Ásgard	630
 Â	348556
+Ægypte	4142
+Ægyptien	238
+Ægyptienne	178
 Ægyptiens	3233
+Ægée	1384
 Æmile	893
 Æthiopien	345
 Æthiopiens	431
@@ -234540,6 +235180,7 @@ zêtes	644
 Écurie	50529
 Éden	404222
 Édimbourg	579739
+Édimbourgeois	250
 Édith	304086
 Édouard	3781189
 Égide	38742
@@ -234549,6 +235190,7 @@ zêtes	644
 Égyptienne	145311
 Égyptiennes	41367
 Égyptiens	2454021
+Égée	298467
 Élaine	16241
 Élam	59788
 Élamites	19330
@@ -234728,6 +235370,11 @@ zêtes	644
 æ	258122
 ædifices	304
 ædiles	1296
+ægagropiles	93
+ægyptien	287
+ægyptienne	292
+ægyptiennes	203
+ægyptiens	377
 æons	1062
 æschynite	220
 æsthétiques	52
@@ -234855,6 +235502,10 @@ zêtes	644
 ébauchée	459212
 ébauchées	210206
 ébauchés	194872
+ébaudis	2511
+ébaudissent	340
+ébaudissez	152
+ébaudit	603
 ébavure	69
 ébavurer	1094
 ébavuré	137
@@ -234922,6 +235573,7 @@ zêtes	644
 éborgnée	3126
 éborgnées	1398
 éborgnés	3633
+ébosser	138
 éboue	149
 ébouer	1727
 éboueur	30754
@@ -234996,6 +235648,7 @@ zêtes	644
 ébouriffées	29799
 ébouriffés	154136
 ébourre	274
+ébourrer	1421
 ébourré	138
 ébousine	52
 ébousiner	650
@@ -235667,10 +236320,15 @@ zêtes	644
 échiquier	1130322
 échiquiers	41776
 écho	9213292
+échocardiogramme	3953
+échocardiographie	42961
+échogramme	2704
+échographe	10161
 échographie	446767
 échographies	29494
 échographique	82282
 échographiques	27083
+échographiste	12984
 échoir	531680
 échoira	11582
 échoit	366672
@@ -235682,6 +236340,8 @@ zêtes	644
 échoppe	332532
 échoppes	378585
 échos	2901840
+échosondage	1285
+échosondeur	2860
 échotier	13569
 échotiers	20644
 échotière	1229
@@ -236888,6 +237548,7 @@ zêtes	644
 édilitaires	27060
 édilité	218546
 édilités	5808
+édimbourgeois	672
 édit	12486698
 édita	212477
 éditable	5497
@@ -237022,6 +237683,8 @@ zêtes	644
 éduquées	77497
 éduqués	273243
 édénique	79178
+égagropile	4032
+égagropiles	11907
 égaie	112095
 égaient	55502
 égaiera	6011
@@ -237425,10 +238088,12 @@ zêtes	644
 égyptologie	126681
 égyptologue	120685
 égyptologues	133542
+égée	2542
 égéen	100612
 égéenne	85593
 égéennes	37762
 égéens	29098
+égées	787
 égérie	86158
 égéries	18573
 éhonté	127862
@@ -238017,6 +238682,7 @@ zêtes	644
 éligibilités	900
 éligible	392563
 éligibles	719171
+élim	3140
 élimina	73475
 éliminai	1611
 éliminaient	20596
@@ -239533,6 +240199,8 @@ zêtes	644
 épaulés	54018
 épave	764879
 épaves	810523
+épaveurs	171
+épaviste	105
 épazote	62
 épeautre	269396
 épeiche	15755
@@ -239729,6 +240397,7 @@ zêtes	644
 épidermoïdes	27551
 épididyme	306438
 épididymes	20413
+épididymite	73334
 épidote	246286
 épidotes	13043
 épidural	19545
@@ -239913,6 +240582,7 @@ zêtes	644
 épinions	93
 épinière	1414064
 épinières	6544
+épinoche	22932
 épinoches	18252
 épiné	493
 épinée	1786
@@ -242181,8 +242851,12 @@ zêtes	644
 étymologiquement	218749
 étymologiques	267161
 étymologisant	805
+étymologise	281
+étymologiser	875
 étymologiste	35784
 étymologistes	110800
+étymologisé	475
+étymologisés	227
 étymon	80825
 étymons	20834
 été	918249617
@@ -242660,6 +243334,7 @@ zêtes	644
 évinçant	33942
 évinçons	284
 évinçât	729
+éviré	953
 éviscère	1826
 éviscèrent	477
 éviscéra	562
@@ -242887,6 +243562,7 @@ zêtes	644
 ôtée	307769
 ôtées	105298
 ôtés	154498
+ÿ	98978
 Œ	132029
 Œdipe	1287879
 Œuilly	2163

@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flutils
 import os
 import sys
 import time
 import zipfile
 import build_dictionary
+from devtools import flutils
 
 
 EXTENSION_ID_TEMPLATE = "org.florisboard.dictionaries.{lang_code}"
