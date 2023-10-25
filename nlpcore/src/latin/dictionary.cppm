@@ -193,6 +193,8 @@ export class LatinDictionary : public Dictionary {
         std::vector<fl::str::UniString> ngram;
         std::map<WordIdT, fl::str::UniString> id_to_words_map;
         WordIdT current_word_id = 1;
+        total_scores_.clear();
+        vocab_sizes_.clear();
 
         while (std::getline(istream, line)) {
             fl::str::trim(line);
@@ -236,6 +238,10 @@ export class LatinDictionary : public Dictionary {
                 }
                 // Assign word to word ID map
                 id_to_words_map[current_word_id++] = std::move(word);
+                // compute frequency scores
+                auto type = EntryType::word();
+                total_scores_[type] += properties->absolute_score;
+                vocab_sizes_[type]++;
             } else if (section == LatinDictionarySection::NGRAMS) {
                 fl::str::split(line, FLDIC_SEPARATOR, line_components);
                 if (line_components.size() < 2) {
@@ -251,6 +257,9 @@ export class LatinDictionary : public Dictionary {
                 auto node = insertNgram(ngram);
                 auto properties = node->value(dict_id_)->ngramProperties();
                 properties->absolute_score = std::stoll(line_components[1]);
+                auto type = EntryType::ngram(line_components.size());
+                total_scores_[type] += properties->absolute_score;
+                vocab_sizes_[type]++;
             } else if (section == LatinDictionarySection::SHORTCUTS) {
                 fl::str::split(line, FLDIC_SEPARATOR, line_components);
                 if (line_components.size() < 2) {
@@ -262,12 +271,14 @@ export class LatinDictionary : public Dictionary {
                 auto properties = node->valueOrCreate(dict_id_)->shortcutPropertiesOrCreate();
                 properties->absolute_score = 1;
                 properties->shortcut_phrase = line_components[1];
+                auto type = EntryType::shortcut();
+                total_scores_[type] += properties->absolute_score;
+                vocab_sizes_[type]++;
             }
         }
 
-        // TODO: do this directly when reading the words/ngrams and avoid this heavy op
-        // TODO: this is necessary for the performance to be good during gradual loading
-        recalculateAllFrequencyScores();
+        // This is already done as we go.
+        // recalculateAllFrequencyScores();
     }
 
     void serializeContent(std::ostream& ostream) override {
