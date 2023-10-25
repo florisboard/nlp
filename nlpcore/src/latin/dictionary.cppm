@@ -26,6 +26,8 @@ module;
 #include <sstream>
 #include <string>
 #include <vector>
+#include <mutex>
+#include <shared_mutex>
 
 export module fl.nlp.core.latin:dictionary;
 
@@ -55,15 +57,16 @@ export enum class LatinDictionarySection {
 export class LatinDictionary : public Dictionary {
   public:
     LatinDictId dict_id_;
-    std::shared_ptr<LatinTrieNode> data_;
+    // all operations on data_->first need to acquire lock on data_->second please.
+    std::shared_ptr<std::pair<LatinTrieNode, std::shared_mutex>> data_;
 
     std::map<EntryType, ScoreT> total_scores_;
     std::map<EntryType, ScoreT> vocab_sizes_;
     std::map<EntryType, ScoreT> global_penalties_;
 
     LatinDictionary() = delete;
-    LatinDictionary(LatinDictId id, std::shared_ptr<LatinTrieNode> shared_data) : dict_id_(id), data_(shared_data) {};
-    LatinDictionary(LatinDictId id) : dict_id_(id), data_(std::make_shared<LatinTrieNode>()) {};
+    LatinDictionary(LatinDictId id, std::shared_ptr<std::pair<LatinTrieNode, std::shared_mutex>> shared_data) : dict_id_(id), data_(shared_data) {};
+    LatinDictionary(LatinDictId id) : dict_id_(id), data_(std::make_shared<std::pair<LatinTrieNode, std::shared_mutex>>()) {};
     LatinDictionary(const LatinDictionary&) = delete;
     LatinDictionary(LatinDictionary&&) = default;
     virtual ~LatinDictionary() = default;
@@ -72,38 +75,45 @@ export class LatinDictionary : public Dictionary {
     LatinDictionary& operator=(LatinDictionary&&) = default;
 
     inline LatinTrieNode* insertNgram(std::span<const fl::str::UniString> ngram) noexcept {
-        return algorithms::insertNgram(data_.get(), dict_id_, ngram);
+        std::scoped_lock<std::shared_mutex> lock(data_->second);
+        return algorithms::insertNgram(&(data_->first), dict_id_, ngram);
     }
 
-    inline void forEachEntry(algorithms::EntryAction& action) {
-        algorithms::forEachEntry(data_.get(), dict_id_, action);
+    inline void forEachEntryReadSafe(algorithms::EntryAction& action) {
+        std::shared_lock<std::shared_mutex> lock(data_->second);
+        algorithms::forEachEntry(&(data_->first), dict_id_, action);
     }
 
-    inline void forEachWord(algorithms::WordAction& action) {
-        algorithms::forEachWord(data_.get(), dict_id_, action);
+    inline void forEachWordReadSafe(algorithms::WordAction& action) {
+        std::shared_lock<std::shared_mutex> lock(data_->second);
+        algorithms::forEachWord(&(data_->first), dict_id_, action);
     }
 
-    inline void forEachNgram(algorithms::NgramAction& action) {
-        algorithms::forEachNgram(data_.get(), dict_id_, action);
+    inline void forEachNgramReadSafe(algorithms::NgramAction& action) {
+        std::shared_lock<std::shared_mutex> lock(data_->second);
+        algorithms::forEachNgram(&(data_->first), dict_id_, action);
     }
 
-    inline void forEachNgram(int32_t ngram_size, algorithms::NgramAction& action) {
-        algorithms::forEachNgram(data_.get(), dict_id_, ngram_size, action);
+    inline void forEachNgramReadSafe(int32_t ngram_size, algorithms::NgramAction& action) {
+        std::shared_lock<std::shared_mutex> lock(data_->second);
+        algorithms::forEachNgram(&(data_->first), dict_id_, ngram_size, action);
     }
 
-    inline void forEachNgram(int32_t min_ngram_size, int32_t max_ngram_size, algorithms::NgramAction& action) {
-        algorithms::forEachNgram(data_.get(), dict_id_, min_ngram_size, max_ngram_size, action);
+    inline void forEachNgramReadSafe(int32_t min_ngram_size, int32_t max_ngram_size, algorithms::NgramAction& action) {
+        std::shared_lock<std::shared_mutex> lock(data_->second);
+        algorithms::forEachNgram(&(data_->first), dict_id_, min_ngram_size, max_ngram_size, action);
     }
 
-    inline void forEachShortcut(algorithms::ShortcutAction& action) {
-        algorithms::forEachShortcut(data_.get(), dict_id_, action);
+    inline void forEachShortcutReadSafe(algorithms::ShortcutAction& action) {
+        std::shared_lock<std::shared_mutex> lock(data_->second);
+        algorithms::forEachShortcut(&(data_->first), dict_id_, action);
     }
 
     void recalculateAllFrequencyScores() noexcept {
         std::map<EntryType, ScoreT> new_total_scores;
         std::map<EntryType, ScoreT> new_vocab_sizes;
 
-        forEachEntry([&](auto ngram, auto ngram_size, auto* node, auto* value) {
+        forEachEntryReadSafe([&](auto ngram, auto ngram_size, auto* node, auto* value) {
             if (ngram_size == 1) {
                 // Word
                 if (auto properties = value->wordPropertiesOrNull(); properties != nullptr) {
@@ -141,19 +151,19 @@ export class LatinDictionary : public Dictionary {
         ScoreT vocab_size = 0;
 
         if (type.isWord()) {
-            forEachWord([&](auto word, auto* node, auto* properties) {
+            forEachWordReadSafe([&](auto word, auto* node, auto* properties) {
                 properties->absolute_score = std::max(static_cast<ScoreT>(0), properties->absolute_score - penalty);
                 total_score += properties->absolute_score;
                 vocab_size++;
             });
         } else if (type.isNgram()) {
-            forEachNgram(type.ngramSize(), [&](auto ngram, auto type, auto* node, auto* properties) {
+            forEachNgramReadSafe(type.ngramSize(), [&](auto ngram, auto type, auto* node, auto* properties) {
                 properties->absolute_score = std::max(static_cast<ScoreT>(0), properties->absolute_score - penalty);
                 total_score += properties->absolute_score;
                 vocab_size++;
             });
         } else if (type.isShortcut()) {
-            forEachShortcut([&](auto shortcut, auto* node, auto* properties) {
+            forEachShortcutReadSafe([&](auto shortcut, auto* node, auto* properties) {
                 properties->absolute_score = std::max(static_cast<ScoreT>(0), properties->absolute_score - penalty);
                 total_score += properties->absolute_score;
                 vocab_size++;
@@ -167,9 +177,10 @@ export class LatinDictionary : public Dictionary {
 
     [[nodiscard]]
     double calculateFrequency(EntryType type, ScoreT score, ScoreT k_offset) const noexcept {
+        // TODO: this currently computes P(n-gram). We should instead compute P(n-gram | (n-1)-gram).
         const ScoreT N = fl::utils::findOrDefault(total_scores_, type, static_cast<ScoreT>(0));
         const ScoreT V = fl::utils::findOrDefault(vocab_sizes_, type, static_cast<ScoreT>(0));
-        return static_cast<double>(score + k_offset) / static_cast<double>(N + k_offset * V);
+        return static_cast<double>(score + k_offset) / std::max(static_cast<double>(N + k_offset * V), 1.0);
     }
 
   private:
@@ -201,13 +212,15 @@ export class LatinDictionary : public Dictionary {
                 continue;
             }
 
+
             if (section == LatinDictionarySection::WORDS) {
                 fl::str::split(line, FLDIC_SEPARATOR, line_components);
                 if (line_components.size() < 2) {
                     throw std::runtime_error("Invalid line!");
                 }
                 fl::str::toUniString(line_components[0], word);
-                auto node = data_->findOrCreate(word);
+                std::scoped_lock<std::shared_mutex> lock(data_->second);
+                auto node = data_->first.findOrCreate(word);
                 auto properties = node->valueOrCreate(dict_id_)->wordPropertiesOrCreate();
                 // Parse score
                 properties->absolute_score = std::stoll(line_components[1]);
@@ -244,7 +257,8 @@ export class LatinDictionary : public Dictionary {
                     throw std::runtime_error("Invalid line!");
                 }
                 fl::str::toUniString(line_components[0], word);
-                auto node = data_->findOrCreate(word);
+                std::scoped_lock<std::shared_mutex> lock(data_->second);
+                auto node = data_->first.findOrCreate(word);
                 auto properties = node->valueOrCreate(dict_id_)->shortcutPropertiesOrCreate();
                 properties->absolute_score = 1;
                 properties->shortcut_phrase = line_components[1];
@@ -252,6 +266,7 @@ export class LatinDictionary : public Dictionary {
         }
 
         // TODO: do this directly when reading the words/ngrams and avoid this heavy op
+        // TODO: this is necessary for the performance to be good during gradual loading
         recalculateAllFrequencyScores();
     }
 
@@ -265,7 +280,8 @@ export class LatinDictionary : public Dictionary {
         ostream << FLDIC_NEWLINE << FLDIC_SECTION_WORDS << FLDIC_NEWLINE;
         WordIdT current_word_id = 1;
         std::string word;
-        data_->forEach(
+        std::shared_lock<std::shared_mutex> lock(data_->second);
+        data_->first.forEach(
             LATIN_SEARCH_TERMINATION_TOKENS,
             [&](std::span<const fl::str::UniChar> uni_word, LatinTrieNode* node) {
                 auto value = node->valueOrNull(dict_id_);
@@ -297,7 +313,8 @@ export class LatinDictionary : public Dictionary {
     void serializeNgrams(std::ostream& ostream) noexcept {
         ostream << FLDIC_NEWLINE << FLDIC_SECTION_NGRAMS << FLDIC_NEWLINE;
         std::vector<WordIdT> ngram;
-        serializeNgrams(ostream, ngram, 1, data_.get());
+        std::shared_lock<std::shared_mutex> lock(data_->second);
+        serializeNgrams(ostream, ngram, 1, &(data_->first));
     }
 
     void serializeNgrams(
@@ -341,7 +358,8 @@ export class LatinDictionary : public Dictionary {
     void serializeShortcuts(std::ostream& ostream) noexcept {
         ostream << FLDIC_NEWLINE << FLDIC_SECTION_SHORTCUTS << FLDIC_NEWLINE;
         std::string raw_shortcut;
-        algorithms::forEachShortcut(data_.get(), dict_id_, [&](auto shortcut, auto* node, auto* properties) {
+        std::shared_lock<std::shared_mutex> lock(data_->second);
+        algorithms::forEachShortcut(&(data_->first), dict_id_, [&](auto shortcut, auto* node, auto* properties) {
             fl::str::toStdString(shortcut, raw_shortcut);
             ostream << raw_shortcut << FLDIC_SEPARATOR << properties->shortcut_phrase << FLDIC_NEWLINE;
         });
@@ -353,7 +371,8 @@ export class LatinDictionary : public Dictionary {
         if (isSpecialToken(uni_word)) {
             return convertSpecialTokenToId(uni_word);
         } else {
-            auto value = data_->find(uni_word)->valueOrNull(dict_id_);
+            std::shared_lock<std::shared_mutex> lock(data_->second);
+            auto value = data_->first.find(uni_word)->valueOrNull(dict_id_);
             if (value == nullptr) return -1;
             auto properties = value->wordPropertiesOrNull();
             return properties == nullptr ? -1 : properties->internal_id;

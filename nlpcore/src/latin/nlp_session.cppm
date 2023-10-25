@@ -24,6 +24,7 @@ module;
 #include <span>
 #include <utility>
 #include <vector>
+#include <shared_mutex>
 
 export module fl.nlp.core.latin:nlp_session;
 
@@ -94,9 +95,12 @@ export class LatinNlpSession {
 
         fl::str::UniString word;
         fl::str::toUniString(raw_word, word);
-        auto word_node = state.shared_data->findOrNull(word);
-        if (word_node != nullptr && word_node->isEndNode()) {
-            return SpellingResult::validWord();
+        {
+            std::shared_lock<std::shared_mutex> lock(state.shared_data->second);
+            auto word_node = state.shared_data->first.findOrNull(word);
+            if (word_node != nullptr && word_node->isEndNode()) {
+                return SpellingResult::validWord();
+            }
         }
 
         std::vector<fl::str::UniString> sentence;
@@ -170,7 +174,7 @@ export class LatinNlpSession {
         for (auto& word : sentence) {
             auto type = EntryType::word();
             fl::str::toUniString(word, uni_word);
-            auto word_node = target_dictionary->data_->findOrCreate(uni_word);
+            auto word_node = target_dictionary->data_->first.findOrCreate(uni_word);
             auto properties = word_node->valueOrCreate(id)->wordPropertiesOrCreate();
             if (properties->absolute_score == 0) {
                 target_dictionary->vocab_sizes_[type]++;

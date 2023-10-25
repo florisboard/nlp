@@ -24,6 +24,8 @@ module;
 #include <string>
 #include <vector>
 #include <set>
+#include <mutex>
+#include <shared_mutex>
 
 export module fl.nlp.core.latin:prediction;
 
@@ -50,7 +52,7 @@ export enum class LatinFuzzySearchType {
 /* Compute frequency and merged properties from word-level, n-gram level, and shortcut level.
  * Returns pair:
  * - merged_properties: absolute score = sum frequencies from all types, offensive/hidden = or(that of each n)
- * - frequency: average of (smoothed) frequencies of all types [Bug?] Should add all n = 1..N. should normalize by (n-1)-gram's frequency, not the root's.
+ * - frequency: average of (smoothed) frequencies of all types. TODO: frequencies from dictionaries should add together, not averaged
  ******************************************************************************/
 template<typename P>
 std::pair<P, double> mergeProperties(
@@ -253,6 +255,7 @@ class RecursiveFuzzySearchState {
 
     /* branch pruning:
      * - discard if cost larger than hard threshold
+     * - discard if cost larger than top_k-th best so far
      **************************************************************************/
     [[nodiscard]]
     inline bool isDeadEndAt(std::size_t token_index) const noexcept {
@@ -265,6 +268,8 @@ class RecursiveFuzzySearchState {
         }
         if (cost >= weights_.max_cost_sum_)
             return true;
+        // Making an approximation: for each n = 1..N, the scores that ranks >= params.top_k-th are the same as the one that ranks params.top_k)-th.
+        // With this approximation, to be top top_k in the final result, a word needs to be top top_k in at least one n = 1..N.
         if (best_nodes.size() >= top_k) {
             if (max_possible_confidence <= best_nodes.cbegin()->first)
                 return true;
@@ -351,8 +356,6 @@ void fuzzySearchRecursive(
     // Current cost
     auto candidateCost = state.editDistanceAt(token_index);
     // Eligible as word candidate? current traversing word length > 0, and candidate cost within bound
-    // Making an approximation: for each n = 1..N, the scores that ranks >= params.top_k-th are the same as the one that ranks params.top_k)-th.
-    // With this approximation, to be top top_k in the final result, a word needs to be top top_k in at least one n = 1..N.
     auto isWordCandidate = token_index > 0 && candidateCost <= state.weights_.max_cost_sum_;
     auto prefixCost = 0.0; // Is initialized in next line only if isWordPrefix results in true
     // TODO: improve prefix searching performance (run time and stop detection)
@@ -440,10 +443,16 @@ void predictWordInternal(std::span<const fl::str::UniString> sentence, const Rec
             auto current_word = sentence.back();
             // No word: this is prediction. Rely on n-gram (n > 1)
             if (current_word.empty()) continue;
+            // To save time, for short words, do not do prefix matching
+            RecursiveFuzzySearchParams new_params(params);
+            if (current_word.size() < 3 && params.search_type_ == LatinFuzzySearchType::ProximityOrPrefix) {
+                new_params.search_type_ = LatinFuzzySearchType::Proximity;
+            }
             // Word fuzzy matching, searching `current_word` (last user input word, possibly incomplete)
-            RecursiveFuzzySearchState state = {params, EntryType::word(), current_word};
+            RecursiveFuzzySearchState state = {new_params, EntryType::word(), current_word};
             // Start search, from the node `params.shared_data_`, given search config, initial state, and start search from first character.
-            fuzzySearchRecursive<WordEntryProperties>(params.shared_data_, params, state, 0);
+            fuzzySearchRecursive<WordEntryProperties>(new_params.shared_data_, new_params, state, 0);
+            // TODO: for n-grams, each n is one entry in the `results_` vector. We should do a weighted average for each unique word for smoothing.
             for (auto& [confidence, raw_word] : state.best_nodes)
                 params.results_.insert({raw_word, confidence}, params.flags_);
             // Shortcut exact matching
@@ -459,12 +468,12 @@ void predictWordInternal(std::span<const fl::str::UniString> sentence, const Rec
             }
         } else {
             // We have an n-gram (n > 1)
-            // Only search the user's dictionary for n-grams for now. [Bug?]
+            // Only search the user's dictionary for n-grams for now. TODO: support n-gram in language dictionaries as well.
             auto* dict = params.dicts_to_search_[0];
             // Subset of the n-gram, words other than the last one
             auto subngram = ngram.subspan(0, ngram.size() - 1);
             // Find all nodes matching the sub-n-gram in the first dictionary (they share the same Trie, with each node labeled with its dictionary ID) TODO: verify
-            auto subngram_nodes = algorithms::findNgramIgnoringCase(dict->data_.get(), dict->dict_id_, subngram);
+            auto subngram_nodes = algorithms::findNgramIgnoringCase(&(dict->data_->first), dict->dict_id_, subngram);
             for (auto* subngram_node : subngram_nodes) {
                 // Find the children whose character is ' ', getting the nodes for searching the last user input word
                 auto* word_node = subngram_node->findOrNull(LATIN_TOKEN_NGRAM_SEPARATOR);
@@ -502,11 +511,12 @@ export class LatinPredictionWrapper {
         std::vector<const LatinDictionary*> dicts_to_search = {
             session_state_.getDictionaryById(0), session_state_.getDictionaryById(1)};
 
+        std::shared_lock<std::shared_mutex> lock(session_state_.shared_data->second);
         RecursiveFuzzySearchParams params = {
             flags,
             search_type,
             dicts_to_search,
-            session_state_.shared_data.get(),
+            &(session_state_.shared_data->first),
             session_config_.weights_.lookup_,
             session_config_.key_proximity_checker_,
             results,
