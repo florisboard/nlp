@@ -360,7 +360,6 @@ void fuzzySearchRecursive(
     auto prefixCost = 0.0; // Is initialized in next line only if isWordPrefix results in true
     // TODO: improve prefix searching performance (run time and stop detection)
     // Eligible as prefix candidate? searching for prefix, current word and query word same until `token_index`, and cost at word size within bound.
-    // [Bug?] editDistanceAt at this stage is either 0 or leftover from last time we searched till word.size().
     auto isWordPrefix = params.search_type_ == LatinFuzzySearchType::ProximityOrPrefix &&
                         state.isPrefixAt(token_index) &&
                         (prefixCost = state.editDistanceAt(word.size())) <= state.weights_.max_cost_sum_;
