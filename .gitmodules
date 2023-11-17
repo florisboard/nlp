@@ -4,9 +4,6 @@
 [submodule "thread-pool/thread-pool"]
 	path = external/thread-pool
 	url = https://github.com/bshoshany/thread-pool.git
-[submodule "icu4c/icu"]
-	path = icu4c/icu
-	url = https://github.com/unicode-org/icu
 [submodule "external/nlohmann-json"]
 	path = external/nlohmann-json
 	url = https://github.com/nlohmann/json
