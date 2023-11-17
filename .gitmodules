@@ -16,3 +16,6 @@
 [submodule "external/fmt"]
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "icu4c"]
+	path = icu4c
+	url = https://github.com/florisboard/icu4c.git
