@@ -26,13 +26,14 @@ To be able to compile this project on your PC, you must run a supported host sys
 System | Submodule build | Standalone build | Notes
 ---|---|---|---
 Windows 7/8/10/11 | ❌ | ❌ | -
-Windows 10/11 with WSL2 | ✅ | ⚠️ | tested with distro:<br>Ubuntu 22.10
+Windows 10/11 with WSL2 | ✅ | ⚠️ | tested with distro:<br>Ubuntu 23.10
 MacOS | ❔ | ❔ | untested but should be supported; please provide feedback
 Debian 11.0 | ⚠️ | ❌ | submodule: `python3` package is outdated in the package repository
 Debian 12.0+ | ✅ | ⚠️ | standalone: `cmake` and `clang` packages are outdated in the package repository
 Ubuntu 22.04 | ✅ | ❌ | -
 Ubuntu 22.10 | ✅ | ⚠️ | standalone: `cmake` and `clang` packages are outdated in the package repository
-Ubuntu 23.04+ | ✅ | ⚠️ | standalone: `cmake` and `clang` packages are outdated in the package repository
+Ubuntu 23.04 | ✅ | ⚠️ | standalone: `cmake` and `clang` packages are outdated in the package repository
+Ubuntu 23.10+ | ✅ | ⚠️ | standalone: `cmake` and `clang` packages are outdated in the package repository
 Other Linux systems | ❔ | ❔ | try yourself
 
 ### Submodule build (targeting `Android`)
@@ -41,14 +42,14 @@ Requirements if you compile NLP as a submodule for the main FlorisBoard project:
 
 - Android SDK
 - Java 17
-- Android NDK r25
+- Android NDK r25 or newer
 - CMake 3.22+
 - Ninja 1.10+
-- GNU make 3.80+
-  - MUST be GNU make and not some other variation of make or the ICU build will fail!!
 - Clang 14.x+ & libc++ (bundled with Android NDK)
 - Python 3.10+
 - Git
+- Optional: GNU make 3.80+
+  - Only required if `ICU_BUILD_FROM_SOURCE` is enabled
 
 If you have trouble installing the requirements or don't know how to install some you can
 also refer to [this excellent guide](https://github.com/florisboard/florisboard/issues/2218#issuecomment-1572763444) written by [@Thithic](https://github.com/Thithic), which guides you step by step in setting up the requirements on Ubuntu 22.04.
@@ -63,13 +64,16 @@ FlorisBoard.
 
 Requirements if you compile NLP and NLP tools as a standalone utility for desktop:
 
-- CMake 3.26+
+- CMake 3.28+
 - Ninja 1.11+
-- GNU make 3.80+
-  - MUST be GNU make and not some other variation of make or the ICU build will fail!!
 - Clang 16.x+ (see below if your distro does not have version 16 yet)
-- Package `libc++-dev` and `libc++abi-dev` (version 16.x+)
+  - The following packages are needed (all version 16.x+):
+    - `clang clang-tools libc++-dev libc++abi-dev`
+  - *Tip: the default clang-packages my not be clang 16.x+ yet, in this case you can try to install*
+    - `clang-16 clang-tools-16 libc++-16-dev libc++abi-16-dev`
 - Git
+- Optional: GNU make 3.80+
+  - Only required if `ICU_BUILD_FROM_SOURCE` is enabled
 
 #### Initializing the local source repository
 
@@ -80,7 +84,17 @@ cd nlp
 git submodule update --init --recursive
 ```
 
-#### Set up clang compiler
+#### Set up cmake/clang compiler (Ubuntu 22.04+ only)
+
+Thetoolchain setup is automated for Ubuntu 22.04+ and can be invoked like this:
+
+```shell
+./setup-toolchain.sh
+```
+
+After a successful run of the script, you can use `./cmake.sh` in-place of the normal `cmake` command.
+
+#### Set up cmake/clang compiler (Manual)
 
 Before you can build this project for Desktop targets you need to set up the clang compiler. First check which version
 you have installed:
@@ -98,18 +112,19 @@ Great! You do not have to set up anything else, and you can skip to the project 
 <details>
 <summary>The reported version is 15.x or older</summary>
 
-In this case you do not have a supported version of clang installed, and we need to download and integrate the compiler
-manually. Head to https://github.com/llvm/llvm-project/releases and download the appropriate prebuilt llvm-project for
-your system. Below example assumes you are on Ubuntu 22.04.
+In this case you do not have a supported version of clang installed, and we need to download and integrate the compiler manually. Head to https://github.com/llvm/llvm-project/releases and download the appropriate prebuilt llvm-project for your system. Below example assumes you are on Ubuntu 22.04 or newer.
 
 ```shell
-# Download clang 16.0.x for Ubuntu 22.04
+# Download clang 17.0.x for Ubuntu 22.04+
+wget https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.5/clang+llvm-17.0.5-x86_64-linux-gnu-ubuntu-22.04.tar.xz
+tar -xf clang+llvm-17.0.5-x86_64-linux-gnu-ubuntu-22.04.tar.xz
+# Alternatively you can also download clang 16.0.x for Ubuntu 22.04+
+#   not recommended anymore due to minor issues between cmake&clang, however still supported
 wget https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.4/clang+llvm-16.0.4-x86_64-linux-gnu-ubuntu-22.04.tar.xz
 tar -xf clang+llvm-16.0.4-x86_64-linux-gnu-ubuntu-22.04.tar.xz
 ```
 
-After this we need to change the compiler path to the downloaded one, else the build will fail. To change it, open
-[CMakePresets.json](CMakePresets.json) in a text editor and change the C/CXX compiler vars like so:
+After this we need to change the compiler path to the downloaded one, else the build will fail. To change it, open [CMakePresets.json](CMakePresets.json) in a text editor and change the C/CXX compiler vars like so:
 
 ```
     ...
@@ -119,14 +134,6 @@ After this we need to change the compiler path to the downloaded one, else the b
 ```
 
 </details>
-
-#### Adjusting the `CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API` UUID
-
-Atm we need to adjust the `CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API` UUID right below the compiler path fields in
-[CMakePresets.json](CMakePresets.json), depending on the CMake version you use (UUID committed in this branch is for
-CMake 3.26.x). See https://github.com/Kitware/CMake/blob/v3.26.0-rc6/Help/dev/experimental.rst (adjust the version tag
-in the URL) for the correct UUID. This step is also temporary and once C++ module support is stable in CMake this will
-not be needed to be adjusted anymore.
 
 #### Building
 
