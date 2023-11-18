@@ -33,10 +33,10 @@ jobs:
           $(pwd)/setup-toolchain.sh
       - name: "CMake: Configure release"
         run: |
-          cmake --preset=release $(pwd)
+          $(pwd)/cmake.sh --preset=release $(pwd)
       - name: "CMake: Build release"
         run: |
-          cmake --build --preset=release $(pwd)
+          $(pwd)/cmake.sh --build --preset=release $(pwd)
 
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
