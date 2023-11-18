@@ -5,7 +5,7 @@ target_module_sources(fl_nlp_tools_train PUBLIC
         raw_text.cppm
         word_scores.cppm
         )
-target_link_icu4c_libraries(fl_nlp_tools_train PUBLIC FlorisICU::uc)
+target_link_libraries(fl_nlp_tools_train PUBLIC FlorisICU::uc)
 target_link_libraries(fl_nlp_tools_train PUBLIC
         fl::icuext
         fl::nlp::core

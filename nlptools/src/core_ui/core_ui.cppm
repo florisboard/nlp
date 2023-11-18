@@ -19,6 +19,7 @@ module;
 #include <argparse/argparse.hpp>
 #include <fmt/core.h>
 #include <unicode/unistr.h>
+#include <unicode/uvernum.h>
 
 #include <termbox.h>
 
@@ -43,7 +44,12 @@ import fl.nlp.tools.common;
 
 namespace fl::nlp::tools {
 
-const std::string ICU_DATA_FILE_PATH = "build/debug/icu4c/host/share/icu_floris/73.1/icudt73l.dat";
+const int icu_major = U_ICU_VERSION_MAJOR_NUM;
+const int icu_minor = U_ICU_VERSION_MINOR_NUM;
+const std::string ICU_DATA_FILE_PATH =
+    fmt::format("build/debug/icu4c/host/share/icu_floris/{}.{}/icudt{}l.dat", icu_major, icu_minor, icu_major);
+const std::string ICU_DATA_FILE_PATH_PREBUILT =
+    fmt::format("icu4c/prebuilt/assets/icu/icudt{}l.dat", icu_major);
 
 const char* attrStatusSymbol(int32_t suggestion_attribute) noexcept {
     if (suggestion_attribute == fl::nlp::RESULT_ATTR_IN_THE_DICTIONARY) {
@@ -175,8 +181,10 @@ void drawSuggestionInputBox(CoreUiState& state, const BoundedBox& bounds) noexce
 
 int mainCoreUi(const std::string& session_config_path) {
     if (U_FAILURE(fl::icuext::loadAndSetCommonData(ICU_DATA_FILE_PATH))) {
-        std::cerr << "Fatal: Failed to load ICU data file! Aborting.\n";
-        return 1;
+        if (U_FAILURE(fl::icuext::loadAndSetCommonData(ICU_DATA_FILE_PATH_PREBUILT))) {
+            std::cerr << "Fatal: Failed to load ICU data file! Aborting.\n";
+            return 1;
+        }
     }
 
     CoreUiState state;

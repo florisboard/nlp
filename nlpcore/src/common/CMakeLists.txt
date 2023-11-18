@@ -11,4 +11,4 @@ target_module_sources(fl_nlp_core_common PUBLIC
         )
 target_link_libraries(fl_nlp_core_common PUBLIC fl::string fl::utils)
 target_link_libraries(fl_nlp_core_common PUBLIC fmt::fmt nlohmann_json::nlohmann_json)
-target_link_icu4c_libraries(fl_nlp_core_common PUBLIC FlorisICU::uc FlorisICU::data)
+target_link_libraries(fl_nlp_core_common PUBLIC FlorisICU::uc FlorisICU::data)

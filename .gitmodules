@@ -1,12 +1,12 @@
+[submodule "icu4c"]
+	path = icu4c
+	url = https://github.com/florisboard/icu4c.git
 [submodule "external/termbox2"]
 	path = external/termbox2
 	url = https://github.com/termbox/termbox2
 [submodule "thread-pool/thread-pool"]
 	path = external/thread-pool
 	url = https://github.com/bshoshany/thread-pool.git
-[submodule "icu4c/icu"]
-	path = icu4c/icu
-	url = https://github.com/unicode-org/icu
 [submodule "external/nlohmann-json"]
 	path = external/nlohmann-json
 	url = https://github.com/nlohmann/json

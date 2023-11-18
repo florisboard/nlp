@@ -1,4 +1,4 @@
-if (NOT ANDROID)
+if(NOT ANDROID)
     cmake_minimum_required(VERSION 3.26)
 else()
     cmake_minimum_required(VERSION 3.22)
@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 find_package(Python 3.10...<4 REQUIRED COMPONENTS Interpreter)
 
 include(EnforceSystemEnv)
-if (NOT ANDROID)
+if(NOT ANDROID)
     include(CxxModules)
 else()
     include(RewriteCppmToHeader)
@@ -32,12 +32,12 @@ get_filename_component(LLVM_TOOLCHAIN ${LLVM_TOOLCHAIN} DIRECTORY)
 
 # We MUST disable json ranges support else this project will not compile properly with clang-16.
 # See also: external/nlohmann-json/docs/mkdocs/docs/api/macros/json_has_ranges.md
-if (NOT ANDROID)
+if(NOT ANDROID)
     set(FLORIS_COMPILE_OPTIONS -stdlib=libc++ -DJSON_HAS_RANGES=0)
     set(FLORIS_LINK_OPTIONS -lc++)
 else()
     set(FLORIS_COMPILE_OPTIONS -DJSON_HAS_RANGES=0)
-    if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
         set(FLORIS_LINK_OPTIONS
             -Wl,--gc-sections,-rpath-link=${LLVM_TOOLCHAIN}/sysroot/usr/lib
             -lc -lstdc++)
@@ -56,21 +56,21 @@ add_link_options(${FLORIS_LINK_OPTIONS})
 # add_compile_options(-gdwarf-4)
 
 # Set up static/shared library vars
-if (BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS)
     set(FLORIS_LIBRARY_TYPE SHARED)
     set(FLORIS_LIBRARY_PREFIX ${CMAKE_SHARED_LIBRARY_PREFIX})
     set(FLORIS_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(FLORIS_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-else ()
+else()
     set(FLORIS_LIBRARY_TYPE STATIC)
     set(FLORIS_LIBRARY_PREFIX ${CMAKE_STATIC_LIBRARY_PREFIX})
     set(FLORIS_LIBRARY_SUFFIX ${CMAKE_STATIC_LIBRARY_SUFFIX})
-    if (NOT ANDROID)
+    if(NOT ANDROID)
         set(FLORIS_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
     else()
         set(FLORIS_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
     endif()
-endif ()
+endif()
 
 # External libraries
 add_subdirectory(external)
@@ -79,6 +79,6 @@ add_subdirectory(icu4c)
 # Internal libraries
 add_subdirectory(icuext)
 add_subdirectory(nlpcore)
-if (NOT ANDROID)
+if(NOT ANDROID)
     add_subdirectory(nlptools)
 endif()
