@@ -1,3 +1,6 @@
+[submodule "icu4c"]
+	path = icu4c
+	url = https://github.com/florisboard/icu4c.git
 [submodule "external/termbox2"]
 	path = external/termbox2
 	url = https://github.com/termbox/termbox2
@@ -16,6 +19,3 @@
 [submodule "external/fmt"]
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt
-[submodule "icu4c"]
-	path = icu4c
-	url = https://github.com/florisboard/icu4c.git
