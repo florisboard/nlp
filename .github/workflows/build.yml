@@ -44,6 +44,8 @@ jobs:
 
       - name: "Set up CMake and Ninja"
         uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.26.0"
 
       - name: "CMake: Configure release"
         run: |
