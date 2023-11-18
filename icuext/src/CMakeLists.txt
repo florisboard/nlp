@@ -7,5 +7,5 @@ target_module_sources(fl_icuext PUBLIC
         udata.cppm
         utext.cppm
         )
-target_link_icu4c_libraries(fl_icuext PUBLIC FlorisICU::uc FlorisICU::data)
+target_link_libraries(fl_icuext PUBLIC FlorisICU::uc FlorisICU::data)
 target_link_libraries(fl_icuext PUBLIC nlohmann_json::nlohmann_json)

@@ -13,4 +13,4 @@ target_module_sources(fl_nlp_core_latin PUBLIC
         prediction_weights.cppm
         )
 target_link_libraries(fl_nlp_core_latin PUBLIC fmt::fmt fl::nlp::core::common fl::icuext fl::string fl::utils)
-target_link_icu4c_libraries(fl_nlp_core_latin PUBLIC FlorisICU::uc FlorisICU::data)
+target_link_libraries(fl_nlp_core_latin PUBLIC FlorisICU::uc FlorisICU::data)
