@@ -25,38 +25,18 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Set up clang-16 dependencies & environment
-        run: |
-          sudo apt-get install -y libncurses5
-          echo "llvm_toolchain=$HOME/clang+llvm-16.0.3-x86_64-linux-gnu-ubuntu-22.04" >> "$GITHUB_ENV"
-      - name: Cache clang-16
-        id: restore-clang
-        uses: actions/cache@v3
-        with:
-          path: "${{ env.llvm_toolchain }}"
-          key: clang-download-ubuntu-22.04
-      - name: Download and extract clang-16
-        if: ${{ steps.restore-clang.outputs.cache-hit != 'true' }}
-        run: |
-          cd $HOME
-          wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.3/clang+llvm-16.0.3-x86_64-linux-gnu-ubuntu-22.04.tar.xz
-          tar -xf clang+llvm-16.0.3-x86_64-linux-gnu-ubuntu-22.04.tar.xz
-
       - name: "Set up CMake and Ninja"
         uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: "~3.26.0"
 
+      - name: "Toolchain setup"
+        run: |
+          $(pwd)/setup-toolchain.sh
       - name: "CMake: Configure release"
         run: |
-          cmake --preset=release $(pwd) \
-            -DCMAKE_C_COMPILER="${{ env.llvm_toolchain }}/bin/clang" \
-            -DCMAKE_CXX_COMPILER="${{ env.llvm_toolchain }}/bin/clang++"
+          cmake --preset=release $(pwd)
       - name: "CMake: Build release"
         run: |
-          cmake --build --preset=release $(pwd) \
-            -DCMAKE_C_COMPILER="${{ env.llvm_toolchain }}/bin/clang" \
-            -DCMAKE_CXX_COMPILER="${{ env.llvm_toolchain }}/bin/clang++"
+          cmake --build --preset=release $(pwd)
 
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
