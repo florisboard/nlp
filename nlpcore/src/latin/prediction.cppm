@@ -26,6 +26,7 @@ module;
 #include <set>
 #include <mutex>
 #include <shared_mutex>
+#include <math>
 
 export module fl.nlp.core.latin:prediction;
 
@@ -85,6 +86,7 @@ std::pair<P, double> mergeProperties(
             frequency += dict->calculateFrequency(entry_type, p->absolute_score, 1);
         }
     }
+    # TODO: a sum of numerators over a sum of denominators is better than this average.
     if (end_node_count > 0) {
         frequency /= end_node_count;
     }
@@ -122,8 +124,15 @@ double computeConfidence(bool isWordPrefix, float cost, float frequency, std::si
     // } else {
     //     similarity = 1.0 - (cost / std::max(token_size, word_size));
     // }
+    // originally, confidence is weighted average of:
+    // - similarity, 1 identical, 0 all different. larger weight.
+    // - frequency, smaller weight. Computed in `mergeProperties` (which calls `LatinDictionary.calculateFrequency`) as:
+    //     - average of this n-gram (or word or shortcut)'s frequency in all dictionaries (language pack + user). Each is:
+    //         - P(n-gram) (among all n-grams at that level)
+    // now, it's negative cost (as log prob) and log frequency, weighted. frequency is n-gram probability, so it's pretty small.
+    // FIXME: What was prefix score before? It was legible.
     similarity = -cost;
-    double confidence = (w1 * similarity + w2 * frequency) / (w1 + w2);
+    double confidence = (w1 * similarity + w2 * std::log2(frequency)) / (w1 + w2);
     return confidence;
 }
 
@@ -260,7 +269,6 @@ class RecursiveFuzzySearchState {
     [[nodiscard]]
     inline bool isDeadEndAt(std::size_t token_index) const noexcept {
         double cost;
-        double max_possible_confidence = computeConfidence(false, cost, 1.0, cached_word_.size() - 1, token_index);
         if (token_index < cached_word_.size() - 1) {
             cost = distances_[token_index][token_index].cost_;
         } else {
@@ -453,7 +461,7 @@ void predictWordInternal(std::span<const fl::str::UniString> sentence, const Rec
             fuzzySearchRecursive<WordEntryProperties>(new_params.shared_data_, new_params, state, 0);
             // TODO: for n-grams, each n is one entry in the `results_` vector. We should do a weighted average for each unique word for smoothing.
             for (auto& [confidence, raw_word] : state.best_nodes)
-                params.results_.insert({raw_word, confidence}, params.flags_);
+                params.results_.insert({raw_word, std::exp2(confidence)}, params.flags_);
             // Shortcut exact matching
             for (auto* dict : params.dicts_to_search_) {
                 // add to search results only if finds exact match in the trie, and value is not empty, and is a shortcut with properties.
@@ -463,7 +471,7 @@ void predictWordInternal(std::span<const fl::str::UniString> sentence, const Rec
                 if (value == nullptr) continue;
                 auto* properties = value->shortcutPropertiesOrNull();
                 if (properties == nullptr) continue;
-                params.results_.insert({properties->shortcut_phrase, 1.0}, params.flags_);
+                params.results_.insert({properties->shortcut_phrase, std::exp2(0.0)}, params.flags_);
             }
         } else {
             // We have an n-gram (n > 1)
@@ -472,7 +480,7 @@ void predictWordInternal(std::span<const fl::str::UniString> sentence, const Rec
             // Subset of the n-gram, words other than the last one
             auto subngram = ngram.subspan(0, ngram.size() - 1);
             // Find all nodes matching the sub-n-gram in the first dictionary (they share the same Trie, with each node labeled with its dictionary ID) TODO: verify
-            auto subngram_nodes = algorithms::findNgramIgnoringCase(&(dict->data_->first), dict->dict_id_, subngram);
+            auto subngram_nodes = algorithms::findNgramIgnoringCase(&(dict->data_->node), dict->dict_id_, subngram);
             for (auto* subngram_node : subngram_nodes) {
                 // Find the children whose character is ' ', getting the nodes for searching the last user input word
                 auto* word_node = subngram_node->findOrNull(LATIN_TOKEN_NGRAM_SEPARATOR);
@@ -510,12 +518,12 @@ export class LatinPredictionWrapper {
         std::vector<const LatinDictionary*> dicts_to_search = {
             session_state_.getDictionaryById(0), session_state_.getDictionaryById(1)};
 
-        std::shared_lock<std::shared_mutex> lock(session_state_.shared_data->second);
+        std::shared_lock<std::shared_mutex> lock(session_state_.shared_data->lock);
         RecursiveFuzzySearchParams params = {
             flags,
             search_type,
             dicts_to_search,
-            &(session_state_.shared_data->first),
+            &(session_state_.shared_data->lock),
             session_config_.weights_.lookup_,
             session_config_.key_proximity_checker_,
             results,

@@ -96,8 +96,8 @@ export class LatinNlpSession {
         fl::str::UniString word;
         fl::str::toUniString(raw_word, word);
         {
-            std::shared_lock<std::shared_mutex> lock(state.shared_data->second);
-            auto word_node = state.shared_data->first.findOrNull(word);
+            std::shared_lock<std::shared_mutex> lock(state.shared_data->lock);
+            auto word_node = state.shared_data->node.findOrNull(word);
             if (word_node != nullptr && word_node->isEndNode()) {
                 return SpellingResult::validWord();
             }

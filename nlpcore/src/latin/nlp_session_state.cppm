@@ -34,7 +34,7 @@ namespace fl::nlp {
 export struct LatinNlpSessionState {
     static const LatinDictId USER_DICTIONARY_ID = 0;
 
-    std::shared_ptr<std::pair<LatinTrieNode, std::shared_mutex>> shared_data = std::make_shared<std::pair<LatinTrieNode, std::shared_mutex>>();
+    std::shared_ptr<LatinTrieRootWithLock> shared_data = std::make_shared<LatinTrieRootWithLock>();
     std::vector<std::unique_ptr<fl::nlp::LatinDictionary>> dictionaries;
 
     inline const fl::nlp::LatinDictionary* getDictionaryById(LatinDictId id) const {

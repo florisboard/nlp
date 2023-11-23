@@ -54,19 +54,24 @@ export enum class LatinDictionarySection {
     SHORTCUTS,
 };
 
+export struct LatinTrieRootWithLock {
+    LatinTrieNode node;
+    std::shared_mutex lock;
+}
+
 export class LatinDictionary : public Dictionary {
   public:
     LatinDictId dict_id_;
-    // all operations on data_->first need to acquire lock on data_->second please.
-    std::shared_ptr<std::pair<LatinTrieNode, std::shared_mutex>> data_;
+    // all operations on data_->node need to acquire lock on data_->lock please.
+    std::shared_ptr<LatinTrieRootWithLock> data_;
 
     std::map<EntryType, ScoreT> total_scores_;
     std::map<EntryType, ScoreT> vocab_sizes_;
     std::map<EntryType, ScoreT> global_penalties_;
 
     LatinDictionary() = delete;
-    LatinDictionary(LatinDictId id, std::shared_ptr<std::pair<LatinTrieNode, std::shared_mutex>> shared_data) : dict_id_(id), data_(shared_data) {};
-    LatinDictionary(LatinDictId id) : dict_id_(id), data_(std::make_shared<std::pair<LatinTrieNode, std::shared_mutex>>()) {};
+    LatinDictionary(LatinDictId id, std::shared_ptr<LatinTrieRootWithLock> shared_data) : dict_id_(id), data_(shared_data) {};
+    LatinDictionary(LatinDictId id) : dict_id_(id), data_(std::make_shared<LatinTrieRootWithLock>()) {};
     LatinDictionary(const LatinDictionary&) = delete;
     LatinDictionary(LatinDictionary&&) = default;
     virtual ~LatinDictionary() = default;
@@ -75,38 +80,38 @@ export class LatinDictionary : public Dictionary {
     LatinDictionary& operator=(LatinDictionary&&) = default;
 
     inline LatinTrieNode* insertNgram(std::span<const fl::str::UniString> ngram) noexcept {
-        std::scoped_lock<std::shared_mutex> lock(data_->second);
-        return algorithms::insertNgram(&(data_->first), dict_id_, ngram);
+        std::scoped_lock<std::shared_mutex> lock(data_->lock);
+        return algorithms::insertNgram(&(data_->node), dict_id_, ngram);
     }
 
     inline void forEachEntryReadSafe(algorithms::EntryAction& action) {
-        std::shared_lock<std::shared_mutex> lock(data_->second);
-        algorithms::forEachEntry(&(data_->first), dict_id_, action);
+        std::shared_lock<std::shared_mutex> lock(data_->lock);
+        algorithms::forEachEntry(&(data_->node), dict_id_, action);
     }
 
     inline void forEachWordReadSafe(algorithms::WordAction& action) {
-        std::shared_lock<std::shared_mutex> lock(data_->second);
-        algorithms::forEachWord(&(data_->first), dict_id_, action);
+        std::shared_lock<std::shared_mutex> lock(data_->lock);
+        algorithms::forEachWord(&(data_->node), dict_id_, action);
     }
 
     inline void forEachNgramReadSafe(algorithms::NgramAction& action) {
-        std::shared_lock<std::shared_mutex> lock(data_->second);
-        algorithms::forEachNgram(&(data_->first), dict_id_, action);
+        std::shared_lock<std::shared_mutex> lock(data_->lock);
+        algorithms::forEachNgram(&(data_->node), dict_id_, action);
     }
 
     inline void forEachNgramReadSafe(int32_t ngram_size, algorithms::NgramAction& action) {
-        std::shared_lock<std::shared_mutex> lock(data_->second);
-        algorithms::forEachNgram(&(data_->first), dict_id_, ngram_size, action);
+        std::shared_lock<std::shared_mutex> lock(data_->lock);
+        algorithms::forEachNgram(&(data_->node), dict_id_, ngram_size, action);
     }
 
     inline void forEachNgramReadSafe(int32_t min_ngram_size, int32_t max_ngram_size, algorithms::NgramAction& action) {
-        std::shared_lock<std::shared_mutex> lock(data_->second);
-        algorithms::forEachNgram(&(data_->first), dict_id_, min_ngram_size, max_ngram_size, action);
+        std::shared_lock<std::shared_mutex> lock(data_->lock);
+        algorithms::forEachNgram(&(data_->node), dict_id_, min_ngram_size, max_ngram_size, action);
     }
 
     inline void forEachShortcutReadSafe(algorithms::ShortcutAction& action) {
-        std::shared_lock<std::shared_mutex> lock(data_->second);
-        algorithms::forEachShortcut(&(data_->first), dict_id_, action);
+        std::shared_lock<std::shared_mutex> lock(data_->lock);
+        algorithms::forEachShortcut(&(data_->node), dict_id_, action);
     }
 
     void recalculateAllFrequencyScores() noexcept {
@@ -221,8 +226,8 @@ export class LatinDictionary : public Dictionary {
                     throw std::runtime_error("Invalid line!");
                 }
                 fl::str::toUniString(line_components[0], word);
-                std::scoped_lock<std::shared_mutex> lock(data_->second);
-                auto node = data_->first.findOrCreate(word);
+                std::scoped_lock<std::shared_mutex> lock(data_->lock);
+                auto node = data_->node.findOrCreate(word);
                 auto properties = node->valueOrCreate(dict_id_)->wordPropertiesOrCreate();
                 // Parse score
                 properties->absolute_score = std::stoll(line_components[1]);
@@ -266,8 +271,8 @@ export class LatinDictionary : public Dictionary {
                     throw std::runtime_error("Invalid line!");
                 }
                 fl::str::toUniString(line_components[0], word);
-                std::scoped_lock<std::shared_mutex> lock(data_->second);
-                auto node = data_->first.findOrCreate(word);
+                std::scoped_lock<std::shared_mutex> lock(data_->lock);
+                auto node = data_->node.findOrCreate(word);
                 auto properties = node->valueOrCreate(dict_id_)->shortcutPropertiesOrCreate();
                 properties->absolute_score = 1;
                 properties->shortcut_phrase = line_components[1];
@@ -291,8 +296,8 @@ export class LatinDictionary : public Dictionary {
         ostream << FLDIC_NEWLINE << FLDIC_SECTION_WORDS << FLDIC_NEWLINE;
         WordIdT current_word_id = 1;
         std::string word;
-        std::shared_lock<std::shared_mutex> lock(data_->second);
-        data_->first.forEach(
+        std::shared_lock<std::shared_mutex> lock(data_->lock);
+        data_->node.forEach(
             LATIN_SEARCH_TERMINATION_TOKENS,
             [&](std::span<const fl::str::UniChar> uni_word, LatinTrieNode* node) {
                 auto value = node->valueOrNull(dict_id_);
@@ -324,8 +329,8 @@ export class LatinDictionary : public Dictionary {
     void serializeNgrams(std::ostream& ostream) noexcept {
         ostream << FLDIC_NEWLINE << FLDIC_SECTION_NGRAMS << FLDIC_NEWLINE;
         std::vector<WordIdT> ngram;
-        std::shared_lock<std::shared_mutex> lock(data_->second);
-        serializeNgrams(ostream, ngram, 1, &(data_->first));
+        std::shared_lock<std::shared_mutex> lock(data_->lock);
+        serializeNgrams(ostream, ngram, 1, &(data_->node));
     }
 
     void serializeNgrams(
@@ -369,8 +374,8 @@ export class LatinDictionary : public Dictionary {
     void serializeShortcuts(std::ostream& ostream) noexcept {
         ostream << FLDIC_NEWLINE << FLDIC_SECTION_SHORTCUTS << FLDIC_NEWLINE;
         std::string raw_shortcut;
-        std::shared_lock<std::shared_mutex> lock(data_->second);
-        algorithms::forEachShortcut(&(data_->first), dict_id_, [&](auto shortcut, auto* node, auto* properties) {
+        std::shared_lock<std::shared_mutex> lock(data_->lock);
+        algorithms::forEachShortcut(&(data_->node), dict_id_, [&](auto shortcut, auto* node, auto* properties) {
             fl::str::toStdString(shortcut, raw_shortcut);
             ostream << raw_shortcut << FLDIC_SEPARATOR << properties->shortcut_phrase << FLDIC_NEWLINE;
         });
@@ -382,8 +387,8 @@ export class LatinDictionary : public Dictionary {
         if (isSpecialToken(uni_word)) {
             return convertSpecialTokenToId(uni_word);
         } else {
-            std::shared_lock<std::shared_mutex> lock(data_->second);
-            auto value = data_->first.find(uni_word)->valueOrNull(dict_id_);
+            std::shared_lock<std::shared_mutex> lock(data_->lock);
+            auto value = data_->node.find(uni_word)->valueOrNull(dict_id_);
             if (value == nullptr) return -1;
             auto properties = value->wordPropertiesOrNull();
             return properties == nullptr ? -1 : properties->internal_id;

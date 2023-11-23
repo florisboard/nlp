@@ -115,7 +115,7 @@ public:
     ~WrappedJThread() {
         thread.join();
     }
-}
+};
 
 export class Dictionary {
   public:
