@@ -17,7 +17,7 @@
 ###### Constants ######
 
 cmake_min_version="3.28.0"
-cmake_version="3.28.0-rc5"
+cmake_version="3.28.0"
 llvm_min_version="16.0.0"
 llvm_version="17.0.5"
 buildtools_dir="$(realpath buildtools)"
