@@ -173,7 +173,7 @@ printf "\033[1mSearching for LLVM installations on this system\033[0m\n"
 sel_llvm_tc=""
 sel_llvm_tc_v="0.0.0"
 candidates=$(mktemp)
-find /usr -type f -name 'clang' > "$candidates" 2>/dev/null
+find /usr/lib -type f -name 'clang' > "$candidates" 2>/dev/null
 while read -r clang_candidate; do
     llvm_tc=$(realpath "$(dirname "$clang_candidate")/..")
     echo "  Found candidate for LLVM toolchain: $llvm_tc"
