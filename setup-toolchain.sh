@@ -94,6 +94,11 @@ mkdir -p "$buildtools_dir"
 missing_pkg_list=$(mktemp)
 dotenv_cmake_bin=""
 dotenv_llvm_toolchain=""
+if [ "$GITHUB_ACTIONS" = "true" ]; then
+    wget_progress_flag=""
+else
+    wget_progress_flag="--show-progress"
+fi
 
 printf "\033[1m\033[1;35mLLVM toochain setup\033[0m\n\n"
 
@@ -155,7 +160,7 @@ if [ $cmake_require_download -eq 1 ]; then
     cmake_download_link="https://github.com/Kitware/CMake/releases/download/v$cmake_version/$cmake_tar_gz_name"
     echo "  Source: $cmake_download_link"
     echo "  Destination: $buildtools_dir/$cmake_tar_gz_name"
-    wget -q --show-progress -nc -P "$buildtools_dir" "$cmake_download_link"
+    wget -q $wget_progress_flag -nc -P "$buildtools_dir" "$cmake_download_link"
     echo "  Extracting $buildtools_dir/$cmake_tar_gz_name"
     rm "$buildtools_dir/$cmake_installation_name" 2>/dev/null
     tar -xzf "$buildtools_dir/$cmake_tar_gz_name" -C "$buildtools_dir"
@@ -342,7 +347,7 @@ if [ $llvm_require_download -eq 1 ]; then
     llvm_download_link="https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvm_version/$llvm_tar_xz_name"
     echo "  Source: $llvm_download_link"
     echo "  Destination: $buildtools_dir/$llvm_tar_xz_name"
-    wget -q --show-progress -nc -P "$buildtools_dir" "$llvm_download_link"
+    wget -q $wget_progress_flag -nc -P "$buildtools_dir" "$llvm_download_link"
     echo "  Extracting $buildtools_dir/$llvm_tar_xz_name"
     rm "$buildtools_dir/$llvm_installation_name" 2>/dev/null
     tar -xf "$buildtools_dir/$llvm_tar_xz_name" -C "$buildtools_dir"
