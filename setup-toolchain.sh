@@ -320,6 +320,7 @@ if [ -n "$missing_pkg_str" ]; then
         echo "  All missing packages successfully installed!"
     else
         echo "  Failed to install $fail_count packages, toolchain is incomplete!"
+        llvm_require_download=1
     fi
     echo
 fi
