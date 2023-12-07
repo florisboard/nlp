@@ -2,7 +2,7 @@
   "version": 3,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 26,
+    "minor": 28,
     "patch": 0
   },
   "configurePresets": [
@@ -16,7 +16,6 @@
         "ICU_BUILD_FROM_SOURCE": false,
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API": "2182bf5c-ef0d-489a-91da-49dbc3090d2a",
         "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/bin",
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/bin",
         "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/bin"

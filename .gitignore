@@ -33,6 +33,7 @@
 
 # CMake files
 build/
+buildtools/
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
@@ -50,3 +51,6 @@ CMakeUserPresets.json
 # Python
 *.pyc
 __pycache__
+
+# dotenv
+.env.buildtools

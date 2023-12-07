@@ -1,7 +1,16 @@
 if(NOT ANDROID)
-    cmake_minimum_required(VERSION 3.26)
+    cmake_minimum_required(VERSION 3.28)
 else()
     cmake_minimum_required(VERSION 3.22)
+endif()
+
+# Set up LLVM toolchain
+if(LLVM_TOOLCHAIN)
+    set(CMAKE_C_COMPILER "${LLVM_TOOLCHAIN}/bin/clang")
+    set(CMAKE_CXX_COMPILER "${LLVM_TOOLCHAIN}/bin/clang++")
+else()
+    get_filename_component(LLVM_TOOLCHAIN ${CMAKE_CXX_COMPILER} DIRECTORY)
+    get_filename_component(LLVM_TOOLCHAIN ${LLVM_TOOLCHAIN} DIRECTORY)
 endif()
 
 project(FlorisNLP VERSION 0.1.0)
@@ -25,10 +34,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# Get llvm toolchain path
-get_filename_component(LLVM_TOOLCHAIN ${CMAKE_CXX_COMPILER} DIRECTORY)
-get_filename_component(LLVM_TOOLCHAIN ${LLVM_TOOLCHAIN} DIRECTORY)
 
 # We MUST disable json ranges support else this project will not compile properly with clang-16.
 # See also: external/nlohmann-json/docs/mkdocs/docs/api/macros/json_has_ranges.md
