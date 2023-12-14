@@ -174,7 +174,7 @@ export class LatinNlpSession {
         for (auto& word : sentence) {
             auto type = EntryType::word();
             fl::str::toUniString(word, uni_word);
-            auto word_node = target_dictionary->data_->first.findOrCreate(uni_word);
+            auto word_node = target_dictionary->data_->node.findOrCreate(uni_word);
             auto properties = word_node->valueOrCreate(id)->wordPropertiesOrCreate();
             if (properties->absolute_score == 0) {
                 target_dictionary->vocab_sizes_[type]++;

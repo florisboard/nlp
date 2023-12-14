@@ -26,7 +26,7 @@ module;
 #include <set>
 #include <mutex>
 #include <shared_mutex>
-#include <math>
+#include <cmath>
 
 export module fl.nlp.core.latin:prediction;
 
@@ -86,7 +86,7 @@ std::pair<P, double> mergeProperties(
             frequency += dict->calculateFrequency(entry_type, p->absolute_score, 1);
         }
     }
-    # TODO: a sum of numerators over a sum of denominators is better than this average.
+    // TODO: a sum of numerators over a sum of denominators is better than this average.
     if (end_node_count > 0) {
         frequency /= end_node_count;
     }
@@ -279,6 +279,7 @@ class RecursiveFuzzySearchState {
         // Making an approximation: for each n = 1..N, the scores that ranks >= params.top_k-th are the same as the one that ranks params.top_k)-th.
         // With this approximation, to be top top_k in the final result, a word needs to be top top_k in at least one n = 1..N.
         if (best_nodes.size() >= top_k) {
+            double max_possible_confidence = computeConfidence(false, cost, 1.0, cached_word_.size() - 1, token_index);
             if (max_possible_confidence <= best_nodes.cbegin()->first)
                 return true;
         }
@@ -523,7 +524,7 @@ export class LatinPredictionWrapper {
             flags,
             search_type,
             dicts_to_search,
-            &(session_state_.shared_data->lock),
+            &(session_state_.shared_data->node),
             session_config_.weights_.lookup_,
             session_config_.key_proximity_checker_,
             results,

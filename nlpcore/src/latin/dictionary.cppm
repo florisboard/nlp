@@ -57,7 +57,7 @@ export enum class LatinDictionarySection {
 export struct LatinTrieRootWithLock {
     LatinTrieNode node;
     std::shared_mutex lock;
-}
+};
 
 export class LatinDictionary : public Dictionary {
   public:
