@@ -24,6 +24,7 @@ module;
 #include <sstream>
 #include <string>
 #include <vector>
+#include <thread>
 
 export module fl.nlp.core.common:dictionary;
 
@@ -96,13 +97,34 @@ export std::string encodeList(const std::vector<std::string>& list) noexcept {
 
 } // namespace dictionary_serialization_helpers
 
+class WrappedJThread {
+public:
+    std::thread thread;
+    WrappedJThread() {
+    }
+    WrappedJThread(std::thread& other) {
+        thread.swap(other);
+    }
+    WrappedJThread& operator=(WrappedJThread&& other) {
+        thread.swap(other.thread);
+        return *this;
+    }
+    WrappedJThread(WrappedJThread&& other) {
+        thread.swap(other.thread);
+    }
+    ~WrappedJThread() {
+        thread.join();
+    }
+};
+
 export class Dictionary {
   public:
     std::filesystem::path file_path;
     std::string schema = FLDIC_SCHEMA_V0_DRAFT1;
     std::string encoding = FLDIC_ENCODING_UTF_8;
+    std::vector<WrappedJThread> loading_threads;
 
-    void loadFromDisk(const std::filesystem::path& path) {
+    void loadFromDiskInternal(const std::filesystem::path& path) {
         std::ifstream dict_file(path);
         if (dict_file.is_open()) {
             file_path = path;
@@ -111,6 +133,11 @@ export class Dictionary {
         } else {
             throw std::runtime_error("Cannot open file '" + file_path.string() + "'");
         }
+    }
+
+    void loadFromDisk(const std::filesystem::path& path) {
+        std::thread thread(&Dictionary::loadFromDiskInternal, this, path);
+        loading_threads.emplace(loading_threads.end(), thread);
     }
 
     void persistToDisk() {

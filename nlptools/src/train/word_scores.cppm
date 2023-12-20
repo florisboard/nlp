@@ -22,6 +22,8 @@ module;
 #include <iostream>
 #include <string>
 #include <vector>
+#include <mutex>
+#include <shared_mutex>
 
 export module fl.nlp.tools.train:word_scores;
 
@@ -45,7 +47,8 @@ void trainDict(fl::nlp::LatinDictionary& dict, std::istream& wordlist_file) {
         fl::str::toUniString(raw_word, word);
         fl::nlp::ScoreT word_count = std::stoll(line_components[1]);
         ;
-        auto* node = dict.data_->findOrNull(word);
+        std::shared_lock<std::shared_mutex> lock(dict.data_->lock);
+        auto* node = dict.data_->node.findOrNull(word);
         if (node == nullptr) continue;
         auto* value = node->valueOrNull(dict.dict_id_);
         if (value == nullptr) continue;
@@ -56,8 +59,9 @@ void trainDict(fl::nlp::LatinDictionary& dict, std::istream& wordlist_file) {
 }
 
 void removeWordsBelowThreshold(fl::nlp::LatinDictionary& dict, fl::nlp::ScoreT score_threshold) {
+    std::scoped_lock<std::shared_mutex> lock(dict.data_->lock);
     fl::nlp::algorithms::forEachWord(
-        dict.data_.get(), dict.dict_id_,
+        &(dict.data_->node), dict.dict_id_,
         [&](auto word, fl::nlp::LatinTrieNode* node, auto* properties) {
             if (properties->absolute_score < score_threshold) {
                 node->value(dict.dict_id_)->removeWordProperties();
