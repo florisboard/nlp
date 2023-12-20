@@ -59,7 +59,7 @@ void trainDict(fl::nlp::LatinDictionary& dict, std::istream& wordlist_file) {
 }
 
 void removeWordsBelowThreshold(fl::nlp::LatinDictionary& dict, fl::nlp::ScoreT score_threshold) {
-    std::scoped_lock<std::shared_mutex> lock(data_->lock);
+    std::scoped_lock<std::shared_mutex> lock(dict.data_->lock);
     fl::nlp::algorithms::forEachWord(
         &(dict.data_->node), dict.dict_id_,
         [&](auto word, fl::nlp::LatinTrieNode* node, auto* properties) {

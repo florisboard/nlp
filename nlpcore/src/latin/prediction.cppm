@@ -115,9 +115,10 @@ struct RecursiveFuzzySearchDistanceCell {
 };
 
 double computeConfidence(bool isWordPrefix, float cost, float frequency, std::size_t word_size, size_t token_size) {
+    // NOTE: now, this returns log confidence instead of a 0-1 value.
     // TODO: reevaluate the weighting and calculation
     double w1 = 1.0;
-    double w2 = 0.5;
+    double w2 = 0.1;  // this means 2^(1/w2) times the frequency can offset an edit distance of w1
     double similarity;
     // if (isWordPrefix) {
     //     similarity = 1.0 - (cost / std::max(static_cast<std::size_t>(1), word_size));

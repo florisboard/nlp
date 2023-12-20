@@ -5,6 +5,7 @@ WORKDIR /home/ubuntu
 
 COPY ./setup-toolchain.sh /home/ubuntu/nlp/setup-toolchain.sh
 RUN cd /home/ubuntu/nlp && ./setup-toolchain.sh
+ENV LD_LIBRARY_PATH=/home/ubuntu/nlp/buildtools/clang+llvm-17.0.5-x86_64-linux-gnu-ubuntu-22.04/lib/x86_64-unknown-linux-gnu
 
 RUN wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip 
 RUN gunzip /usr/local/bin/ninja.gz && chmod a+x /usr/local/bin/ninja
