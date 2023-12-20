@@ -28,6 +28,8 @@ module;
 #include <map>
 #include <regex>
 #include <vector>
+#include <mutex>
+#include <shared_mutex>
 
 export module fl.nlp.tools.prep:wiktextract;
 
@@ -161,7 +163,8 @@ class WiktextractPreprocessor {
         fl::str::UniString uni_word;
         for (auto& word : config.project_specific_words) {
             fl::str::toUniString(word, uni_word);
-            auto node = dict.data_->findOrCreate(uni_word);
+            std::scoped_lock<std::shared_mutex> lock(dict.data_->lock);
+            auto node = dict.data_->node.findOrCreate(uni_word);
             node->valueOrCreate(dict.dict_id_)->wordPropertiesOrCreate()->absolute_score = 1;
         }
     }
@@ -314,7 +317,8 @@ class WiktextractPreprocessor {
                     total_words_offensive++;
                     fl::str::UniString uni_word;
                     fl::str::toUniString(word, uni_word);
-                    auto node = dict.data_->findOrCreate(uni_word);
+                    std::scoped_lock<std::shared_mutex> lock(dict.data_->lock);
+                    auto node = dict.data_->node.findOrCreate(uni_word);
                     auto properties = node->valueOrCreate(dict.dict_id_)->wordPropertiesOrCreate();
                     properties->absolute_score = 1;
                     properties->is_possibly_offensive = true;
@@ -322,7 +326,8 @@ class WiktextractPreprocessor {
                     total_words_normal++;
                     fl::str::UniString uni_word;
                     fl::str::toUniString(word, uni_word);
-                    auto node = dict.data_->findOrCreate(uni_word);
+                    std::scoped_lock<std::shared_mutex> lock(dict.data_->lock);
+                    auto node = dict.data_->node.findOrCreate(uni_word);
                     auto properties = node->valueOrCreate(dict.dict_id_)->wordPropertiesOrCreate();
                     properties->absolute_score = 1;
                 }
